@@ -114,6 +114,7 @@ class ContinualCacheAdapter:
         fusion_weight: float = 0.35,
         dedupe_threshold: float = 0.98,
         multimodal_alpha: float = 0.65,
+        use_vision_keys: bool = True,
     ):
         self.encoder = encoder or FrozenTextEncoder()
         self.labels = labels or list(ATTACK_LABELS)
@@ -123,6 +124,7 @@ class ContinualCacheAdapter:
         self.fusion_weight = fusion_weight
         self.dedupe_threshold = dedupe_threshold
         self.multimodal_alpha = multimodal_alpha
+        self.use_vision_keys = use_vision_keys
         self._vision_encoder = None
         self._entries: list[CacheEntry] = []
 
@@ -161,7 +163,9 @@ class ContinualCacheAdapter:
         keys = np.stack([e.key for e in self._entries], axis=0)
         sims = keys @ q
 
-        if vision is not None and any(e.vision_key is not None for e in self._entries):
+        if vision is not None and self.use_vision_keys and any(
+            e.vision_key is not None for e in self._entries
+        ):
             vkeys = []
             vmask = []
             for e in self._entries:
@@ -198,7 +202,9 @@ class ContinualCacheAdapter:
         raw_payload: str | None = None,
     ) -> dict[str, float]:
         """将缓存分与基线概率融合（支持多模态视觉 Key）。"""
-        vision = self.encode_vision(raw_payload or text) if raw_payload or text else None
+        vision = None
+        if self.use_vision_keys and (raw_payload or text):
+            vision = self.encode_vision(raw_payload or text)
         cache_raw = self.lookup_scores(text, vision=vision)
         total_c = sum(cache_raw.values()) or 1.0
         cache_probs = {lb: cache_raw.get(lb, 0.0) / total_c for lb in self.labels}
@@ -354,6 +360,7 @@ class ContinualCacheAdapter:
             fusion_weight=float(cfg.get("fusion_weight", 0.35)),
             dedupe_threshold=float(cfg.get("dedupe_threshold", 0.98)),
             multimodal_alpha=float(cfg.get("multimodal_alpha", 0.65)),
+            use_vision_keys=bool(cfg.get("use_vision_keys", True)),
         )
         if not npz_path.exists():
             return adapter

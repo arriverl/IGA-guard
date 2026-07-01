@@ -55,16 +55,33 @@ continual_cache:
   top_k: 8
   fusion_weight: 0.35
   dedupe_threshold: 0.98
-  multimodal_alpha: 0.65
+  multimodal_alpha: 0.85
+  use_vision_keys: true
 
 # IGA-Guard 3.0 多模态轨（协议 + 字节图视觉，冻结编码器）
+# 条件融合：混淆样本压低 mm 权重，Normal 流量加强压 FP
 multimodal:
   enabled: true
-  vision_weight: 0.45
+  vision_weight: 0.30
   weight_base: 0.38
   weight_semantic: 0.28
   weight_multimodal: 0.14
   weight_dlinear: 0.12
+  # 混淆子集：主信号 RF+语义
+  weight_base_obfuscated: 0.42
+  weight_semantic_obfuscated: 0.32
+  weight_multimodal_obfuscated: 0.04
+  weight_dlinear_obfuscated: 0.12
+  # 非混淆（含 Normal）：多模态压误报
+  weight_base_benign: 0.34
+  weight_semantic_benign: 0.24
+  weight_multimodal_benign: 0.22
+  weight_dlinear_benign: 0.10
+  # 门控：base 已确信攻击时不掺 mm
+  gate_base_attack_threshold: 0.45
+  gate_base_low_threshold: 0.25
+  gate_mm_normal_threshold: 0.5
+  gate_mm_boost: 1.5
   byte_grid: [32, 64]
 
 llm_agent:

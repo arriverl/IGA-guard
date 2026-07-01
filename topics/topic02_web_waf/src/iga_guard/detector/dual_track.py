@@ -39,6 +39,7 @@ class DualTrackDetector:
         det = cfg.get("detector", {})
         dlinear_cfg = cfg.get("dlinear", {})
         mm_cfg = cfg.get("multimodal", {})
+        self._mm_cfg = mm_cfg
 
         model_path = det.get("model_path", "models/fusion_detector.joblib")
         path = model_path if Path(model_path).exists() else None
@@ -70,6 +71,59 @@ class DualTrackDetector:
             self.cache = ContinualCacheAdapter.load(config=cache_cfg)
             if cache_cfg.get("fusion_weight") is not None:
                 self.cache.fusion_weight = float(cache_cfg["fusion_weight"])
+            self.cache.use_vision_keys = bool(mm_cfg.get("enabled", False))
+
+    def _fusion_weights(
+        self,
+        payload: NormalizedPayload,
+        base_result: DetectionResult,
+        mm_bias: dict[str, float],
+    ) -> tuple[float, float, float, float]:
+        """条件融合 + 门控：混淆样本压低 mm 权重，Normal 场景加强压 FP。"""
+        cfg = self._mm_cfg
+        raw_low = (payload.raw_payload or "").lower()
+        obf = is_obfuscated(raw_low)
+
+        if not self.multimodal.enabled:
+            return self._w_base, self._w_sem, 0.0, self._w_dl
+
+        if obf:
+            w_base = float(cfg.get("weight_base_obfuscated", 0.42))
+            w_sem = float(cfg.get("weight_semantic_obfuscated", 0.32))
+            w_mm = float(cfg.get("weight_multimodal_obfuscated", 0.04))
+            w_dl = float(cfg.get("weight_dlinear_obfuscated", 0.12))
+        else:
+            w_base = float(cfg.get("weight_base_benign", 0.34))
+            w_sem = float(cfg.get("weight_semantic_benign", 0.24))
+            w_mm = float(cfg.get("weight_multimodal_benign", 0.22))
+            w_dl = float(cfg.get("weight_dlinear_benign", 0.10))
+
+        attack_peak_base = max(
+            (v for k, v in base_result.all_probs.items() if k != "Normal"), default=0.0,
+        )
+        mm_attack_peak = max(
+            (v for k, v in mm_bias.items() if k != "Normal"), default=0.0,
+        )
+        gate_base = float(cfg.get("gate_base_attack_threshold", 0.45))
+        gate_low = float(cfg.get("gate_base_low_threshold", 0.25))
+
+        if attack_peak_base >= gate_base or obf:
+            w_base += w_mm * 0.6
+            w_sem += w_mm * 0.4
+            w_mm = 0.0
+        else:
+            pf = self.multimodal.protocol.encode_features(payload)
+            benign_proto = (
+                pf.get("proto_hpp", 0) == 0
+                and pf.get("proto_obfuscated", 0) == 0
+                and pf.get("proto_pct_density", 0) < 0.2
+                and attack_peak_base < gate_low
+                and mm_attack_peak < 0.15
+            )
+            if benign_proto:
+                w_mm *= float(cfg.get("gate_mm_boost", 1.5))
+
+        return w_base, w_sem, w_mm, w_dl
 
     def predict(
         self,
@@ -88,6 +142,7 @@ class DualTrackDetector:
 
         sem_bias = self.semantic.class_bias(payload)
         mm_bias = self.multimodal.class_bias(payload)
+        w_base, w_sem, w_mm, w_dl = self._fusion_weights(payload, base_result, mm_bias)
         if ts_matrix and len(ts_matrix) >= 2:
             dlinear_enc = self.dlinear.encode_series(ts_matrix)
         else:
@@ -96,17 +151,17 @@ class DualTrackDetector:
 
         all_probs: dict[str, float] = {}
         for label in self.labels:
-            p = self._w_base * base_result.all_probs.get(label, 0.0)
-            p += self._w_sem * sem_bias.get(label, 0.0)
-            p += self._w_mm * mm_bias.get(label, 0.0)
+            p = w_base * base_result.all_probs.get(label, 0.0)
+            p += w_sem * sem_bias.get(label, 0.0)
+            p += w_mm * mm_bias.get(label, 0.0)
             if label != "Normal":
-                p += self._w_dl * anomaly * max(
+                p += w_dl * anomaly * max(
                     mm_bias.get(label, 0.0),
                     sem_bias.get(label, 0.0),
                     base_result.all_probs.get(label, 0.0),
                 )
             else:
-                p += self._w_dl * (1.0 - anomaly) * 0.5
+                p += w_dl * (1.0 - anomaly) * 0.5
             all_probs[label] = p
 
         total = sum(all_probs.values()) or 1.0

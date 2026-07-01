@@ -1,0 +1,107 @@
+{
+  "dataset": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\test_obfuscated.csv",
+  "max_samples": 2000,
+  "runs": {
+    "without_multimodal": {
+      "eval_samples": 2000,
+      "overall_binary": {
+        "detection_recall": 0.7827,
+        "detection_precision": 0.988,
+        "false_positive_rate": 0.036,
+        "tp": 1239,
+        "fp": 15,
+        "fn": 344,
+        "tn": 402
+      },
+      "obfuscated_attack_binary": {
+        "detection_recall": 0.919,
+        "detection_precision": 1.0,
+        "tp": 976,
+        "fn": 86,
+        "samples": 1062
+      },
+      "normal_binary": {
+        "false_positive_rate": 0.036,
+        "fp": 15,
+        "tn": 402,
+        "samples": 417
+      },
+      "multiclass_accuracy": 0.639,
+      "elapsed_sec": 136.2,
+      "multimodal_enabled": false,
+      "cache_stats": {
+        "size": 132,
+        "encoder_mode": "st",
+        "multimodal_alpha": 0.85,
+        "vision_keys": 132,
+        "max_size": 5000,
+        "by_label": {
+          "Normal": 25,
+          "CMD": 25,
+          "SQLi": 25,
+          "XSS": 25,
+          "PathTraversal": 23,
+          "FileInclusion": 3,
+          "XXE": 3,
+          "PromptInjection": 3
+        },
+        "by_source": {
+          "few_shot_seed": 132
+        }
+      }
+    },
+    "with_multimodal": {
+      "eval_samples": 2000,
+      "overall_binary": {
+        "detection_recall": 0.7795,
+        "detection_precision": 0.9896,
+        "false_positive_rate": 0.0312,
+        "tp": 1234,
+        "fp": 13,
+        "fn": 349,
+        "tn": 404
+      },
+      "obfuscated_attack_binary": {
+        "detection_recall": 0.9171,
+        "detection_precision": 1.0,
+        "tp": 974,
+        "fn": 88,
+        "samples": 1062
+      },
+      "normal_binary": {
+        "false_positive_rate": 0.0312,
+        "fp": 13,
+        "tn": 404,
+        "samples": 417
+      },
+      "multiclass_accuracy": 0.6215,
+      "elapsed_sec": 95.1,
+      "multimodal_enabled": true,
+      "cache_stats": {
+        "size": 132,
+        "encoder_mode": "st",
+        "multimodal_alpha": 0.85,
+        "vision_keys": 132,
+        "max_size": 5000,
+        "by_label": {
+          "Normal": 25,
+          "CMD": 25,
+          "SQLi": 25,
+          "XSS": 25,
+          "PathTraversal": 23,
+          "FileInclusion": 3,
+          "XXE": 3,
+          "PromptInjection": 3
+        },
+        "by_source": {
+          "few_shot_seed": 132
+        }
+      }
+    }
+  },
+  "delta": {
+    "obfuscated_recall_pp": -0.0019,
+    "overall_recall_pp": -0.0032,
+    "normal_fpr_pp": -0.0048
+  }
+}

@@ -19,7 +19,7 @@ from iga_guard.obfuscation_signals import is_obfuscated
 from iga_guard.pipeline import load_config
 
 
-def _run_eval(engine: IgaGuardEngine, data_path: Path) -> dict:
+def _run_eval(engine: IgaGuardEngine, data_path: Path, max_samples: int | None = None) -> dict:
     y_true: list[str] = []
     y_pred: list[str] = []
     bin_true: list[bool] = []
@@ -30,6 +30,8 @@ def _run_eval(engine: IgaGuardEngine, data_path: Path) -> dict:
 
     with data_path.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
+    if max_samples and max_samples > 0:
+        rows = rows[:max_samples]
 
     for i, row in enumerate(rows):
         payload, label = row["payload"], row["label"]
@@ -92,19 +94,26 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", default=str(ROOT / "data" / "master" / "test_obfuscated.csv"))
     parser.add_argument("--output", default=str(ROOT / "results" / "v2_compare_multimodal_full.json"))
+    parser.add_argument("--max-samples", type=int, default=0, help="0=全量")
     args = parser.parse_args()
     data_path = Path(args.data)
+    max_samples = args.max_samples if args.max_samples > 0 else None
 
     base_cfg = load_config(ROOT / "configs" / "default.yaml")
-    results: dict = {"dataset": str(data_path), "runs": {}}
+    results: dict = {
+        "dataset": str(data_path),
+        "max_samples": max_samples,
+        "runs": {},
+    }
 
     for name, mm_on in [("without_multimodal", False), ("with_multimodal", True)]:
         cfg = copy.deepcopy(base_cfg)
         cfg.setdefault("multimodal", {})["enabled"] = mm_on
+        cfg.setdefault("continual_cache", {})["use_vision_keys"] = mm_on
         print(f"\n=== {name} (multimodal={mm_on}) ===", flush=True)
         t0 = time.perf_counter()
         engine = IgaGuardEngine(cfg)
-        metrics = _run_eval(engine, data_path)
+        metrics = _run_eval(engine, data_path, max_samples=max_samples)
         metrics["elapsed_sec"] = round(time.perf_counter() - t0, 1)
         metrics["multimodal_enabled"] = mm_on
         if hasattr(engine.detector, "cache") and engine.detector.cache:

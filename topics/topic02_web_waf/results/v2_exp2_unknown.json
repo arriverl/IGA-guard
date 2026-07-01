@@ -1,0 +1,74 @@
+{
+  "experiment": "E2_unknown_obfuscation",
+  "dataset": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\test_obfuscated.csv",
+  "train_obfuscation_types": [
+    "base64_fragment",
+    "case_random",
+    "char_function",
+    "chunked_whitespace",
+    "double_url_encode",
+    "hex_escape",
+    "hpp_duplicate_param",
+    "html_entity_full",
+    "html_entity_partial",
+    "img_onerror_wrap",
+    "inline_comment",
+    "json_nested_escape",
+    "keyword_concat_split",
+    "logic_or_tautology",
+    "multipart_boundary_sim",
+    "mysql_version_comment",
+    "nested_comment",
+    "null_byte",
+    "paren_overload",
+    "svg_event_wrap",
+    "tab_newline",
+    "unicode_escape",
+    "unicode_normalization",
+    "url_encode",
+    "whitespace_substitution"
+  ],
+  "unknown_obfuscation_types": [],
+  "unknown_samples": 0,
+  "obfuscated_recall": 0,
+  "metrics": {
+    "eval_samples": 0,
+    "overall_multiclass": {
+      "accuracy": 0,
+      "recall_malicious_exact_class": 0,
+      "samples": 0
+    },
+    "overall_binary": {
+      "detection_recall": 0,
+      "detection_precision": 0,
+      "f1": 0,
+      "false_positive_rate": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "samples": 0
+    },
+    "obfuscated_attack_binary": {
+      "detection_recall": 0,
+      "detection_precision": 0,
+      "f1": 0,
+      "false_positive_rate": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "samples": 0
+    },
+    "normal_binary": {
+      "false_positive_rate": 0,
+      "fp": 0,
+      "tn": 0,
+      "samples": 0
+    },
+    "target_obfuscated_recall": 0.995,
+    "pass_binary_obfuscated": null,
+    "elapsed_sec": 0.0
+  },
+  "note": "测试集 source 含训练未出现的 obfuscation:* 类型；报告混淆攻击二分类 recall"
+}

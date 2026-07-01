@@ -12,6 +12,9 @@ IGA-Guard 2.0 统一系统入口
   python scripts/iga_system.py serve           # 启动 Web
   python scripts/iga_system.py obfuscate -p "1 union select 1" -t SQLi -n 10
   python scripts/iga_system.py pipeline        # 全流程（训练+评估+对抗）
+  python scripts/iga_system.py expand-cache    # 漏检→缓存
+  python scripts/iga_system.py evolve-obf      # 漏检→诚实重训
+  python scripts/iga_system.py experiments     # E2/E5/E7/E8 实验套件
 """
 
 from __future__ import annotations
@@ -68,7 +71,7 @@ def cmd_train(args: argparse.Namespace) -> int:
         return _run([
             py, "scripts/train_bert.py", "--data", data,
             "--epochs", str(args.epochs),
-            "--max-samples", str(args.bert_samples),
+            *(["--max-samples", str(args.bert_samples)] if args.bert_samples > 0 else []),
         ], "微调 TinyBERT")
     return 0
 
@@ -77,7 +80,7 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     py = sys.executable
     data = args.data or str(ROOT / "data" / "master" / "test_obfuscated.csv")
     cmd = [py, "scripts/evaluate.py", "--data", data]
-    if args.max_samples:
+    if args.max_samples and args.max_samples > 0:
         cmd += ["--max-samples", str(args.max_samples)]
     return _run(cmd, "检测评估")
 
@@ -147,6 +150,40 @@ def cmd_build_cache(args: argparse.Namespace) -> int:
     return _run(cmd, "构建持续学习 KV 缓存")
 
 
+def cmd_expand_cache(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [py, "scripts/expand_cache_from_misses.py", "--max-rows", str(args.max_rows)]
+    if args.misses:
+        cmd += ["--misses", args.misses]
+    return _run(cmd, "漏检样本扩持续学习缓存")
+
+
+def cmd_evolve_obf(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py, "scripts/evolve_from_obf_misses.py",
+        "--max-rows", str(args.max_rows),
+        "--min-samples", str(args.min_samples),
+    ]
+    return _run(cmd, "漏检诚实增量重训 RF")
+
+
+def cmd_experiments(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [py, "scripts/run_experiments_suite.py", "--experiments", args.experiments]
+    if args.max_samples:
+        cmd += ["--max-samples", str(args.max_samples)]
+    if args.rl_events:
+        cmd += ["--rl-events", str(args.rl_events)]
+    if args.train_data:
+        cmd += ["--train-data", args.train_data]
+    if args.test_data:
+        cmd += ["--test-data", args.test_data]
+    if args.misses:
+        cmd += ["--misses", args.misses]
+    return _run(cmd, f"实验套件 ({args.experiments})")
+
+
 def cmd_compare_multimodal(args: argparse.Namespace) -> int:
     py = sys.executable
     cmd = [py, "scripts/compare_multimodal_full.py"]
@@ -179,13 +216,13 @@ def main() -> int:
     p_train = sub.add_parser("train", help="训练模型")
     p_train.add_argument("--data", default=None)
     p_train.add_argument("--skip-bert", action="store_true")
-    p_train.add_argument("--epochs", type=int, default=2)
-    p_train.add_argument("--bert-samples", type=int, default=40000)
+    p_train.add_argument("--epochs", type=int, default=5)
+    p_train.add_argument("--bert-samples", type=int, default=0, help="0=全量训练")
     p_train.set_defaults(func=cmd_train)
 
     p_eval = sub.add_parser("evaluate", help="评估")
     p_eval.add_argument("--data", default=None)
-    p_eval.add_argument("--max-samples", type=int, default=5000)
+    p_eval.add_argument("--max-samples", type=int, default=0, help="0=全量")
     p_eval.set_defaults(func=cmd_evaluate)
 
     p_adv = sub.add_parser("adversarial", help="对抗演化")
@@ -216,6 +253,25 @@ def main() -> int:
     p_cache.add_argument("--data", default=None)
     p_cache.add_argument("--per-class", type=int, default=30)
     p_cache.set_defaults(func=cmd_build_cache)
+
+    p_ec = sub.add_parser("expand-cache", help="漏检样本写入持续学习缓存")
+    p_ec.add_argument("--misses", default=None)
+    p_ec.add_argument("--max-rows", type=int, default=500)
+    p_ec.set_defaults(func=cmd_expand_cache)
+
+    p_evo = sub.add_parser("evolve-obf", help="漏检样本诚实增量重训")
+    p_evo.add_argument("--max-rows", type=int, default=400)
+    p_evo.add_argument("--min-samples", type=int, default=50)
+    p_evo.set_defaults(func=cmd_evolve_obf)
+
+    p_exp = sub.add_parser("experiments", help="运行 E2/E5/E7/E8 实验")
+    p_exp.add_argument("--experiments", default="all", help="e2,e5,e7,e8 或 all")
+    p_exp.add_argument("--train-data", default=None)
+    p_exp.add_argument("--test-data", default=None)
+    p_exp.add_argument("--misses", default=None)
+    p_exp.add_argument("--max-samples", type=int, default=3000)
+    p_exp.add_argument("--rl-events", type=int, default=50)
+    p_exp.set_defaults(func=cmd_experiments)
 
     p_cmp = sub.add_parser("compare-multimodal", help="全量多模态开/关对比")
     p_cmp.add_argument("--data", default=None)

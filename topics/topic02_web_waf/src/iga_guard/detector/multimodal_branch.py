@@ -96,8 +96,9 @@ class ProtocolEncoder:
 
     def class_bias(self, payload: NormalizedPayload) -> dict[str, float]:
         feats = self.encode_features(payload)
-        bias = {lb: 0.04 if lb == "Normal" else 0.0 for lb in ATTACK_LABELS}
+        bias = {lb: 0.0 for lb in ATTACK_LABELS}
         norm = (payload.normalized_payload or payload.raw_payload).lower()
+        raw = payload.raw_payload or ""
 
         if feats["proto_hpp"] > 0 or feats["proto_ampersand_density"] > 0.3:
             bias["SQLi"] += 0.35
@@ -114,6 +115,15 @@ class ProtocolEncoder:
             for lb, w in attack_keyword_scores(norm).items():
                 if lb != "Normal":
                     bias[lb] += 0.15 * w
+
+        decode_depth = len(payload.decode_chain)
+        if decode_depth >= 2:
+            bias["SQLi"] += 0.15
+            bias["XSS"] += 0.15
+        pct_ratio = raw.count("%") / max(len(raw), 1)
+        if pct_ratio > 0.15 and is_obfuscated(raw):
+            bias["SQLi"] += 0.2
+            bias["XSS"] += 0.2
 
         st = structural_attack_scores(
             payload.raw_payload, norm, decode_depth=len(payload.decode_chain),
@@ -138,7 +148,7 @@ class VisionEncoder:
     def class_bias(self, payload: NormalizedPayload) -> dict[str, float]:
         raw = payload.raw_payload or ""
         vec = self.encode(raw)
-        bias = {lb: 0.05 if lb == "Normal" else 0.0 for lb in ATTACK_LABELS}
+        bias = {lb: 0.0 for lb in ATTACK_LABELS}
 
         entropy_proxy = float(vec[1]) if vec.size > 1 else 0.0
         edge_energy = float(vec[-2]) if vec.size > 2 else 0.0
@@ -152,6 +162,26 @@ class VisionEncoder:
             bias["CMD"] += 0.15
         if high_byte_ratio > 0.08:
             bias["SQLi"] += 0.2
+
+        decode_depth = len(payload.decode_chain)
+        if decode_depth >= 2:
+            bias["SQLi"] += 0.15
+            bias["XSS"] += 0.15
+        pct_ratio = raw.count("%") / max(len(raw), 1)
+        if pct_ratio > 0.15:
+            bias["SQLi"] += 0.2
+            bias["XSS"] += 0.2
+        raw_low = raw.lower()
+        if re.search(r"(?:\\x|%)[0-9a-f]{2}", raw_low):
+            bias["SQLi"] += 0.15
+            bias["CMD"] += 0.1
+        # 大小写交替（混淆逃逸常见形态）
+        alnum = [c for c in raw if c.isalpha()]
+        if len(alnum) >= 8:
+            switches = sum(1 for a, b in zip(alnum, alnum[1:]) if a.isupper() != b.isupper())
+            if switches / max(len(alnum) - 1, 1) > 0.35:
+                bias["XSS"] += 0.15
+                bias["SQLi"] += 0.1
 
         norm = (payload.normalized_payload or raw).lower()
         if "union" in norm or "select" in norm:

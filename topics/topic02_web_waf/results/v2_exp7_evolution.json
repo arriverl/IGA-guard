@@ -1,0 +1,392 @@
+{
+  "experiment": "E7_online_rl",
+  "feedback_source": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\eval_obf_misses.jsonl",
+  "events_simulated": 50,
+  "baseline_thresholds": {
+    "Normal": 0.35,
+    "SQLi": 0.35,
+    "XSS": 0.35,
+    "CMD": 0.35,
+    "PathTraversal": 0.35,
+    "FileInclusion": 0.35,
+    "XXE": 0.35,
+    "PromptInjection": 0.35
+  },
+  "final_thresholds": {
+    "Normal": 0.35,
+    "SQLi": 0.2,
+    "XSS": 0.35,
+    "CMD": 0.4900000000000001,
+    "PathTraversal": 0.35,
+    "FileInclusion": 0.35,
+    "XXE": 0.35,
+    "PromptInjection": 0.35
+  },
+  "threshold_deltas": {
+    "CMD": 0.14,
+    "FileInclusion": 0.0,
+    "Normal": 0.0,
+    "PathTraversal": 0.0,
+    "PromptInjection": 0.0,
+    "SQLi": -0.15,
+    "XSS": 0.0,
+    "XXE": 0.0
+  },
+  "reward_summary": {
+    "mean": 0.44,
+    "positive": 35,
+    "negative": 15
+  },
+  "events": [
+    {
+      "event": 1,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 2,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 3,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 4,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 5,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:unicode_escape"
+    },
+    {
+      "event": 6,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 7,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 8,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 9,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 10,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:multipart_boundary_sim"
+    },
+    {
+      "event": 11,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 12,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:url_encode"
+    },
+    {
+      "event": 13,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:url_encode"
+    },
+    {
+      "event": 14,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 15,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 16,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:case_random"
+    },
+    {
+      "event": 17,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 18,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:case_random"
+    },
+    {
+      "event": 19,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 20,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 21,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 22,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 23,
+      "true_label": "SQLi",
+      "predicted": "SQLi",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 24,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:unicode_escape"
+    },
+    {
+      "event": 25,
+      "true_label": "SQLi",
+      "predicted": "CMD",
+      "reward": -0.5,
+      "source": "obfuscation:multipart_boundary_sim"
+    },
+    {
+      "event": 26,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:unicode_escape"
+    },
+    {
+      "event": 27,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:unicode_normalization"
+    },
+    {
+      "event": 28,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:unicode_escape"
+    },
+    {
+      "event": 29,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 30,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 31,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 32,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 33,
+      "true_label": "SQLi",
+      "predicted": "XSS",
+      "reward": -0.5,
+      "source": "obfuscation:base64_fragment"
+    },
+    {
+      "event": 34,
+      "true_label": "SQLi",
+      "predicted": "SQLi",
+      "reward": 1.0,
+      "source": "obfuscation:char_function"
+    },
+    {
+      "event": 35,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:unicode_normalization"
+    },
+    {
+      "event": 36,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 37,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 38,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 39,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 40,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 41,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:url_encode"
+    },
+    {
+      "event": 42,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:double_url_encode"
+    },
+    {
+      "event": 43,
+      "true_label": "SQLi",
+      "predicted": "CMD",
+      "reward": -0.5,
+      "source": "obfuscation:multipart_boundary_sim"
+    },
+    {
+      "event": 44,
+      "true_label": "SQLi",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "obfuscation:base64_fragment"
+    },
+    {
+      "event": 45,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 46,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:unicode_normalization"
+    },
+    {
+      "event": 47,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "obfuscation:null_byte"
+    },
+    {
+      "event": 48,
+      "true_label": "SQLi",
+      "predicted": "CMD",
+      "reward": -0.5,
+      "source": "obfuscation:multipart_boundary_sim"
+    },
+    {
+      "event": 49,
+      "true_label": "CMD",
+      "predicted": "CMD",
+      "reward": 1.0,
+      "source": "seclists_cmd"
+    },
+    {
+      "event": 50,
+      "true_label": "CMD",
+      "predicted": "Normal",
+      "reward": -1.0,
+      "source": "seclists_cmd"
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "total": 2000,
+  "by_label": {
+    "CMD": 1198,
+    "SQLi": 786,
+    "PathTraversal": 2,
+    "XSS": 12,
+    "PromptInjection": 1,
+    "108": 1
+  },
+  "by_source_prefix": {
+    "seclists_cmd": 285,
+    "obfuscation": 1697,
+    "csic_gsi": 14,
+    "community": 4
+  },
+  "by_source": {
+    "obfuscation:null_byte": 299,
+    "seclists_cmd": 285,
+    "obfuscation:unicode_escape": 280,
+    "obfuscation:url_encode": 211,
+    "obfuscation:double_url_encode": 206,
+    "obfuscation:multipart_boundary_sim": 195,
+    "obfuscation:unicode_normalization": 189,
+    "obfuscation:case_random": 163,
+    "obfuscation:char_function": 75,
+    "obfuscation:base64_fragment": 31,
+    "obfuscation:hex_escape": 18,
+    "csic_gsi:cisc_anomalousTraffic_test.txt": 14,
+    "obfuscation:keyword_concat_split": 13,
+    "obfuscation:json_nested_escape": 5,
+    "community:payloads_seed": 4,
+    "obfuscation:nested_comment": 4,
+    "obfuscation:logic_or_tautology": 3,
+    "obfuscation:hpp_duplicate_param": 2,
+    "obfuscation:tab_newline": 1,
+    "obfuscation:html_entity_full": 1,
+    "obfuscation:html_entity_partial": 1
+  },
+  "cross_label_source_prefix": {
+    "108": {
+      "obfuscation": 1
+    },
+    "CMD": {
+      "seclists_cmd": 285,
+      "obfuscation": 913
+    },
+    "PathTraversal": {
+      "obfuscation": 2
+    },
+    "PromptInjection": {
+      "obfuscation": 1
+    },
+    "SQLi": {
+      "obfuscation": 768,
+      "csic_gsi": 14,
+      "community": 4
+    },
+    "XSS": {
+      "obfuscation": 12
+    }
+  },
+  "top_patterns": [
+    {
+      "pattern": "double_url_encode_cmd",
+      "count": 473,
+      "pct": 23.6
+    },
+    {
+      "pattern": "null_byte_in_params",
+      "count": 277,
+      "pct": 13.8
+    },
+    {
+      "pattern": "unicode_escape_sqli",
+      "count": 253,
+      "pct": 12.7
+    },
+    {
+      "pattern": "seclists_echo_shell",
+      "count": 240,
+      "pct": 12.0
+    },
+    {
+      "pattern": "multipart_boundary_sqli",
+      "count": 192,
+      "pct": 9.6
+    },
+    {
+      "pattern": "unicode_normalization",
+      "count": 167,
+      "pct": 8.3
+    },
+    {
+      "pattern": "case_random_cmd",
+      "count": 133,
+      "pct": 6.7
+    },
+    {
+      "pattern": "char_function_sqli",
+      "count": 75,
+      "pct": 3.8
+    },
+    {
+      "pattern": "double_url_encode_sqli",
+      "count": 48,
+      "pct": 2.4
+    },
+    {
+      "pattern": "other:url_encode",
+      "count": 45,
+      "pct": 2.2
+    }
+  ],
+  "top_5_miss_patterns": [
+    {
+      "pattern": "double_url_encode_cmd",
+      "count": 473,
+      "pct": 23.6
+    },
+    {
+      "pattern": "null_byte_in_params",
+      "count": 277,
+      "pct": 13.8
+    },
+    {
+      "pattern": "unicode_escape_sqli",
+      "count": 253,
+      "pct": 12.7
+    },
+    {
+      "pattern": "seclists_echo_shell",
+      "count": 240,
+      "pct": 12.0
+    },
+    {
+      "pattern": "multipart_boundary_sqli",
+      "count": 192,
+      "pct": 9.6
+    }
+  ],
+  "score_diagnostics": {
+    "kw_peak_distribution": {
+      "0.88": 694,
+      "0.95": 332,
+      "0.00": 278,
+      "0.97": 230,
+      "0.93": 204,
+      "0.98": 72,
+      "0.72": 60,
+      "0.64": 34,
+      "0.78": 30,
+      "0.47": 16
+    },
+    "st_peak_distribution": {
+      "0.92": 594,
+      "0.00": 498,
+      "0.93": 391,
+      "0.96": 208,
+      "0.89": 162,
+      "0.74": 42,
+      "0.48": 31,
+      "0.64": 30,
+      "0.54": 13,
+      "0.68": 11
+    },
+    "fallback_would_catch": {
+      "total": 2000,
+      "caught": 1470,
+      "catch_rate_pct": 73.5,
+      "top_5_pattern_coverage": {
+        "double_url_encode_cmd": {
+          "total": 473,
+          "caught": 434,
+          "catch_rate_pct": 91.8
+        },
+        "null_byte_in_params": {
+          "total": 277,
+          "caught": 276,
+          "catch_rate_pct": 99.6
+        },
+        "unicode_escape_sqli": {
+          "total": 253,
+          "caught": 200,
+          "catch_rate_pct": 79.1
+        },
+        "seclists_echo_shell": {
+          "total": 240,
+          "caught": 240,
+          "catch_rate_pct": 100.0
+        },
+        "multipart_boundary_sqli": {
+          "total": 192,
+          "caught": 88,
+          "catch_rate_pct": 45.8
+        }
+      }
+    }
+  }
+}

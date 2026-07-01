@@ -28,7 +28,7 @@ HTTP 请求 → 采集解析 → 多层解混淆 → 四模态融合检测 → W
 | 组件 | 路径 | 说明 |
 |------|------|------|
 | RF 融合 | `models/fusion_detector.joblib` | 128 树，133k 训练 |
-| TinyBERT | `models/tinybert_waf/` | 50k 子集微调（3 epoch），语义轨门控 |
+| TinyBERT | `models/tinybert_waf/` | 50k 子集微调（3 epoch）；**全量 133k × 5 epoch 重训进行中** |
 | 配置 | `configs/default.yaml` | `use_semantic_branch: true` |
 
 ## 创新点（答辩四条）
@@ -37,7 +37,7 @@ HTTP 请求 → 采集解析 → 多层解混淆 → 四模态融合检测 → W
 2. **WebSpotter 恶意高亮** — IoU +37.9%，字段贡献图
 3. **RL-GWO 特征筛选 + Online RL** — 阈值自演化
 4. **社区情报 + 25+ 混淆手法** — Agent4 数据集闭环
-5. **IGA-Guard 3.0 四模态融合** — 协议轨 + 字节图视觉轨 + 双 Key 持续学习缓存（见 `research/agent2_integration/MULTIMODAL.md`）
+5. **IGA-Guard 3.0 四模态融合** — 协议轨 + 字节图视觉轨 + 双 Key 持续学习缓存 + **条件融合门控**（见 `research/agent2_integration/MULTIMODAL.md`）
 
 ## 统一入口
 
@@ -83,15 +83,27 @@ API：`POST /api/detect` · `POST /api/obfuscate` · `POST /api/feedback` · `PO
 
 > 诚实口径：混淆子集 Precision 100%、零 FP；Recall 91.86% 未达 99.5%。此前 100% Recall 已废弃。
 
-### E3 对抗鲁棒性（3 轮有界，`v2_exp3_adversarial_rounds.csv`）
+### 多模态消融（条件融合优化，`v2_compare_multimodal_full.json`，全量 n=19,411）
+
+| 配置 | 混淆 Recall | 整体 Recall | Normal FPR |
+|------|-------------|-------------|------------|
+| 关闭多模态 | **92.17%** | 78.91% | 3.10% |
+| 开启多模态 | **92.05%** | 78.64% | **2.75%** |
+| **Δ** | **−0.12 pp** | −0.27 pp | **−0.35 pp** |
+
+> **条件融合优化已完成**：相对优化前线性 14% 融合（混淆 Δ −5.1 pp）的检出损失已消除；默认保持多模态开启（FPR 收益 > 0.12 pp Recall 代价）。详见 [`MULTIMODAL.md`](../research/agent2_integration/MULTIMODAL.md)。
+
+### E3 对抗鲁棒性（5 轮有界，`v2_exp3_adversarial_rounds.csv`）
 
 | 轮次 | 样本数 | Recall |
 |------|--------|--------|
-| R1 | 244 | **100%** |
-| R2 | 239 | **100%** |
-| R3 | 248 | **100%** |
+| R1 | 244 | **86.5%** |
+| R2 | 153 | **24.8%** |
+| R3 | 487 | **26.5%** |
+| R4 | 1,438 | **23.2%** |
+| R5 | 4,340 | **21.3%** |
 
-> 增量重训后 3 轮零漏检；参数 `--max-seeds 100 --max-variants 1500`。
+> 5 轮有界演化已跑通；XSS 编码类变种为主要漏检来源。有界 3 轮增量重训版本（R1~R3 100%）见历史日志。
 
 ### E4 延迟（`v2_exp4_latency.json`，1,000 次）
 
@@ -100,6 +112,15 @@ P50 **2.92 ms** · P99 **27.38 ms**（赛题 ≤ 10 ms，内部目标 < 5 ms）
 ### E6 可解释性（`v2_exp6_localization.json`）
 
 WebSpotter IoU **+37.93%**（目标 ≥ +22%）✅
+
+### 待执行实验（脚本已就绪，结果待生成）
+
+| 编号 | 名称 | 预期结果文件 | 状态 |
+|------|------|--------------|------|
+| E2 | 未知混淆检测 | `v2_exp2_unknown.csv` | 📝 脚本已就绪，待执行 |
+| E5 | 消融实验 | `v2_exp5_ablation.csv` | 📝 脚本已就绪，待执行 |
+| E7 | Online RL 演化 | `v2_exp7_evolution.json` | 📝 脚本已就绪，待执行 |
+| E8 | 虚拟补丁有效性 | `v2_exp8_virtual_patch.json` | 📝 脚本已就绪，待执行 |
 
 ## 评估指标（evaluate.py v2）
 
@@ -118,7 +139,9 @@ WebSpotter IoU **+37.93%**（目标 ≥ +22%）✅
 
 ## 持续优化方向
 
-- 全量 TinyBERT 训练（133k × 5 epoch），目标混淆 Recall > 99.5%
-- 对抗演化漏检反哺 `failures.jsonl` → 增量重训（E7 Online RL）
+- **P0**：全量 TinyBERT 训练（133k × 5 epoch）**进行中**，目标混淆 Recall > **99.5%**
+- **P0**：条件融合优化 **已完成**（多模态 Δ −0.12 pp，FPR −0.35 pp）
+- 对抗演化漏检反哺 `failures.jsonl` → 增量重训（E7 Online RL，脚本已就绪）
 - 延迟长尾优化：语义按需触发、INT8 量化、E4b 压测
+- 补跑 E2/E5/E7/E8 实验闭环
 - 补拉 SecLists 剩余源（网络可用时）
