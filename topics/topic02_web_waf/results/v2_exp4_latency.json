@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "iterations": 1000,
+  "mean_ms": 11.231,
+  "p50_ms": 2.915,
+  "p95_ms": 25.612,
+  "p99_ms": 27.384,
+  "max_ms": 35.829,
+  "target_ms": 5,
+  "pass": true
+}

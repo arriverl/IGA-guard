@@ -1,0 +1,91 @@
+# IGA-Guard 2.0
+version: "2.0.0"
+
+server:
+  host: "127.0.0.1"
+  port: 5000
+
+detector:
+  engine: "dual_track"          # dual_track | fusion (legacy)
+  model_path: "models/fusion_detector.joblib"
+  confidence_threshold: 0.35
+  semantic_model: "distilbert-base-uncased"  # optional TinyBERT-v2
+  use_semantic_branch: true    # TinyBERT 已用 master 数据集微调
+  labels:
+    - Normal
+    - SQLi
+    - XSS
+    - CMD
+    - PathTraversal
+    - FileInclusion
+    - XXE
+    - PromptInjection
+
+normalizer:
+  max_decode_rounds: 6
+
+features:
+  candidate_dims: 100
+  selected_dims: 15
+  rl_gwo_enabled: true
+
+dlinear:
+  seq_len: 16
+  moving_avg: 4
+
+latency:
+  target_ms: 5
+  benchmark_iterations: 50000
+
+evolution:
+  failure_cache: "data/cache/failures.jsonl"
+  retrain_min_samples: 50
+  max_base_samples: 80000
+  failure_augment: 2
+  online_rl_enabled: true
+  learning_rate: 0.05
+
+# Tip-Adapter 风格持续学习缓存（冻结编码器 + 动态 KV 库）
+continual_cache:
+  enabled: true
+  path: "models/continual_cache.npz"
+  max_size: 5000
+  per_class_seed: 30
+  beta: 5.0
+  top_k: 8
+  fusion_weight: 0.35
+  dedupe_threshold: 0.98
+  multimodal_alpha: 0.65
+
+# IGA-Guard 3.0 多模态轨（协议 + 字节图视觉，冻结编码器）
+multimodal:
+  enabled: true
+  vision_weight: 0.45
+  weight_base: 0.38
+  weight_semantic: 0.28
+  weight_multimodal: 0.14
+  weight_dlinear: 0.12
+  byte_grid: [32, 64]
+
+llm_agent:
+  enabled: false
+  provider: "qwen"
+  api_base: ""
+  api_key_env: "IGA_LLM_API_KEY"
+
+explanation:
+  nl_enabled: true
+  nl_provider: "template"       # template | local_llm | api
+
+rules:
+  export_dir: "data/rules_export"
+  virtual_patch_enabled: true
+
+timeseries:
+  window: 16
+
+protocols:
+  http1: true
+  http2: true
+  http3: false
+  websocket: true

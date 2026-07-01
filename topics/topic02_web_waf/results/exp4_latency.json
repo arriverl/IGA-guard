@@ -1,0 +1,10 @@
+{
+  "iterations": 100,
+  "mean_ms": 16.465,
+  "p50_ms": 16.138,
+  "p95_ms": 16.809,
+  "p99_ms": 18.1,
+  "max_ms": 48.069,
+  "target_ms": 10,
+  "pass": false
+}

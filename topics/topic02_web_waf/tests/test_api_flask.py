@@ -1,0 +1,96 @@
+"""Flask REST API 验收测试（test client）。"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from backend.app import create_app, incremental_retrain  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def client():
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as c:
+        yield c
+
+
+class TestFlaskAPI:
+    def test_health(self, client):
+        r = client.get("/api/health")
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["status"] == "ok"
+        assert data["service"] == "IGA-Guard"
+        assert "version" in data
+
+    def test_detect_sqli(self, client):
+        r = client.post(
+            "/api/detect",
+            json={"method": "GET", "url": "http://demo/login?id=1+union+select+1,2--"},
+        )
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["detection"]["is_malicious"] is True
+        assert data["detection"]["latency_ms"] >= 0
+
+    def test_detect_normal(self, client):
+        r = client.post(
+            "/api/detect",
+            json={"method": "GET", "url": "http://demo/login?user=alice&page=home"},
+        )
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["detection"]["label"] == "Normal"
+        assert data["detection"]["is_malicious"] is False
+
+    def test_obfuscate(self, client):
+        r = client.post(
+            "/api/obfuscate",
+            json={"payload": "1 union select 1,2--", "attack_type": "SQLi", "count": 5},
+        )
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["count"] >= 1
+        assert len(data["variants"]) >= 1
+        assert data["variants"][0]["source"] == "original"
+
+    def test_obfuscate_empty_payload(self, client):
+        r = client.post("/api/obfuscate", json={"payload": ""})
+        assert r.status_code == 400
+        assert r.get_json()["error"] == "payload required"
+
+    def test_metrics_overall(self, client):
+        r = client.get("/api/metrics/overall")
+        assert r.status_code == 200
+        data = r.get_json()
+        assert data["obfuscated_attack_recall"] == pytest.approx(0.9186, abs=0.001)
+        assert data["normal_false_positive_rate"] == pytest.approx(0.0293, abs=0.001)
+        assert data["source"] == "results/v2_exp1_overall.json"
+
+    def test_evolve_returns_status(self, client):
+        r = client.post("/api/evolve")
+        assert r.status_code == 200
+        data = r.get_json()
+        assert "updated" in data
+
+    def test_evolve_uses_base_train_csv(self):
+        """确认 evolve 端点传入 base_train_csv 参数（合并重训）。"""
+        import inspect
+
+        sig = inspect.signature(incremental_retrain)
+        assert "base_train_csv" in sig.parameters
+
+        source = Path(ROOT / "backend" / "app.py").read_text(encoding="utf-8")
+        assert "base_train_csv=str(ROOT / \"data\" / \"master\" / \"train_obfuscated.csv\")" in source
+
+    def test_dashboard_index(self, client):
+        r = client.get("/")
+        assert r.status_code == 200
+        assert b"IGA-Guard 2.0" in r.data

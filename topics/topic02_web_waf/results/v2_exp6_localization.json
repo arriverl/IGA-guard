@@ -1,0 +1,17 @@
+{
+  "v1": {
+    "method": "v1_keyword",
+    "span_hit_rate": 1.0,
+    "mean_iou": 0.725
+  },
+  "v2": {
+    "method": "v2_webspotter",
+    "span_hit_rate": 1.0,
+    "mean_iou": 1.0
+  },
+  "hit_rate_improvement": 0.0,
+  "iou_improvement": 0.3793,
+  "localization_improvement_ratio": 0.3793,
+  "target_improvement": 0.22,
+  "pass": true
+}

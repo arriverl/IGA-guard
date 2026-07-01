@@ -1,0 +1,81 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+127.0.0.1 - - [30/Jun/2026 17:07:06] "GET /api/health HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jun/2026 17:07:45] "GET /api/stats HTTP/1.1" 200 -
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\detector\\semantic_branch.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\detector\\semantic_branch.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\detector\\semantic_branch.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\detector\\semantic_branch.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\detector\\semantic_branch.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\normalizer\\decoder.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\normalizer\\decoder.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\normalizer\\decoder.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\adversarial\\mutator.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\src\\iga_guard\\adversarial\\mutator.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Detected change in 'D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\tests\\test_pipeline_smoke.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\utils\\generic.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\utils\\auto_docstring.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\utils\\__init__.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\dependency_versions_check.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\__init__.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\_pytest\\python.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\pluggy\\_callers.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\pluggy\\_manager.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\pluggy\\_hooks.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\_pytest\\runner.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\_pytest\\main.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\_pytest\\config\\__init__.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\_pytest\\assertion\\rewrite.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\tensorflow\\python\\data\\ops\\test_mode.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\tensorflow\\python\\framework\\test_util.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\tensorflow\\core\\util\\test_log_pb2.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\tensorflow\\compiler\\xla\\tsl\\protobuf\\test_log_pb2.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\tensorflow\\python\\framework\\test_combinations.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\tensorflow\\python\\distribute\\test_util.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\pipelines\\base.py', reloading
+ * Detected change in 'C:\\Users\\ASUS\\AppData\\Roaming\\Python\\Python313\\site-packages\\transformers\\pipelines\\__init__.py', reloading
+ * Restarting with watchdog (windowsapi)
+ * Debugger is active!
+ * Debugger PIN: 450-712-533
+127.0.0.1 - - [30/Jun/2026 17:10:19] "GET /api/health HTTP/1.1" 200 -

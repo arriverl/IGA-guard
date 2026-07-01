@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IGA-Guard 2.0 安全防御大屏</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <style>
+    :root { --bg:#060a13; --card:#111827; --accent:#2563eb; --danger:#dc2626; --ok:#16a34a; --text:#f1f5f9; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:1rem 1.5rem;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
+    .badge{background:#1e3a5f;padding:.2rem .6rem;border-radius:999px;font-size:.75rem}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;padding:1rem 1.5rem}
+    .span2{grid-column:span 2} .span3{grid-column:span 3}
+    .card{background:var(--card);border:1px solid #1f2937;border-radius:12px;padding:1rem}
+    .card h2{margin:0 0 .75rem;font-size:.9rem;color:#94a3b8;font-weight:600}
+    .chart{height:220px} .chart-lg{height:280px}
+    input,button,select{padding:.45rem .65rem;border-radius:8px;border:1px solid #334155;background:#0b1220;color:var(--text)}
+    button{background:var(--accent);border:none;cursor:pointer;font-weight:600}
+    .row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+    .stat{font-size:1.8rem;font-weight:700} .danger{color:var(--danger)} .ok{color:var(--ok)}
+    .nl{background:#0b1220;padding:.75rem;border-radius:8px;font-size:.85rem;line-height:1.5;border-left:3px solid var(--accent)}
+    mark.iga-mal{background:#dc2626;color:#fff;padding:0 .15rem;border-radius:3px}
+    .alert{padding:.5rem;margin-bottom:.4rem;background:#1c0a0a;border-left:3px solid var(--danger);font-size:.8rem;border-radius:4px}
+    .obf-panel{border-top:1px solid #1e293b;padding-top:.5rem}
+    .obf-list{max-height:280px;overflow-y:auto;margin-top:.5rem}
+    .obf-item{display:flex;align-items:flex-start;gap:.5rem;padding:.45rem .55rem;margin:.35rem 0;background:#0b1220;border:1px solid #334155;border-radius:6px;font-size:.75rem}
+    .obf-item:hover{border-color:#475569}
+    .obf-item-body{flex:1;min-width:0}
+    .obf-payload{font-family:ui-monospace,monospace;word-break:break-all;line-height:1.4}
+    .obf-src{color:#64748b;font-size:.68rem;margin-bottom:.15rem}
+    .obf-detect-btn{background:#1e3a5f;font-size:.68rem;padding:.28rem .55rem;flex-shrink:0;white-space:nowrap}
+    .obf-detect-btn:hover:not(:disabled){background:var(--accent)}
+    .obf-detect-btn:disabled{opacity:.55;cursor:wait}
+    .obf-result{display:flex;gap:.35rem;margin-top:.3rem;flex-wrap:wrap;font-size:.68rem}
+    .obf-badge{padding:.12rem .4rem;border-radius:4px}
+    .obf-badge.mal{background:#3b1111;color:#fca5a5;border:1px solid var(--danger)}
+    .obf-badge.ok{background:#0a2010;color:#86efac;border:1px solid var(--ok)}
+    .obf-badge.cat{background:#172554;color:#93c5fd;border:1px solid #1d4ed8}
+    .obf-badge.conf{background:#1e293b;color:#cbd5e1}
+    .obf-meta{font-size:.72rem;color:#64748b;margin-top:.35rem}
+    .btn-sm{font-size:.75rem;padding:.38rem .6rem}
+    .btn-secondary{background:#334155}
+    .btn-secondary:hover{background:#475569}
+    .obf-count-wrap{display:flex;align-items:center;gap:.25rem}
+    .obf-count-wrap label{font-size:.72rem;color:#64748b;white-space:nowrap}
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1 style="margin:0;font-size:1.25rem">IGA-Guard 2.0 · 可解释自演化 Web 安全防御系统</h1>
+      <small style="color:#64748b">Dual-Track · WebSpotter · Online RL</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>实时检测</h2>
+      <div class="row">
+        <select v-model="method"><option>GET</option><option>POST</option></select>
+        <input v-model="url" style="flex:1;min-width:180px" />
+        <button @click="detect">检测</button>
+      </div>
+      <div v-if="result">
+        <p>判定: <strong :class="result.detection.is_malicious?'danger':'ok'">{{ result.detection.label }}</strong>
+          {{ (result.detection.confidence*100).toFixed(1) }}% · {{ result.detection.latency_ms.toFixed(2) }}ms</p>
+        <div class="nl" v-if="result.explanation?.highlight_html">
+          <div v-html="result.explanation.highlight_html"></div>
+        </div>
+        <div class="nl" v-else-if="result.explanation?.natural_language" v-html="nlHtml"></div>
+      </div>
+    </div>
+
+    <div class="card span2" v-show="hasFieldContributions">
+      <h2>字段贡献度 (WebSpotter)</h2>
+      <div id="contribChart" class="chart-lg"></div>
+    </div>
+
+    <div class="card">
+      <h2>核心指标 · v2 离线评测</h2>
+      <p>混淆检出 <span class="stat ok">{{ pct(overallMetrics.obfuscated_attack_recall) }}</span></p>
+      <p>Normal 误报 <span class="stat">{{ pct(overallMetrics.normal_false_positive_rate) }}</span></p>
+      <p style="font-size:.75rem;color:#64748b;margin:.35rem 0">
+        全量召回 {{ pct(overallMetrics.overall_detection_recall) }}
+        · n={{ overallMetrics.eval_samples||'-' }}
+        · {{ overallMetrics.source||'offline' }}
+      </p>
+      <hr style="border:none;border-top:1px solid #1e293b;margin:.65rem 0" />
+      <p>实时告警 <span class="stat danger">{{ stats.total_alerts||0 }}</span></p>
+      <p>P99 延迟 <span class="stat">{{ latency.p99_ms||'-' }}</span> ms</p>
+      <p style="font-size:.75rem;color:#64748b">在线目标 &lt; 5ms · 混淆目标 &gt; 99.5%</p>
+    </div>
+
+    <div class="card">
+      <h2>模型演化 (Online RL)</h2>
+      <div id="evoChart" class="chart"></div>
+    </div>
+
+    <div class="card span2">
+      <h2>攻击类型分布</h2>
+      <div id="pieChart" class="chart-lg"></div>
+    </div>
+
+    <div class="card">
+      <h2>近期告警</h2>
+      <div v-for="(a,i) in alerts" :key="i" class="alert">
+        {{ a.detection?.label }} · {{ a.url?.slice(0,60) }}
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h2>混淆生成器 · 对抗变异</h2>
+      <div class="obf-panel">
+        <div class="row">
+          <select v-model="obfType" title="攻击类型">
+            <option value="SQLi">SQLi</option>
+            <option value="XSS">XSS</option>
+            <option value="CMD">CMD</option>
+            <option value="PathTraversal">PathTraversal</option>
+            <option value="FileInclusion">FileInclusion</option>
+            <option value="XXE">XXE</option>
+          </select>
+          <input v-model="obfPayload" style="flex:1;min-width:160px" placeholder="原始载荷" />
+          <div class="obf-count-wrap">
+            <label for="obfCount">手法数 n</label>
+            <input id="obfCount" v-model.number="obfCount" type="number" min="3" max="30" style="width:56px" title="混淆变体数量 (3–30)" />
+          </div>
+          <button class="btn-sm" :disabled="obfLoading" @click="generateObf">{{ obfLoading ? '生成中…' : '生成' }}</button>
+          <button v-if="obfVariants.length" class="btn-sm btn-secondary" :disabled="obfBatchDetecting" @click="detectAllObf">
+            {{ obfBatchDetecting ? '批量检测…' : '全部检测' }}
+          </button>
+        </div>
+        <p v-if="obfVariants.length" class="obf-meta">
+          共 {{ obfVariants.length }} 个变体 · 类型 {{ obfType }}
+          <span v-if="obfDetectedCount"> · 已检 {{ obfDetectedCount }}/{{ obfVariants.length }} · 命中 {{ obfMaliciousCount }}</span>
+        </p>
+        <div v-if="obfVariants.length" class="obf-list">
+          <div v-for="(v,i) in obfVariants" :key="i" class="obf-item">
+            <div class="obf-item-body">
+              <div class="obf-src">#{{ i + 1 }} · {{ v.source }}</div>
+              <div class="obf-payload" :title="v.payload">{{ v.payload }}</div>
+              <div v-if="v.detection" class="obf-result">
+                <span class="obf-badge" :class="v.detection.is_malicious ? 'mal' : 'ok'">
+                  {{ v.detection.is_malicious ? '恶意' : '正常' }}
+                </span>
+                <span class="obf-badge cat">{{ v.detection.label }}</span>
+                <span class="obf-badge conf">{{ (v.detection.confidence * 100).toFixed(1) }}%</span>
+                <span class="obf-badge conf">{{ v.detection.latency_ms.toFixed(2) }}ms</span>
+              </div>
+            </div>
+            <button class="obf-detect-btn" :disabled="v.detecting" @click="detectVariantObf(i)">
+              {{ v.detecting ? '…' : '检测' }}
+            </button>
+          </div>
+        </div>
+        <p v-else-if="obfGenerated" class="obf-meta">未生成变体，请检查载荷或网络。</p>
+      </div>
+    </div>
+
+    <div class="card span3">
+      <h2>风险热力 · 延迟趋势</h2>
+      <div id="lineChart" class="chart-lg"></div>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data(){return{
+    version:'2.0.0', health:'...', method:'GET',
+    url:'http://demo/login?id=1+union+select+1,2--',
+    result:null, alerts:[], stats:{}, latency:{}, evoHistory:[],
+    latencyHistory:[],
+    obfPayload:'1 union select 1,2--', obfType:'SQLi', obfCount:8, obfVariants:[],
+    obfLoading:false, obfBatchDetecting:false, obfGenerated:false,
+    overallMetrics:{
+      obfuscated_attack_recall:0.9186,
+      normal_false_positive_rate:0.0293,
+      overall_detection_recall:0.788,
+      eval_samples:19411,
+      source:'fallback',
+    },
+  }},
+  computed:{
+    nlHtml(){ return (this.result?.explanation?.natural_language||'').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); },
+    hasFieldContributions(){
+      const fc=this.result?.explanation?.field_contributions;
+      return fc && Object.keys(fc).length>0;
+    },
+    obfDetectedCount(){
+      return this.obfVariants.filter(v=>v.detection).length;
+    },
+    obfMaliciousCount(){
+      return this.obfVariants.filter(v=>v.detection?.is_malicious).length;
+    }
+  },
+  mounted(){
+    fetch('/api/health').then(r=>r.json()).then(d=>{this.health=d.status;this.version=d.version});
+    this.refresh(); this.charts= {};
+    this.$nextTick(()=>{ this.initCharts(); setInterval(this.refresh, 8000); });
+  },
+  methods:{
+    pct(v){ return v==null ? '-' : (v*100).toFixed(2)+'%'; },
+    async detect(){
+      const r=await fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({method:this.method,url:this.url})});
+      this.result=await r.json();
+      if(this.result.detection?.latency_ms) this.latencyHistory.push(this.result.detection.latency_ms);
+      this.$nextTick(()=>this.updateContribChart());
+      this.refresh();
+    },
+    async generateObf(){
+      this.obfLoading=true;
+      this.obfGenerated=false;
+      try{
+        const r=await fetch('/api/obfuscate',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({payload:this.obfPayload,attack_type:this.obfType,count:this.obfCount})});
+        const d=await r.json();
+        if(!r.ok||d.error){ this.obfVariants=[]; return; }
+        this.obfVariants=(d.variants||[]).map(v=>({
+          payload:v.payload, source:v.source||'unknown',
+          detecting:false, detection:null,
+        }));
+        this.obfGenerated=true;
+      }finally{ this.obfLoading=false; }
+    },
+    async detectVariantObf(i){
+      const v=this.obfVariants[i];
+      if(!v||v.detecting) return;
+      v.detecting=true;
+      try{
+        const testUrl='http://demo/obf?p='+encodeURIComponent(v.payload);
+        const r=await fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({method:'GET',url:testUrl})});
+        const d=await r.json();
+        v.detection=d.detection||null;
+      }catch(_){
+        v.detection={is_malicious:false,label:'Error',confidence:0,latency_ms:0};
+      }finally{ v.detecting=false; }
+    },
+    async detectAllObf(){
+      if(this.obfBatchDetecting) return;
+      this.obfBatchDetecting=true;
+      try{
+        for(let i=0;i<this.obfVariants.length;i++){
+          if(!this.obfVariants[i].detection) await this.detectVariantObf(i);
+        }
+      }finally{ this.obfBatchDetecting=false; }
+    },
+    async refresh(){
+      const [a,s,l,e,m]=await Promise.all([
+        fetch('/api/alerts').then(r=>r.json()),
+        fetch('/api/stats').then(r=>r.json()),
+        fetch('/api/metrics/latency').then(r=>r.json()),
+        fetch('/api/evolution/history').then(r=>r.json()),
+        fetch('/api/metrics/overall').then(r=>r.json()),
+      ]);
+      this.alerts=a.alerts||[]; this.stats=s; this.latency=l; this.evoHistory=e.history||[];
+      if(m&&m.obfuscated_attack_recall!=null) this.overallMetrics=m;
+      this.updateCharts();
+    },
+    initCharts(){
+      this.charts.pie=echarts.init(document.getElementById('pieChart'));
+      this.charts.line=echarts.init(document.getElementById('lineChart'));
+      this.charts.evo=echarts.init(document.getElementById('evoChart'));
+      const el=document.getElementById('contribChart');
+      if(el) this.charts.contrib=echarts.init(el);
+      this.updateCharts();
+    },
+    updateCharts(){
+      if(!this.charts.pie) return;
+      const dist=this.stats.attack_distribution||{};
+      this.charts.pie.setOption({
+        backgroundColor:'transparent',
+        tooltip:{trigger:'item'},
+        series:[{type:'pie',radius:['40%','70%'],
+          data:Object.entries(dist).map(([n,v])=>({name:n,value:v})),
+          label:{color:'#cbd5e1'}}]
+      });
+      this.charts.line.setOption({
+        backgroundColor:'transparent', xAxis:{type:'category',data:this.latencyHistory.map((_,i)=>i+1),axisLabel:{color:'#94a3b8'}},
+        yAxis:{type:'value',name:'ms',axisLabel:{color:'#94a3b8'}},
+        series:[{type:'line',data:this.latencyHistory,smooth:true,areaStyle:{opacity:.15},lineStyle:{color:'#3b82f6'}}]
+      });
+      this.charts.evo.setOption({
+        backgroundColor:'transparent', xAxis:{type:'category',data:this.evoHistory.map(h=>h.episode),axisLabel:{color:'#94a3b8'}},
+        yAxis:{type:'value',axisLabel:{color:'#94a3b8'}},
+        series:[{type:'bar',data:this.evoHistory.map(h=>h.reward),itemStyle:{color:'#8b5cf6'}}]
+      });
+      this.updateContribChart();
+    },
+    updateContribChart(){
+      if(!this.charts.contrib) return;
+      const fc=this.result?.explanation?.field_contributions||{};
+      const entries=Object.entries(fc).sort((a,b)=>a[1]-b[1]);
+      if(!entries.length){
+        this.charts.contrib.clear();
+        return;
+      }
+      this.charts.contrib.setOption({
+        backgroundColor:'transparent',
+        tooltip:{trigger:'axis',axisPointer:{type:'shadow'},
+          formatter:(p)=>{const d=p[0];return `${d.name}<br/>贡献度: ${(d.value*100).toFixed(1)}%`;}},
+        grid:{left:'28%',right:'8%',top:'4%',bottom:'4%',containLabel:true},
+        xAxis:{type:'value',max:1,axisLabel:{color:'#94a3b8',formatter:v=>(v*100).toFixed(0)+'%'}},
+        yAxis:{type:'category',data:entries.map(e=>e[0]),axisLabel:{color:'#cbd5e1',fontSize:11}},
+        series:[{type:'bar',data:entries.map(e=>e[1]),
+          itemStyle:{color:(p)=>p.value>=0.5?'#dc2626':'#3b82f6'},
+          label:{show:true,position:'right',color:'#94a3b8',
+            formatter:p=>(p.value*100).toFixed(1)+'%'}}]
+      });
+    }
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

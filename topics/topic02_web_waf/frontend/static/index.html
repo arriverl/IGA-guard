@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IGA-Guard 攻击监控大屏</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    :root { --bg: #0b1220; --card: #141e30; --accent: #3b82f6; --danger: #ef4444; --ok: #22c55e; --text: #e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); }
+    header { padding: 1rem 2rem; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
+    h1 { margin: 0; font-size: 1.4rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 2rem; }
+    .card { background: var(--card); border-radius: 12px; padding: 1rem; border: 1px solid #1e293b; }
+    .card h2 { margin: 0 0 0.75rem; font-size: 1rem; color: #94a3b8; }
+    input, button, select { padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: var(--text); }
+    button { background: var(--accent); border: none; cursor: pointer; font-weight: 600; }
+    .row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .alert-item { padding: 0.6rem; margin-bottom: 0.5rem; border-radius: 8px; background: #1a0f0f; border-left: 4px solid var(--danger); font-size: 0.85rem; }
+    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.25rem; }
+    .tag.high { background: #7f1d1d; }
+    .tag.medium { background: #78350f; }
+    .heatmap { font-family: monospace; color: #f87171; white-space: pre; font-size: 0.8rem; }
+    .stat { font-size: 2rem; font-weight: 700; }
+    .ok { color: var(--ok); }
+    .bad { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>IGA-Guard · 可解释自演化 Web 攻击检测</h1>
+      <span>{{ health }}</span>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2>实时检测</h2>
+        <div class="row">
+          <select v-model="method">
+            <option>GET</option><option>POST</option>
+          </select>
+          <input v-model="url" style="flex:1;min-width:200px" placeholder="http://target/login?id=1 union select 1" />
+          <button @click="detect">检测</button>
+        </div>
+        <div v-if="result">
+          <p>类型: <strong :class="result.detection.is_malicious ? 'bad' : 'ok'">{{ result.detection.label }}</strong>
+             置信度: {{ (result.detection.confidence * 100).toFixed(1) }}%
+             耗时: {{ result.detection.latency_ms.toFixed(2) }} ms</p>
+          <div v-if="result.explanation">
+            <p>恶意字段: {{ result.explanation.malicious_field }} · 片段: <code>{{ result.explanation.malicious_span }}</code></p>
+            <div class="heatmap" v-for="line in result.explanation.heatmap" :key="line">{{ line }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>监控统计</h2>
+        <p class="stat bad">{{ alerts.length }}</p>
+        <p>近期告警数</p>
+        <button @click="loadAlerts">刷新告警</button>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1">
+        <h2>攻击告警流</h2>
+        <div v-if="!alerts.length">暂无告警</div>
+        <div class="alert-item" v-for="(a, i) in alerts" :key="i">
+          <span class="tag" :class="a.detection.risk_level">{{ a.detection.label }}</span>
+          {{ a.url }} — {{ a.detection.risk_level }} — {{ a.detection.latency_ms?.toFixed(1) }}ms
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          health: '连接中...',
+          method: 'GET',
+          url: 'http://demo.local/login?id=1+union+select+1,2--',
+          result: null,
+          alerts: [],
+        };
+      },
+      mounted() {
+        fetch('/api/health').then(r => r.json()).then(d => { this.health = d.status; });
+        this.loadAlerts();
+      },
+      methods: {
+        async detect() {
+          const r = await fetch('/api/detect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ method: this.method, url: this.url }),
+          });
+          this.result = await r.json();
+          if (this.result.detection?.is_malicious) this.loadAlerts();
+        },
+        async loadAlerts() {
+          const r = await fetch('/api/alerts');
+          const d = await r.json();
+          this.alerts = d.alerts || [];
+        },
+      },
+    }).mount('#app');
+  </script>
+</body>
+</html>

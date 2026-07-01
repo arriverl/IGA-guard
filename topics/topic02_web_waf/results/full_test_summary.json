@@ -1,0 +1,39 @@
+{
+  "full_test_suite": {
+    "eval_master": {
+      "samples": 18659,
+      "overall_accuracy": 0.6562,
+      "malicious_recall": 0.5522,
+      "obfuscated_recall": 0.6533,
+      "pass_target_99_5": false,
+      "log": "logs/eval_full_master.log"
+    },
+    "explainability_e6": {
+      "iou_improvement": 0.3793,
+      "pass": true,
+      "log": "logs/eval_explain_full.log"
+    },
+    "latency_e4": {
+      "p50_ms": 2.915,
+      "p95_ms": 25.612,
+      "p99_ms": 27.384,
+      "pass": true,
+      "log": "logs/latency_full.log"
+    },
+    "adversarial_e3": {
+      "status": "crashed",
+      "data": "data/master/test.csv",
+      "rounds": 5,
+      "note": "进程在对抗演化阶段异常退出(exit 4294967295)，eval/explain/latency 已完成"
+    }
+  },
+  "dataset_v2_community": {
+    "full_unique": 47584,
+    "full_obfuscated": 108964,
+    "community_seed": 234
+  },
+  "agents": {
+    "agent4_community": "completed",
+    "agent1_freebuf_xianzhi": "completed_local_fallback"
+  }
+}

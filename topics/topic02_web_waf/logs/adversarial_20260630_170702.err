@@ -1,0 +1,45 @@
+Traceback (most recent call last):
+  File "<frozen os>", line 713, in __getitem__
+KeyError: 'LOKY_MAX_CPU_COUNT'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\scripts\run_adversarial.py", line 206, in <module>
+    main()
+    ~~~~^^
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\scripts\run_adversarial.py", line 156, in main
+    detected, misses = evaluate_round(engine, variants)
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\scripts\run_adversarial.py", line 100, in evaluate_round
+    report = engine.analyze_url("GET", url)
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\src\iga_guard\pipeline.py", line 167, in analyze_url
+    return self.analyze_request(parse_http_request(method=method, url=url, body=body))
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\src\iga_guard\pipeline.py", line 119, in analyze_request
+    det = self.detector.predict(norm, ts_matrix=ts_matrix)
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\src\iga_guard\detector\dual_track.py", line 63, in predict
+    base_result = self.base.predict(payload, fv=fv)
+  File "D:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf\src\iga_guard\detector\fusion_model.py", line 87, in predict
+    proba = self.model.predict_proba(X)[0]
+            ~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\ASUS\AppData\Roaming\Python\Python313\site-packages\sklearn\ensemble\_forest.py", line 948, in predict_proba
+    n_jobs, _, _ = _partition_estimators(self.n_estimators, self.n_jobs)
+                   ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\AppData\Roaming\Python\Python313\site-packages\sklearn\ensemble\_base.py", line 168, in _partition_estimators
+    n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
+                 ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\ASUS\AppData\Roaming\Python\Python313\site-packages\joblib\parallel.py", line 954, in effective_n_jobs
+    return backend.effective_n_jobs(n_jobs=n_jobs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\AppData\Roaming\Python\Python313\site-packages\joblib\_parallel_backends.py", line 688, in effective_n_jobs
+    n_jobs = max(cpu_count() + 1 + n_jobs, 1)
+                 ~~~~~~~~~^^
+  File "C:\Users\ASUS\AppData\Roaming\Python\Python313\site-packages\joblib\externals\loky\backend\context.py", line 114, in cpu_count
+    cpu_count_user = _cpu_count_user(os_cpu_count)
+  File "C:\Users\ASUS\AppData\Roaming\Python\Python313\site-packages\joblib\externals\loky\backend\context.py", line 222, in _cpu_count_user
+    cpu_count_loky = int(os.environ.get("LOKY_MAX_CPU_COUNT", os_cpu_count))
+                         ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen _collections_abc>", line 811, in get
+  File "<frozen os>", line 716, in __getitem__
+KeyboardInterrupt
