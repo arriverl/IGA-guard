@@ -200,6 +200,8 @@ class ContinualCacheAdapter:
         base_probs: dict[str, float],
         text: str,
         raw_payload: str | None = None,
+        *,
+        fusion_weight: float | None = None,
     ) -> dict[str, float]:
         """将缓存分与基线概率融合（支持多模态视觉 Key）。"""
         vision = None
@@ -209,7 +211,7 @@ class ContinualCacheAdapter:
         total_c = sum(cache_raw.values()) or 1.0
         cache_probs = {lb: cache_raw.get(lb, 0.0) / total_c for lb in self.labels}
 
-        lam = self.fusion_weight
+        lam = fusion_weight if fusion_weight is not None else self.fusion_weight
         fused = {
             lb: (1.0 - lam) * base_probs.get(lb, 0.0) + lam * cache_probs.get(lb, 0.0)
             for lb in self.labels

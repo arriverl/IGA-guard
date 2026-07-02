@@ -1,5 +1,5 @@
-# IGA-Guard 2.0 Agent 任务队列与进程状态
-# 更新方式: 各 Agent 完成后在此勾选，或由 scripts/start_everything.ps1 写 logs/
+# IGA-Guard 3.0 Agent 任务队列与进程状态
+# 更新方式: 各 Agent 完成后在此勾选；统一入口 `scripts/iga_system.py`
 
 ## 常驻服务
 
@@ -32,16 +32,13 @@
 ### Agent 4 · 数据集采集代理（新增）
 - [x] **核心库** `src/iga_guard/dataset/` — CSIC 解析、公开源拉取、20+ 混淆技术、合并划分
 - [x] **入口** `scripts/dataset_agent.py` — 拉取 SecLists/FuzzDB/PAT + CSIC + 混淆扩充
-- [x] **全流程** `scripts/run_full_pipeline.py` — 数据集 → RF + TinyBERT → 评估
+- [x] **全流程** `scripts/iga_system.py pipeline` — 数据集 → RF + TinyBERT → 评估
 - [x] **验收**: 社区种子 `payloads_seed.txt` + `community_fetcher.py` 已集成；`full_obfuscated.csv` 可达 15 万行
 
 ```powershell
 python scripts/dataset_agent.py
-python scripts/run_full_pipeline.py --skip-bert  # 或完整含 BERT
-```
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\start_everything.ps1
+python scripts/iga_system.py pipeline --skip-bert  # 或完整含 BERT
+python scripts/iga_system.py status
 ```
 
 日志目录: `logs/`

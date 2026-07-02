@@ -14,28 +14,28 @@
   },
   "final_thresholds": {
     "Normal": 0.35,
-    "SQLi": 0.2,
+    "SQLi": 0.24999999999999994,
     "XSS": 0.35,
-    "CMD": 0.4900000000000001,
+    "CMD": 0.4600000000000001,
     "PathTraversal": 0.35,
     "FileInclusion": 0.35,
     "XXE": 0.35,
     "PromptInjection": 0.35
   },
   "threshold_deltas": {
-    "CMD": 0.14,
+    "CMD": 0.11,
     "FileInclusion": 0.0,
     "Normal": 0.0,
     "PathTraversal": 0.0,
     "PromptInjection": 0.0,
-    "SQLi": -0.15,
+    "SQLi": -0.1,
     "XSS": 0.0,
     "XXE": 0.0
   },
   "reward_summary": {
-    "mean": 0.44,
-    "positive": 35,
-    "negative": 15
+    "mean": 0.7,
+    "positive": 42,
+    "negative": 8
   },
   "events": [
     {
@@ -69,8 +69,8 @@
     {
       "event": 5,
       "true_label": "SQLi",
-      "predicted": "Normal",
-      "reward": -1.0,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:unicode_escape"
     },
     {
@@ -104,8 +104,8 @@
     {
       "event": 10,
       "true_label": "CMD",
-      "predicted": "CMD",
-      "reward": 1.0,
+      "predicted": "SQLi",
+      "reward": -0.5,
       "source": "obfuscation:multipart_boundary_sim"
     },
     {
@@ -202,15 +202,15 @@
     {
       "event": 24,
       "true_label": "SQLi",
-      "predicted": "Normal",
-      "reward": -1.0,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:unicode_escape"
     },
     {
       "event": 25,
       "true_label": "SQLi",
-      "predicted": "CMD",
-      "reward": -0.5,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:multipart_boundary_sim"
     },
     {
@@ -230,8 +230,8 @@
     {
       "event": 28,
       "true_label": "SQLi",
-      "predicted": "Normal",
-      "reward": -1.0,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:unicode_escape"
     },
     {
@@ -265,8 +265,8 @@
     {
       "event": 33,
       "true_label": "SQLi",
-      "predicted": "XSS",
-      "reward": -0.5,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:base64_fragment"
     },
     {
@@ -335,15 +335,15 @@
     {
       "event": 43,
       "true_label": "SQLi",
-      "predicted": "CMD",
-      "reward": -0.5,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:multipart_boundary_sim"
     },
     {
       "event": 44,
       "true_label": "SQLi",
-      "predicted": "Normal",
-      "reward": -1.0,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:base64_fragment"
     },
     {
@@ -370,8 +370,8 @@
     {
       "event": 48,
       "true_label": "SQLi",
-      "predicted": "CMD",
-      "reward": -0.5,
+      "predicted": "SQLi",
+      "reward": 1.0,
       "source": "obfuscation:multipart_boundary_sim"
     },
     {
@@ -384,8 +384,8 @@
     {
       "event": 50,
       "true_label": "CMD",
-      "predicted": "Normal",
-      "reward": -1.0,
+      "predicted": "SQLi",
+      "reward": -0.5,
       "source": "seclists_cmd"
     }
   ]

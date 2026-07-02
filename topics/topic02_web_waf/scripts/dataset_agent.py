@@ -181,7 +181,7 @@ def run_agent(args: argparse.Namespace) -> int:
     write_csv(obf_test, SAMPLES_DIR / "master_test.csv")
 
     print("\n[完成] 下一步:")
-    print("  python scripts/run_full_pipeline.py")
+    print("  python scripts/iga_system.py pipeline")
     return 0
 
 

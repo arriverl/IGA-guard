@@ -26,6 +26,7 @@ from iga_guard.features import extract_features
 from iga_guard.models import ATTACK_LABELS, DetectionResult, NormalizedPayload
 from iga_guard.obfuscation_signals import (
     attack_keyword_scores,
+    has_strong_obfuscation,
     is_obfuscated,
     structural_attack_scores,
 )
@@ -37,6 +38,7 @@ class DualTrackDetector:
     def __init__(self, config: dict | None = None):
         cfg = config or {}
         det = cfg.get("detector", {})
+        self._det_cfg = det
         dlinear_cfg = cfg.get("dlinear", {})
         mm_cfg = cfg.get("multimodal", {})
         self._mm_cfg = mm_cfg
@@ -62,7 +64,16 @@ class DualTrackDetector:
         self._w_sem = float(mm_cfg.get("weight_semantic", 0.28))
         self._w_mm = float(mm_cfg.get("weight_multimodal", 0.14))
         self._w_dl = float(mm_cfg.get("weight_dlinear", 0.12))
-        self.threshold = det.get("confidence_threshold", 0.35)
+        self.threshold = det.get("confidence_threshold", 0.38)
+        self._cache_force_hit = float(det.get("cache_force_hit_min", 0.92))
+        self._cache_fusion_benign = float(det.get("cache_fusion_weight_benign", 0.12))
+        self._fp_guard_conf_min = float(
+            det.get("fp_guard_min_attack_conf", det.get("fp_guard_min_confidence", 0.55))
+        )
+        self._fp_guard_base_max = float(
+            det.get("fp_guard_max_base_attack", det.get("fp_guard_base_attack_max", 0.32))
+        )
+        self._obf_boost_min_base = float(det.get("obfuscation_boost_min_base_attack", 0.25))
         self._rl_thresholds: dict[str, float] = {l: self.threshold for l in self.labels}
 
         cache_cfg = cfg.get("continual_cache", {})
@@ -125,6 +136,36 @@ class DualTrackDetector:
 
         return w_base, w_sem, w_mm, w_dl
 
+    def _apply_fp_guard(
+        self,
+        *,
+        label: str,
+        confidence: float,
+        is_malicious: bool,
+        all_probs: dict[str, float],
+        base_result: DetectionResult,
+        base_attack_peak: float,
+        strong_obf: bool,
+        decode_depth: int,
+        cache_hit: float = 0.0,
+    ) -> tuple[str, float, bool]:
+        """缓存/规则将 RF 判 Normal 翻为攻击时，要求更高置信或强混淆证据。"""
+        if (
+            label != "Normal"
+            and is_malicious
+            and base_result.label == "Normal"
+            and base_attack_peak < self._fp_guard_base_max
+            and not strong_obf
+            and decode_depth < 2
+            and confidence < self._fp_guard_conf_min
+            and cache_hit < self._cache_force_hit
+        ):
+            return "Normal", max(
+                all_probs.get("Normal", 0.0),
+                base_result.all_probs.get("Normal", 0.5),
+            ), False
+        return label, confidence, is_malicious
+
     def predict(
         self,
         payload: NormalizedPayload,
@@ -167,9 +208,20 @@ class DualTrackDetector:
         total = sum(all_probs.values()) or 1.0
         all_probs = {k: v / total for k, v in all_probs.items()}
 
-        # 混淆载荷：结构信号 + 关键词 + 解码链加权
         raw_low = payload.raw_payload.lower()
-        if is_obfuscated(raw_low):
+        base_attack_peak = max(
+            (v for k, v in base_result.all_probs.items() if k != "Normal"), default=0.0,
+        )
+        strong_obf = has_strong_obfuscation(raw_low)
+        decode_depth = len(payload.decode_chain)
+
+        # 混淆 boost：强混淆 / 双轮解码 / base 攻击峰值达标
+        should_boost = is_obfuscated(raw_low) and (
+            strong_obf
+            or decode_depth >= 2
+            or base_attack_peak >= self._obf_boost_min_base
+        )
+        if should_boost:
             norm = (payload.normalized_payload or payload.raw_payload).lower()
             kw = attack_keyword_scores(norm)
             st = structural_attack_scores(
@@ -200,38 +252,67 @@ class DualTrackDetector:
             confidence = all_probs[label]
         thresh = self._rl_thresholds.get(label, self.threshold)
         is_malicious = label != "Normal" and (confidence >= thresh or attack_peak >= thresh)
-        if not is_malicious and is_obfuscated(raw_low):
+        if not is_malicious and (
+            strong_obf
+            or (is_obfuscated(raw_low) and decode_depth >= 2)
+        ):
             norm_text = (payload.normalized_payload or payload.raw_payload).lower()
             kw = attack_keyword_scores(norm_text)
             st = structural_attack_scores(
-                payload.raw_payload, norm_text, decode_depth=len(payload.decode_chain),
+                payload.raw_payload, norm_text, decode_depth=decode_depth,
             )
             kw_peak = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
             st_peak = max((v for k, v in st.items() if k != "Normal"), default=0.0)
-            if len(payload.decode_chain) >= 2 and kw_peak >= 0.3:
+            if decode_depth >= 2 and kw_peak >= 0.28:
                 label = max((k for k in kw if k != "Normal"), key=lambda k: kw[k])
                 confidence = max(confidence, kw_peak, thresh)
                 is_malicious = True
-            elif st_peak >= 0.5 and kw_peak >= 0.15:
+            elif strong_obf and st_peak >= 0.48 and kw_peak >= 0.15:
+                label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
+                confidence = max(confidence, st_peak, thresh)
+                is_malicious = True
+            elif decode_depth >= 2 and st_peak >= 0.52 and kw_peak >= 0.18:
                 label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
                 confidence = max(confidence, st_peak, thresh)
                 is_malicious = True
 
-        # Stage-2：持续学习 KV 缓存修正（冻结编码器，免训练查库）
+        hit = 0.0
+        base_normal_peak = base_result.all_probs.get("Normal", 0.0)
         if self.cache and len(self.cache._entries) > 0:
             text = payload.normalized_payload or payload.raw_payload
+            cache_lam = self.cache.fusion_weight
+            if not strong_obf and base_attack_peak < 0.35:
+                cache_lam = min(cache_lam, self._cache_fusion_benign)
+            if base_normal_peak > 0.45 and base_attack_peak < 0.28:
+                cache_lam *= 0.5
             all_probs = self.cache.fuse_probs(
-                all_probs, text, raw_payload=payload.raw_payload,
+                all_probs, text, raw_payload=payload.raw_payload, fusion_weight=cache_lam,
             )
             label = max(all_probs, key=all_probs.get)
             confidence = all_probs[label]
             attack_peak = max((v for k, v in all_probs.items() if k != "Normal"), default=0.0)
             hit = self.cache.cache_hit_strength(text)
-            if hit >= 0.85 and label != "Normal":
+            if (
+                hit >= self._cache_force_hit
+                and label != "Normal"
+                and (strong_obf or base_attack_peak >= 0.30)
+            ):
                 is_malicious = True
                 confidence = max(confidence, hit * 0.9)
             elif label != "Normal" and confidence >= thresh:
                 is_malicious = True
+
+        label, confidence, is_malicious = self._apply_fp_guard(
+            label=label,
+            confidence=confidence,
+            is_malicious=is_malicious,
+            all_probs=all_probs,
+            base_result=base_result,
+            base_attack_peak=base_attack_peak,
+            strong_obf=strong_obf,
+            decode_depth=decode_depth,
+            cache_hit=hit,
+        )
 
         return DetectionResult(
             label=label,

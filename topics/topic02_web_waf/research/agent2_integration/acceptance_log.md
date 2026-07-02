@@ -1,6 +1,6 @@
 # IGA-Guard 2.0 周验收签收记录
 
-> 每周五 17:00 执行 `.\scripts\week_acceptance.ps1 -Week N`，填写本表存档  
+> 周验收已并入 `iga_system.py pipeline` + `tests/`；历史记录见下表  
 > 关联：[`RUNNABLE_PLAN.md`](RUNNABLE_PLAN.md) §八-A
 
 | 周次 | 执行日期 | 执行人 | 命令 | 结果 | 阻塞项 | 签字 |

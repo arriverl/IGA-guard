@@ -33,10 +33,10 @@ $env:PYTHONPATH="src"
 python scripts/dataset_agent.py
 
 # 2. 完整流水线（RF + TinyBERT + 评估）
-python scripts/run_full_pipeline.py
+python scripts/iga_system.py pipeline
 
 # 仅 RF + 评估（跳过 BERT）
-python scripts/run_full_pipeline.py --skip-bert
+python scripts/iga_system.py pipeline --skip-bert
 ```
 
 ## 产出文件

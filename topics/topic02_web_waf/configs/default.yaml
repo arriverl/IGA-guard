@@ -8,7 +8,12 @@ server:
 detector:
   engine: "dual_track"          # dual_track | fusion (legacy)
   model_path: "models/fusion_detector.joblib"
-  confidence_threshold: 0.35
+  confidence_threshold: 0.40
+  cache_force_hit_min: 0.92
+  cache_fusion_weight_benign: 0.12
+  fp_guard_max_base_attack: 0.32
+  fp_guard_min_attack_conf: 0.55
+  obfuscation_boost_min_base_attack: 0.25
   semantic_model: "distilbert-base-uncased"  # optional TinyBERT-v2
   use_semantic_branch: true    # TinyBERT 已用 master 数据集微调
   labels:
@@ -53,7 +58,7 @@ continual_cache:
   per_class_seed: 30
   beta: 5.0
   top_k: 8
-  fusion_weight: 0.35
+  fusion_weight: 0.28
   dedupe_threshold: 0.98
   multimodal_alpha: 0.85
   use_vision_keys: true

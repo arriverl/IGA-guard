@@ -1,13 +1,14 @@
-# IGA-Guard 2.0 — Agent 与进程总览
+# IGA-Guard 3.0 — Agent 与进程总览
 
-## 一键全量启动（推荐）
+## 统一入口（推荐）
 
 ```powershell
 cd d:\Code_development\gitproduct\caisa_contest_2026\topics\topic02_web_waf
-powershell -ExecutionPolicy Bypass -File scripts\start_everything.ps1
+$env:PYTHONPATH="src"
+python scripts/iga_system.py status
+python scripts/iga_system.py pipeline    # 数据集 → 训练 → 评估 → 对抗
+python scripts/iga_system.py serve       # Web 大屏
 ```
-
-启动内容：pip → 10k 数据集 → RF 训练 → **并行** TinyBERT / 对抗实验 / Web 服务 → 评估脚本
 
 日志：`logs/` · 任务队列：`research/AGENT_QUEUE.md`
 
@@ -22,7 +23,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start_everything.ps1
 | A3 | 工程实现 | `src/iga_guard/` | TinyBERT 本地加载 + 前端六页 |
 | E1 | 检测引擎 | `detector/dual_track.py` | 已标注 ✓ |
 | E2 | DLinear 时序 | `collector/timeseries_buffer.py` | 已标注 ✓ |
-| S1 | Web 服务 | `run.py :5000` | 随 start_everything 启动 |
+| S1 | Web 服务 | `run.py :5000` | `iga_system.py serve` |
 
 ## 访问地址
 

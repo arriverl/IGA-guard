@@ -18,7 +18,12 @@ from sklearn.ensemble import RandomForestClassifier
 
 from iga_guard.features import extract_features
 from iga_guard.models import ATTACK_LABELS, DetectionResult, FeatureVector, NormalizedPayload
-from iga_guard.obfuscation_signals import attack_keyword_scores, is_obfuscated, structural_attack_scores
+from iga_guard.obfuscation_signals import (
+    attack_keyword_scores,
+    has_strong_obfuscation,
+    is_obfuscated,
+    structural_attack_scores,
+)
 
 
 class FusionDetector:
@@ -77,7 +82,7 @@ class FusionDetector:
             for label, w in attack_keyword_scores(text).items():
                 if label != "Normal":
                     scores[label] += 0.25 * w
-        if is_obfuscated(payload.raw_payload) and len(payload.decode_chain) >= 1:
+        if has_strong_obfuscation(payload.raw_payload) and len(payload.decode_chain) >= 1:
             scores["SQLi"] += 0.2
             scores["XSS"] += 0.15
         raw_low = payload.raw_payload.lower()
@@ -142,7 +147,7 @@ class FusionDetector:
             confidence = all_probs[label]
         is_malicious = label != "Normal" and confidence >= 0.35
         # 混淆兜底：须解码链 + 明确攻击关键词（避免误报正常 hex token）
-        if not is_malicious and is_obfuscated(payload.raw_payload):
+        if not is_malicious and has_strong_obfuscation(payload.raw_payload):
             norm = (payload.normalized_payload or payload.raw_payload).lower()
             kw = attack_keyword_scores(norm)
             kw_attack = max((v for k, v in kw.items() if k != "Normal"), default=0.0)

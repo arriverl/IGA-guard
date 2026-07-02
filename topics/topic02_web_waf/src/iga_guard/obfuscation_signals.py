@@ -21,9 +21,10 @@ _ATTACK_PATTERNS: dict[str, tuple[str, ...]] = {
     ),
     "XSS": ("<script", "onerror", "javascript:", "alert(", "onload=", "<svg", "fromcharcode", "<scr"),
     "CMD": (
-        ";", "wget", "curl", "|", "&&", "`", "${jndi:", "echo ", "sleep ",
+        "wget", "curl", "`", "${jndi:", "echo ", "sleep ",
         "echo%20", "%28echo", "$(echo", "str%3d%24%28echo", "str=$(echo",
         "%26%26", "sleep%20", "|echo", "%2528echo", "echo%2520", "%252526",
+        "&&", "||", ";wget", "|wget", "%3bwget", "%7cwget",
     ),
     "PathTraversal": ("../", "..\\", "/etc/passwd", "%2e%2e"),
     "FileInclusion": ("php://", "file://", "expect://", "data://"),
@@ -38,6 +39,39 @@ _SCRIPT_SPLIT = re.compile(r"['\"]\s*\+\s*['\"]")
 _PARAM_PAIRS = re.compile(r"(?:^|[&?])(\w+)=([^&]*)", re.I)
 _UNICODE_ESCAPE = re.compile(r"\\u([0-9a-f]{4})", re.I)
 _NULL_IN_VALUE = re.compile(r"[\w.]%00|%00[\w.@]|%00%23|%3d%00|%00%3d", re.I)
+
+# 强混淆：检测器 boost / 兜底专用（避免普通 URL 单次编码误触发）
+_STRONG_OBFUSCATION_MARKERS: tuple[str, ...] = (
+    "%252", "%00", "webkitformboundary", "/**/", "fromcharcode",
+    "eval(", "\\u", "0x", "boundary=", "multipart", "\\x",
+    "&&echo", "$(echo", "%0aecho", "atob(", "unhex(", "benchmark(",
+    "concat(", "/*!", "echo%20", "echo%2520",
+)
+
+
+def has_strong_obfuscation(text: str) -> bool:
+    """
+    检测器专用强混淆判定：普通 URL 编码（仅含少量 %20 等）不触发 boost。
+    评测子集仍用 is_obfuscated() 保持口径一致。
+    """
+    if not text:
+        return False
+    low = text.lower()
+    if any(m in low for m in _STRONG_OBFUSCATION_MARKERS):
+        return True
+    if has_fullwidth(text):
+        return True
+    if _encoded_cmd_markers(low):
+        return True
+    if len(_UNICODE_ESCAPE.findall(text)) >= 3:
+        return True
+    pct = low.count("%")
+    if pct >= 4 and pct / max(len(low), 1) > 0.18:
+        return True
+    weak_hits = sum(1 for m in ("%0a", "%09", "char(", "sleep(", "&#", "'+'") if m in low)
+    if weak_hits >= 2 and pct >= 2:
+        return True
+    return False
 
 
 def _encoded_cmd_markers(text: str) -> bool:
@@ -164,8 +198,6 @@ def structural_attack_scores(
             scores["SQLi"] += 0.45
             if _encoded_cmd_markers(raw_low):
                 scores["CMD"] += 0.35
-        else:
-            scores["SQLi"] += 0.4
 
     if _unicode_escape_sqli_signal(raw) or _unicode_escape_sqli_signal(norm):
         scores["SQLi"] += 0.55

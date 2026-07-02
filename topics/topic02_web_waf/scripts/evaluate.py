@@ -23,6 +23,7 @@ def main() -> None:
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--output", default=str(ROOT / "results" / "v2_exp1_overall.json"))
     args = parser.parse_args()
+    max_samples = args.max_samples if args.max_samples and args.max_samples > 0 else None
 
     engine = IgaGuardEngine(load_config(ROOT / "configs" / "default.yaml"))
     y_true: list[str] = []
@@ -36,7 +37,7 @@ def main() -> None:
 
     with open(args.data, encoding="utf-8", newline="") as f:
         for i, row in enumerate(csv.DictReader(f)):
-            if args.max_samples is not None and i >= args.max_samples:
+            if max_samples is not None and i >= max_samples:
                 break
             payload = row["payload"]
             label = row["label"]
