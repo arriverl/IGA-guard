@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-IGA-Guard 2.0 统一系统入口
+IGA-Guard 3.0 统一系统入口
 ==========================
 检测 + 混淆 + 数据集 + 训练 + 评估 + 服务 一体化 CLI。
 
@@ -45,7 +45,7 @@ def cmd_status(_: argparse.Namespace) -> int:
             rows[name] = sum(1 for _ in open(p, encoding="utf-8")) - 1
 
     status = {
-        "version": "2.0.0",
+        "version": "3.0.0",
         "dataset": rows,
         "models": {
             "fusion_rf": (ROOT / "models" / "fusion_detector.joblib").exists(),
@@ -208,7 +208,7 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="IGA-Guard 2.0 统一系统")
+    parser = argparse.ArgumentParser(description="IGA-Guard 3.0 统一系统")
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("status", help="系统状态").set_defaults(func=cmd_status)
