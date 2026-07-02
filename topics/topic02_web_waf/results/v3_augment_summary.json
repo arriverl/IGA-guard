@@ -1,0 +1,69 @@
+{
+  "input_rows": 110013,
+  "attack_sampled": 20000,
+  "added_variants": 40000,
+  "output_rows": 150013,
+  "output": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\train_obfuscated_v31.csv",
+  "top_techniques": [
+    [
+      "boundary_continuation_rfc2231",
+      10557
+    ],
+    [
+      "brace_expansion_cmd",
+      5400
+    ],
+    [
+      "operator_swapping",
+      5132
+    ],
+    [
+      "logical_invariant_append",
+      5037
+    ],
+    [
+      "json_null_in_key",
+      5017
+    ],
+    [
+      "leetspeak_obfuscation",
+      4942
+    ],
+    [
+      "integer_encoding",
+      1598
+    ],
+    [
+      "conditional_block_comment",
+      939
+    ],
+    [
+      "scientific_notation",
+      650
+    ],
+    [
+      "ifs_var_bypass",
+      386
+    ],
+    [
+      "invisible_css_conceal",
+      50
+    ],
+    [
+      "zero_width_char_split",
+      48
+    ],
+    [
+      "details_ontoggle_xss",
+      48
+    ],
+    [
+      "string_fromcharcode_xss",
+      43
+    ],
+    [
+      "data_uri_xss",
+      37
+    ]
+  ]
+}

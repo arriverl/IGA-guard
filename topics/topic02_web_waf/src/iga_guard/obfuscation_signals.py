@@ -11,6 +11,10 @@ OBFUSCATED_MARKERS: tuple[str, ...] = (
     "%252", "\\x", "concat(", "unhex(", "benchmark(", "sleep(",
     "%00", "atob(", "echo%20", "&&echo", "$(echo",
     "'+'", "\"+\"",
+    # v3.1 新增
+    "between", "1e0", "1E0", "${ifs}", "{cat,", "/???/", "php://filter",
+    "zip://", "xi:include", "data:text/html", "ontoggle", "font-size:0",
+    "boundary*0=", "%c0%af", "%u2215", "[SYSTEM]", "||", "BETWEEN",
 )
 
 _ATTACK_PATTERNS: dict[str, tuple[str, ...]] = {
@@ -29,7 +33,10 @@ _ATTACK_PATTERNS: dict[str, tuple[str, ...]] = {
     "PathTraversal": ("../", "..\\", "/etc/passwd", "%2e%2e"),
     "FileInclusion": ("php://", "file://", "expect://", "data://"),
     "XXE": ("<!entity", "&xxe;", "system ", "file:///"),
-    "PromptInjection": ("ignore previous", "jailbreak", "system prompt", "disregard"),
+    "PromptInjection": (
+        "ignore previous", "jailbreak", "system prompt", "disregard",
+        "[system]", "validation: approved", "忽略", "ignore\u200b",
+    ),
 }
 
 _HEX32_PARAM = re.compile(r"(?:^|[&?])(\w+)=([0-9a-f]{32})\b", re.I)
@@ -46,6 +53,9 @@ _STRONG_OBFUSCATION_MARKERS: tuple[str, ...] = (
     "eval(", "\\u", "0x", "boundary=", "multipart", "\\x",
     "&&echo", "$(echo", "%0aecho", "atob(", "unhex(", "benchmark(",
     "concat(", "/*!", "echo%20", "echo%2520",
+    # v3.1
+    "boundary*0=", "php://filter", "zip://", "xi:include", "%c0%af",
+    "data:text/html", "\u200b", "\u200c", "\u202e", "ontoggle=",
 )
 
 
@@ -70,6 +80,10 @@ def has_strong_obfuscation(text: str) -> bool:
         return True
     weak_hits = sum(1 for m in ("%0a", "%09", "char(", "sleep(", "&#", "'+'") if m in low)
     if weak_hits >= 2 and pct >= 2:
+        return True
+    if any(c in text for c in ("\u200b", "\u200c", "\u200d", "\u202e")):
+        return True
+    if "boundary*0=" in low or "php://filter" in low:
         return True
     return False
 
@@ -201,6 +215,26 @@ def structural_attack_scores(
 
     if _unicode_escape_sqli_signal(raw) or _unicode_escape_sqli_signal(norm):
         scores["SQLi"] += 0.55
+
+    if any(m in raw_low for m in ("php://filter", "zip://", "xi:include")):
+        scores["FileInclusion"] += 0.65
+
+    if "data:text/html" in raw_low or "ontoggle=" in raw_low:
+        scores["XSS"] += 0.55
+
+    if "${ifs}" in raw_low or "{cat," in raw_low or "/???/" in raw_low:
+        scores["CMD"] += 0.5
+
+    if "%c0%af" in raw_low or "..;/" in raw_low or "%u2215" in raw_low:
+        scores["PathTraversal"] += 0.55
+
+    if "[system]" in raw_low or "validation: approved" in raw_low:
+        scores["PromptInjection"] += 0.45
+
+    if any(c in raw for c in ("\u200b", "\u200c", "\u200d", "\u202e")):
+        if kw_attack >= 0.15 or _FORM_INJ.search(low):
+            scores["PromptInjection"] += 0.35
+            scores["SQLi"] += 0.2
 
     if "webkitformboundary" in raw_low:
         body = raw.split("\n\n", 1)[-1] if "\n\n" in raw else ""

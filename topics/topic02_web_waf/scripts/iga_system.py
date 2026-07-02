@@ -168,6 +168,31 @@ def cmd_evolve_obf(args: argparse.Namespace) -> int:
     return _run(cmd, "漏检诚实增量重训 RF")
 
 
+def cmd_augment_v3(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py, "scripts/augment_v3_techniques.py",
+        "--max-attack-rows", str(args.max_attack_rows),
+        "--variants", str(args.variants),
+    ]
+    if args.data:
+        cmd += ["--data", args.data]
+    if args.output:
+        cmd += ["--output", args.output]
+    return _run(cmd, "v3.1 混淆技术扩库")
+
+
+def cmd_retrain_v3(args: argparse.Namespace) -> int:
+    """v3.1 流程：扩库 → RF 重训 → 评估。"""
+    if cmd_augment_v3(args) != 0:
+        return 1
+    train_data = args.output or str(ROOT / "data" / "master" / "train_obfuscated_v31.csv")
+    py = sys.executable
+    if _run([py, "scripts/train.py", "--data", train_data], "RF 重训（v3.1 扩库）") != 0:
+        return 1
+    return cmd_evaluate(args)
+
+
 def cmd_experiments(args: argparse.Namespace) -> int:
     py = sys.executable
     cmd = [py, "scripts/run_experiments_suite.py", "--experiments", args.experiments]
@@ -277,6 +302,21 @@ def main() -> int:
     p_cmp.add_argument("--data", default=None)
     p_cmp.add_argument("--output", default=None)
     p_cmp.set_defaults(func=cmd_compare_multimodal)
+
+    p_aug = sub.add_parser("augment-v3", help="v3.1 新混淆技术扩训练集")
+    p_aug.add_argument("--data", default=None)
+    p_aug.add_argument("--output", default=None)
+    p_aug.add_argument("--max-attack-rows", type=int, default=25000)
+    p_aug.add_argument("--variants", type=int, default=2)
+    p_aug.set_defaults(func=cmd_augment_v3)
+
+    p_rt = sub.add_parser("retrain-v3", help="v3.1 扩库+RF重训+评估")
+    p_rt.add_argument("--data", default=None)
+    p_rt.add_argument("--output", default=None)
+    p_rt.add_argument("--max-attack-rows", type=int, default=25000)
+    p_rt.add_argument("--variants", type=int, default=2)
+    p_rt.add_argument("--max-samples", type=int, default=0)
+    p_rt.set_defaults(func=cmd_retrain_v3)
 
     p_pipe = sub.add_parser("pipeline", help="全流程")
     p_pipe.add_argument("--skip-bert", action="store_true")
