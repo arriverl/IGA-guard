@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IGA-Guard 3.0 · 演示导航</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
+</head>
+<body>
+<div id="app">
+  <header class="iga-header">
+    <div>
+      <h1>IGA-Guard 3.0 · 可解释自演化 Web 安全防御系统</h1>
+      <small id="iga-subtitle">六页演示导航 · Dual-Track · WebSpotter · Online RL</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
+
+  <div class="hub-grid">
+    <a class="hub-card" href="/static/p1_monitor.html">
+      <h3>P1 监控大屏</h3>
+      <p>核心离线指标、实时告警流、延迟 P99、QPS 采样统计</p>
+    </a>
+    <a class="hub-card" href="/static/p2_detail.html">
+      <h3>P2 攻击详情</h3>
+      <p>HTTP 全链路解析、多层解混淆 decode_chain、检测置信度</p>
+    </a>
+    <a class="hub-card" href="/static/p3_localization.html">
+      <h3>P3 载荷定位</h3>
+      <p>WebSpotter 字段贡献条形图、恶意片段高亮与自然语言解释</p>
+    </a>
+    <a class="hub-card" href="/static/p4_risk.html">
+      <h3>P4 风险热力</h3>
+      <p>攻击类型分布饼图、延迟趋势折线、风险热力可视化</p>
+    </a>
+    <a class="hub-card" href="/static/p5_evolution.html">
+      <h3>P5 模型演化</h3>
+      <p>Online RL 奖励曲线、混淆对抗变异生成与批量检测</p>
+    </a>
+    <a class="hub-card" href="/static/p6_rules.html">
+      <h3>P6 规则中心</h3>
+      <p>虚拟补丁 CVE 库、ModSecurity 规则预览与一键导出</p>
+    </a>
+    <a class="hub-card" href="/static/dashboard.html" style="grid-column: span 3; text-align: center;">
+      <h3>综合大屏（单页版）</h3>
+      <p>保留原有 dashboard.html 全功能单页视图，适合决赛 3 分钟快速演示</p>
+    </a>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() { return { version: '3.0.0', health: '...' }; },
+  mounted() {
+    igaMountShell('hub');
+    igaFetchHealth(this);
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

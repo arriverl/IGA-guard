@@ -27,7 +27,11 @@
 - [x] **已完成**: semantic_branch 加载本地 TinyBERT 权重 + 关键词回退
 - [x] **已完成**: dashboard field_contributions ECharts 横向条形图
 - [x] **已完成**: `tests/test_pipeline_smoke.py`（3 条冒烟 + 10 测试全通过）
-- [ ] **下一项**: 前端六页拆分
+- [x] **已完成**: 前端六页拆分 → `frontend/static/p1_monitor.html` … `p6_rules.html` + `hub.html`
+- [x] **已完成**: 混淆逃逸兜底 `obfuscated_evasion_rescue` + pipeline 恶意优先合并
+- [x] **已完成**: evaluate.py URL 编码/POST body 修复（含 `&` 载荷不再被 query 截断）
+- [x] **已完成**: 全量重评 n=19,411 → 混淆 **99.95%** / FPR **5.63%** / 漏检 **5**（`v2_exp1_overall.json`）
+- [ ] **下一项**: FPR 压至 <3% + EXPERIMENT_REPORT 刷新
 
 ### Agent 4 · 数据集采集代理（新增）
 - [x] **核心库** `src/iga_guard/dataset/` — CSIC 解析、公开源拉取、20+ 混淆技术、合并划分

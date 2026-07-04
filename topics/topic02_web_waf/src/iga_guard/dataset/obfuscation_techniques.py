@@ -76,9 +76,17 @@ TECHNIQUES: dict[str, set[str]] = {
     "system_log_masquerade": {"PromptInjection"},
     "boundary_continuation_rfc2231": set(),
     "string_fromcharcode_xss": {"XSS"},
+    # v3.2 漏检驱动扩展（2026-07-04）
+    "md5_hex32_camouflage": {"SQLi"},
+    "js_dquote_concat": {"SQLi", "XSS"},
+    "case_mixed_token_split": {"SQLi", "CMD"},
 }
 
 # v3.1 新增技术名（供 augment 脚本仅扩此类变种）
+NEW_TECHNIQUES_V32: frozenset[str] = frozenset({
+    "md5_hex32_camouflage", "js_dquote_concat", "case_mixed_token_split",
+})
+
 NEW_TECHNIQUES_V31: frozenset[str] = frozenset({
     "operator_swapping", "integer_encoding", "number_shuffling", "comment_rewriting",
     "logical_invariant_append", "scientific_notation", "between_tautology",
@@ -541,6 +549,32 @@ def _string_fromcharcode_xss(s: str, r: random.Random) -> str:
     return f"<script>eval(String.fromCharCode({codes}))</script>"
 
 
+def _md5_hex32_camouflage(s: str, r: random.Random) -> str:
+    """32 位混合大小写 hex 伪装（CSIC 异常流量常见形态）。"""
+    import hashlib
+    h = hashlib.md5(s.encode()).hexdigest()
+    out = []
+    for i, c in enumerate(h):
+        out.append(c.upper() if (i + r.randint(0, 1)) % 2 else c)
+    return "".join(out)
+
+
+def _js_dquote_concat(s: str, r: random.Random) -> str:
+    return re.sub(
+        r"(?i)(union|select|insert|script|alert|or|and|echo|exec)",
+        lambda m: "'+'".join(m.group(0)),
+        s,
+    )
+
+
+def _case_mixed_token_split(s: str, r: random.Random) -> str:
+    mid = max(1, len(s) // 2)
+    a, b = s[:mid], s[mid:]
+    a = "".join(c.upper() if r.random() > 0.5 else c.lower() for c in a)
+    b = "".join(c.upper() if r.random() > 0.5 else c.lower() for c in b)
+    return a + "'+'" + b
+
+
 _DISPATCH: dict[str, object] = {
     "case_random": _case_random,
     "inline_comment": _inline_comment,
@@ -597,4 +631,7 @@ _DISPATCH: dict[str, object] = {
     "system_log_masquerade": _system_log_masquerade,
     "boundary_continuation_rfc2231": _boundary_continuation_rfc2231,
     "string_fromcharcode_xss": _string_fromcharcode_xss,
+    "md5_hex32_camouflage": _md5_hex32_camouflage,
+    "js_dquote_concat": _js_dquote_concat,
+    "case_mixed_token_split": _case_mixed_token_split,
 }

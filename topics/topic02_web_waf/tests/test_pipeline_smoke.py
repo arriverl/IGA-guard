@@ -55,3 +55,11 @@ class TestPipelineSmoke:
         assert "field_contributions" in exp
         assert isinstance(exp["field_contributions"], dict)
         assert len(exp["field_contributions"]) >= 1
+
+    def test_obfuscated_query_param_not_overwritten_by_path(self, engine: IgaGuardEngine):
+        """查询参数中的混淆攻击不应被路径字段的高置信 Normal 覆盖。"""
+        report = engine.analyze_url(
+            "GET",
+            "http://eval.local/test?p=ben%00aderet@introito.io",
+        )
+        assert report.detection.is_malicious is True

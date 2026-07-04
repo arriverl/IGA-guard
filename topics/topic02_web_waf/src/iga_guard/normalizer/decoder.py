@@ -53,12 +53,29 @@ def _decode_once(text: str) -> tuple[str, str | None]:
 
     # URL encoding
     if "%" in stripped:
+        # 三重 URL 编码（%25253d 等）
+        if "%2525" in stripped or stripped.count("%") >= 6:
+            prev = stripped
+            decoded = stripped
+            for _ in range(3):
+                try:
+                    decoded = unquote(unquote_plus(decoded))
+                except Exception:
+                    break
+            if decoded != prev:
+                return decoded, "triple_url_decode"
         try:
             decoded = unquote(unquote_plus(stripped))
             if decoded != stripped:
                 return decoded, "url_decode"
         except Exception:
             pass
+
+    # 编码态 null byte：%00 / %2500
+    if re.search(r"%(?:25)*0{2}", stripped, re.I):
+        decoded = re.sub(r"%(?:25)*0{2}", "\x00", stripped, flags=re.I)
+        if decoded != stripped:
+            return decoded, "encoded_null_byte"
 
     # HTML entities
     if "&" in stripped and ";" in stripped:

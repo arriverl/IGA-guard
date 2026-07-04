@@ -40,6 +40,17 @@ from iga_guard.rules.virtual_patch import export_virtual_patch_rule, match_virtu
 _EARLY_EXIT_CONF = 0.88
 
 
+def _prefer_detection(candidate: DetectionResult, current: DetectionResult | None) -> bool:
+    """恶意判定优先于高置信 Normal（修复多字段检测时被 Normal 覆盖）。"""
+    if current is None:
+        return True
+    if candidate.is_malicious and not current.is_malicious:
+        return True
+    if not candidate.is_malicious and current.is_malicious:
+        return False
+    return candidate.confidence > current.confidence
+
+
 def load_config(path: str | Path = "configs/default.yaml") -> dict:
     """加载 YAML 配置；默认路径相对于项目根目录 configs/default.yaml。"""
     cfg_path = Path(path)
@@ -119,7 +130,7 @@ class IgaGuardEngine:
                 det = self.detector.predict(norm, ts_matrix=ts_matrix)
             else:
                 det = self.detector.predict(norm)
-            if best_detection is None or det.confidence > best_detection.confidence:
+            if _prefer_detection(det, best_detection):
                 best_detection = det
                 best_payload = norm
 

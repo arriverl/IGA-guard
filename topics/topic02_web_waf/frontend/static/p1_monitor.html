@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P1 监控大屏 · IGA-Guard</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
+</head>
+<body>
+<div id="app">
+  <header class="iga-header">
+    <div>
+      <h1>IGA-Guard 3.0 · P1 监控大屏</h1>
+      <small id="iga-subtitle">实时攻击拓扑 · QPS 采样 · 告警流</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
+
+  <div class="grid">
+    <div class="card">
+      <h2>核心指标 · v2 离线评测</h2>
+      <p>混淆检出 <span class="stat ok">{{ pct(overallMetrics.obfuscated_attack_recall) }}</span></p>
+      <p>Normal 误报 <span class="stat">{{ pct(overallMetrics.normal_false_positive_rate) }}</span></p>
+      <p style="font-size:.75rem;color:#64748b">
+        全量召回 {{ pct(overallMetrics.overall_detection_recall) }}
+        · n={{ overallMetrics.eval_samples || '-' }}
+      </p>
+      <p style="font-size:.75rem;color:#64748b">目标：混淆 &gt; 99.5% · 在线 P99 &lt; 5ms</p>
+    </div>
+
+    <div class="card">
+      <h2>在线采样</h2>
+      <p>实时告警 <span class="stat danger">{{ stats.total_alerts || 0 }}</span></p>
+      <p>延迟样本 <span class="stat">{{ latency.samples || 0 }}</span></p>
+      <p>均值 <span class="stat">{{ latency.mean_ms || '-' }}</span> ms</p>
+      <p>P99 <span class="stat">{{ latency.p99_ms || '-' }}</span> ms</p>
+    </div>
+
+    <div class="card">
+      <h2>快速检测</h2>
+      <div class="row">
+        <input v-model="url" style="flex:1" />
+        <button @click="detect">检测</button>
+      </div>
+      <p v-if="lastLabel" style="font-size:.85rem">
+        最近: <strong :class="lastMalicious?'danger':'ok'">{{ lastLabel }}</strong>
+        · {{ lastMs }}ms
+      </p>
+    </div>
+
+    <div class="card span2">
+      <h2>延迟趋势（在线采样）</h2>
+      <div id="latChart" class="chart-lg"></div>
+    </div>
+
+    <div class="card">
+      <h2>攻击类型（会话内）</h2>
+      <div id="miniPie" class="chart"></div>
+    </div>
+
+    <div class="card span3">
+      <h2>近期告警流</h2>
+      <div v-if="!alerts.length" style="color:#64748b;font-size:.85rem">暂无告警，请执行检测触发</div>
+      <div v-for="(a,i) in alerts" :key="i" class="alert">
+        <strong>{{ a.detection?.label }}</strong>
+        · {{ (a.detection?.confidence*100).toFixed(1) }}%
+        · {{ a.detection?.latency_ms?.toFixed(2) }}ms
+        <br /><span class="mono" style="border:none;padding:0;background:transparent">{{ a.url?.slice(0,120) }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      version: '3.0.0', health: '...', url: 'http://demo/login?id=1+union+select+1,2--',
+      alerts: [], stats: {}, latency: {}, overallMetrics: {},
+      latencyHistory: [], lastLabel: '', lastMalicious: false, lastMs: 0, charts: {},
+    };
+  },
+  mounted() {
+    igaMountShell('p1');
+    igaFetchHealth(this);
+    this.$nextTick(() => { this.initCharts(); this.refresh(); setInterval(this.refresh, 8000); });
+  },
+  methods: {
+    pct: igaPct,
+    async detect() {
+      const r = await fetch('/api/detect', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'GET', url: this.url }),
+      });
+      const d = await r.json();
+      this.lastLabel = d.detection?.label;
+      this.lastMalicious = d.detection?.is_malicious;
+      this.lastMs = d.detection?.latency_ms?.toFixed(2);
+      if (d.detection?.latency_ms) this.latencyHistory.push(d.detection.latency_ms);
+      this.refresh();
+    },
+    async refresh() {
+      await igaRefreshCore(this);
+      this.updateCharts();
+    },
+    initCharts() {
+      this.charts.lat = echarts.init(document.getElementById('latChart'));
+      this.charts.pie = echarts.init(document.getElementById('miniPie'));
+      this.updateCharts();
+    },
+    updateCharts() {
+      if (!this.charts.lat) return;
+      this.charts.lat.setOption({
+        backgroundColor: 'transparent',
+        xAxis: { type: 'category', data: this.latencyHistory.map((_, i) => i + 1), axisLabel: { color: '#94a3b8' } },
+        yAxis: { type: 'value', name: 'ms', axisLabel: { color: '#94a3b8' } },
+        series: [{ type: 'line', data: this.latencyHistory, smooth: true, areaStyle: { opacity: 0.12 }, lineStyle: { color: '#3b82f6' } }],
+      });
+      const dist = this.stats.attack_distribution || {};
+      this.charts.pie.setOption({
+        backgroundColor: 'transparent',
+        series: [{ type: 'pie', radius: '65%', data: Object.entries(dist).map(([n, v]) => ({ name: n, value: v })), label: { color: '#cbd5e1', fontSize: 10 } }],
+      });
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

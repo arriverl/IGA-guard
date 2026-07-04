@@ -20,7 +20,7 @@ python scripts/iga_system.py serve       # Web 大屏
 |----|------|------|----------|
 | A1 | 情报研究员 | `research/agent1_literature/` | 混淆逃逸 SOTA + CSIC 下载脚本 |
 | A2 | 方案架构师 | `research/agent2_integration/` | 实验报告 + 作品报告提纲 |
-| A3 | 工程实现 | `src/iga_guard/` | TinyBERT 本地加载 + 前端六页 |
+| A3 | 工程实现 | `src/iga_guard/` | 混淆 Recall 提升 + 决赛答辩排练 |
 | E1 | 检测引擎 | `detector/dual_track.py` | 已标注 ✓ |
 | E2 | DLinear 时序 | `collector/timeseries_buffer.py` | 已标注 ✓ |
 | S1 | Web 服务 | `run.py :5000` | `iga_system.py serve` |

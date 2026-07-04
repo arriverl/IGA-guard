@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P5 模型演化 · IGA-Guard</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
+  <style>
+    .obf-item{display:flex;align-items:flex-start;gap:.5rem;padding:.45rem;margin:.35rem 0;background:#0b1220;border:1px solid #334155;border-radius:6px;font-size:.75rem}
+    .obf-payload{font-family:ui-monospace,monospace;word-break:break-all;flex:1}
+    .obf-badge{padding:.12rem .4rem;border-radius:4px;font-size:.68rem}
+    .obf-badge.mal{background:#3b1111;color:#fca5a5}
+    .obf-badge.ok{background:#0a2010;color:#86efac}
+  </style>
+</head>
+<body>
+<div id="app">
+  <header class="iga-header">
+    <div>
+      <h1>IGA-Guard 3.0 · P5 模型演化</h1>
+      <small id="iga-subtitle">Online RL 奖励曲线 · 对抗混淆生成</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Online RL 演化</h2>
+      <div id="evoChart" class="chart-lg"></div>
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn-secondary" @click="triggerEvolve" :disabled="evolving">{{ evolving ? '演化中…' : '触发增量重训' }}</button>
+      </div>
+      <p v-if="evolveResult" class="mono" style="margin-top:.5rem;font-size:.7rem">{{ evolveResult }}</p>
+    </div>
+
+    <div class="card span2">
+      <h2>混淆生成器 · 对抗变异</h2>
+      <div class="row">
+        <select v-model="obfType">
+          <option value="SQLi">SQLi</option><option value="XSS">XSS</option>
+          <option value="CMD">CMD</option><option value="PathTraversal">PathTraversal</option>
+        </select>
+        <input v-model="obfPayload" style="flex:1" placeholder="原始载荷" />
+        <input v-model.number="obfCount" type="number" min="3" max="20" style="width:56px" />
+        <button :disabled="obfLoading" @click="generateObf">{{ obfLoading ? '…' : '生成' }}</button>
+        <button v-if="obfVariants.length" class="btn-secondary" :disabled="obfBatch" @click="detectAllObf">全部检测</button>
+      </div>
+      <div v-for="(v,i) in obfVariants" :key="i" class="obf-item">
+        <div class="obf-payload">{{ v.payload }}</div>
+        <button style="font-size:.68rem;padding:.25rem .5rem" :disabled="v.detecting" @click="detectVariant(i)">检</button>
+        <span v-if="v.detection" class="obf-badge" :class="v.detection.is_malicious?'mal':'ok'">
+          {{ v.detection.label }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card span3">
+      <h2>演化历史明细</h2>
+      <div v-if="!evoHistory.length" style="color:#64748b">暂无 RL 反馈记录</div>
+      <div v-for="h in evoHistory" :key="h.episode" class="alert" style="border-left-color:#8b5cf6">
+        Episode {{ h.episode }} · reward {{ h.reward?.toFixed(3) }}
+        <span v-if="h.threshold"> · threshold {{ h.threshold }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      version: '3.0.0', health: '...', evoHistory: [], chart: null,
+      evolving: false, evolveResult: '',
+      obfPayload: '1 union select 1,2--', obfType: 'SQLi', obfCount: 8,
+      obfVariants: [], obfLoading: false, obfBatch: false,
+    };
+  },
+  mounted() {
+    igaMountShell('p5');
+    igaFetchHealth(this);
+    this.$nextTick(() => {
+      this.chart = echarts.init(document.getElementById('evoChart'));
+      this.refresh();
+      setInterval(this.refresh, 12000);
+    });
+  },
+  methods: {
+    async refresh() {
+      const e = await fetch('/api/evolution/history').then((r) => r.json());
+      this.evoHistory = e.history || [];
+      if (this.chart) {
+        this.chart.setOption({
+          backgroundColor: 'transparent',
+          xAxis: { type: 'category', data: this.evoHistory.map((h) => h.episode), axisLabel: { color: '#94a3b8' } },
+          yAxis: { type: 'value', axisLabel: { color: '#94a3b8' } },
+          series: [{ type: 'bar', data: this.evoHistory.map((h) => h.reward), itemStyle: { color: '#8b5cf6' } }],
+        });
+      }
+    },
+    async triggerEvolve() {
+      this.evolving = true;
+      try {
+        const d = await fetch('/api/evolve', { method: 'POST' }).then((r) => r.json());
+        this.evolveResult = JSON.stringify(d);
+        this.refresh();
+      } finally { this.evolving = false; }
+    },
+    async generateObf() {
+      this.obfLoading = true;
+      try {
+        const d = await fetch('/api/obfuscate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payload: this.obfPayload, attack_type: this.obfType, count: this.obfCount }),
+        }).then((r) => r.json());
+        this.obfVariants = (d.variants || []).map((v) => ({ ...v, detecting: false, detection: null }));
+      } finally { this.obfLoading = false; }
+    },
+    async detectVariant(i) {
+      const v = this.obfVariants[i];
+      v.detecting = true;
+      try {
+        const d = await fetch('/api/detect', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: 'GET', url: 'http://demo/obf?p=' + encodeURIComponent(v.payload) }),
+        }).then((r) => r.json());
+        v.detection = d.detection;
+      } finally { v.detecting = false; }
+    },
+    async detectAllObf() {
+      this.obfBatch = true;
+      try {
+        for (let i = 0; i < this.obfVariants.length; i++) {
+          if (!this.obfVariants[i].detection) await this.detectVariant(i);
+        }
+      } finally { this.obfBatch = false; }
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

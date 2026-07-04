@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P2 攻击详情 · IGA-Guard</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
+</head>
+<body>
+<div id="app">
+  <header class="iga-header">
+    <div>
+      <h1>IGA-Guard 3.0 · P2 攻击详情</h1>
+      <small id="iga-subtitle">请求全链路 · 解混淆 decode_chain</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2>HTTP 请求输入</h2>
+      <div class="row">
+        <select v-model="method"><option>GET</option><option>POST</option></select>
+        <input v-model="url" style="flex:1;min-width:200px" />
+        <button @click="detect">分析</button>
+      </div>
+      <div class="row">
+        <textarea v-model="body" rows="3" style="flex:1" placeholder="可选 POST Body"></textarea>
+      </div>
+    </div>
+
+    <div class="card" v-if="result">
+      <h2>检测结论</h2>
+      <p>
+        判定: <strong :class="result.detection.is_malicious?'danger':'ok'">{{ result.detection.label }}</strong>
+        · {{ (result.detection.confidence*100).toFixed(1) }}%
+        · 风险 {{ result.detection.risk_level }}
+        · {{ result.detection.latency_ms.toFixed(2) }}ms
+      </p>
+      <p style="font-size:.78rem;color:#64748b">方法 {{ result.method }} · URL 长度 {{ result.url?.length }}</p>
+    </div>
+
+    <div class="card span2" v-if="result && result.normalized?.length">
+      <h2>载荷字段 · 解混淆链路</h2>
+      <div v-for="(n, idx) in result.normalized" :key="idx" style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #1e293b">
+        <p style="font-size:.8rem;color:#94a3b8">
+          字段 <code>{{ n.field || 'query' }}</code>
+          · 位置 {{ n.location }}
+        </p>
+        <p style="font-size:.75rem;color:#64748b">原始载荷</p>
+        <div class="mono">{{ n.raw }}</div>
+        <p style="font-size:.75rem;color:#64748b;margin-top:.5rem">净化后</p>
+        <div class="mono">{{ n.normalized }}</div>
+        <div v-if="n.decode_chain?.length" style="margin-top:.5rem">
+          <p style="font-size:.75rem;color:#64748b">decode_chain（{{ n.decode_chain.length }} 步）</p>
+          <div v-for="(step, si) in n.decode_chain" :key="si" class="chain-step">
+            <span class="idx">{{ si + 1 }}</span>
+            <span class="mono" style="flex:1;border:none;padding:0">{{ step }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card span2" v-if="result?.explanation">
+      <h2>解释摘要</h2>
+      <div class="nl">
+        <p>恶意字段: {{ result.explanation.malicious_field }}</p>
+        <p>片段: <code>{{ result.explanation.malicious_span }}</code></p>
+        <p v-if="result.explanation.natural_language">{{ result.explanation.natural_language }}</p>
+      </div>
+    </div>
+
+    <div class="card span2" v-if="!result">
+      <p style="color:#64748b">输入 URL 并点击「分析」查看全链路详情</p>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() { return { version: '3.0.0', health: '...', method: 'GET', url: 'http://demo/login?id=1%2527%20union%20select', body: '', result: null }; },
+  mounted() { igaMountShell('p2'); igaFetchHealth(this); },
+  methods: {
+    async detect() {
+      const r = await fetch('/api/detect', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: this.method, url: this.url, body: this.body }),
+      });
+      this.result = await r.json();
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

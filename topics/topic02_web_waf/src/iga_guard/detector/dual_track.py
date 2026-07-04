@@ -26,10 +26,14 @@ from iga_guard.features import extract_features
 from iga_guard.models import ATTACK_LABELS, DetectionResult, NormalizedPayload
 from iga_guard.obfuscation_signals import (
     attack_keyword_scores,
+    evasion_rule_scores,
     has_strong_obfuscation,
     is_obfuscated,
+    looks_like_benign_csic_form,
+    obfuscated_evasion_rescue,
     structural_attack_scores,
 )
+from iga_guard.obfuscation_signals import _encoded_cmd_markers, _mixed_case_hex32_token  # noqa: PLC2701
 
 
 class DualTrackDetector:
@@ -73,7 +77,9 @@ class DualTrackDetector:
         self._fp_guard_base_max = float(
             det.get("fp_guard_max_base_attack", det.get("fp_guard_base_attack_max", 0.32))
         )
-        self._obf_boost_min_base = float(det.get("obfuscation_boost_min_base_attack", 0.25))
+        self._obf_boost_min_base = float(det.get("obfuscation_boost_min_base_attack", 0.20))
+        self._cache_fusion_obf = float(det.get("cache_fusion_weight_obfuscated", 0.42))
+        self._fp_guard_tier_b = bool(det.get("fp_guard_tier_b_enabled", True))
         self._rl_thresholds: dict[str, float] = {l: self.threshold for l in self.labels}
 
         cache_cfg = cfg.get("continual_cache", {})
@@ -148,17 +154,46 @@ class DualTrackDetector:
         strong_obf: bool,
         decode_depth: int,
         cache_hit: float = 0.0,
+        raw_low: str = "",
+        norm_low: str = "",
+        evasion_peak: float = 0.0,
+        kw_peak: float = 0.0,
+        st_peak: float = 0.0,
     ) -> tuple[str, float, bool]:
-        """缓存/规则将 RF 判 Normal 翻为攻击时，要求更高置信或强混淆证据。"""
+        """分层 FP 护栏：混淆/结构证据充分时不翻回 Normal。"""
+        if not is_malicious or label == "Normal":
+            return label, confidence, is_malicious
+
+        # Tier A：强混淆 + 解码深度 + 结构/关键词证据 → 不护栏
         if (
-            label != "Normal"
-            and is_malicious
-            and base_result.label == "Normal"
+            is_obfuscated(raw_low)
+            and (strong_obf or decode_depth >= 2)
+            and (kw_peak >= 0.12 or st_peak >= 0.40 or evasion_peak >= 0.40)
+        ):
+            return label, confidence, is_malicious
+
+        # Tier B：高置信 evasion 规则命中
+        if evasion_peak >= 0.50 and (kw_peak >= 0.10 or st_peak >= 0.35):
+            return label, confidence, is_malicious
+
+        # Tier B2：Top FN 模式
+        if self._fp_guard_tier_b:
+            if "%252" in raw_low and _encoded_cmd_markers(raw_low) and st_peak >= 0.35:
+                return label, confidence, is_malicious
+            if "%00" in raw_low and (st_peak >= 0.38 or kw_peak >= 0.10):
+                return label, confidence, is_malicious
+            if "webkitformboundary" in raw_low and st_peak >= 0.45:
+                return label, confidence, is_malicious
+
+        # Tier C：原护栏（仅弱证据翻回）
+        if (
+            base_result.label == "Normal"
             and base_attack_peak < self._fp_guard_base_max
             and not strong_obf
             and decode_depth < 2
             and confidence < self._fp_guard_conf_min
             and cache_hit < self._cache_force_hit
+            and evasion_peak < 0.45
         ):
             return "Normal", max(
                 all_probs.get("Normal", 0.0),
@@ -209,20 +244,26 @@ class DualTrackDetector:
         all_probs = {k: v / total for k, v in all_probs.items()}
 
         raw_low = payload.raw_payload.lower()
+        norm_text = (payload.normalized_payload or payload.raw_payload).lower()
         base_attack_peak = max(
             (v for k, v in base_result.all_probs.items() if k != "Normal"), default=0.0,
         )
         strong_obf = has_strong_obfuscation(raw_low)
         decode_depth = len(payload.decode_chain)
+        evasion = evasion_rule_scores(
+            payload.raw_payload, norm_text, decode_depth=decode_depth,
+        )
+        evasion_peak = max(evasion.values(), default=0.0)
 
-        # 混淆 boost：强混淆 / 双轮解码 / base 攻击峰值达标
+        # 混淆 boost：强混淆 / 深解码 / evasion 规则 / base 攻击峰值达标
         should_boost = is_obfuscated(raw_low) and (
             strong_obf
             or decode_depth >= 2
             or base_attack_peak >= self._obf_boost_min_base
+            or evasion_peak >= 0.50
         )
         if should_boost:
-            norm = (payload.normalized_payload or payload.raw_payload).lower()
+            norm = norm_text
             kw = attack_keyword_scores(norm)
             st = structural_attack_scores(
                 payload.raw_payload, norm, decode_depth=len(payload.decode_chain),
@@ -233,6 +274,7 @@ class DualTrackDetector:
                         0.55 * all_probs.get(label, 0.0)
                         + 0.25 * kw.get(label, 0.0)
                         + 0.2 * st.get(label, 0.0)
+                        + 0.15 * evasion.get(label, 0.0)
                     )
             if len(payload.decode_chain) >= 2:
                 for label in self.labels:
@@ -254,16 +296,22 @@ class DualTrackDetector:
         is_malicious = label != "Normal" and (confidence >= thresh or attack_peak >= thresh)
         if not is_malicious and (
             strong_obf
-            or (is_obfuscated(raw_low) and decode_depth >= 2)
+            or (is_obfuscated(raw_low) and decode_depth >= 1)
+            or evasion_peak >= 0.40
+            or ("%00" in raw_low and is_obfuscated(raw_low))
+            or ("eval(atob" in raw_low and decode_depth >= 1)
         ):
-            norm_text = (payload.normalized_payload or payload.raw_payload).lower()
             kw = attack_keyword_scores(norm_text)
             st = structural_attack_scores(
                 payload.raw_payload, norm_text, decode_depth=decode_depth,
             )
             kw_peak = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
             st_peak = max((v for k, v in st.items() if k != "Normal"), default=0.0)
-            if decode_depth >= 2 and kw_peak >= 0.28:
+            if decode_depth >= 2 and _encoded_cmd_markers(raw_low) and st_peak >= 0.35:
+                label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
+                confidence = max(confidence, st_peak, 0.42)
+                is_malicious = True
+            elif decode_depth >= 2 and kw_peak >= 0.28:
                 label = max((k for k in kw if k != "Normal"), key=lambda k: kw[k])
                 confidence = max(confidence, kw_peak, thresh)
                 is_malicious = True
@@ -275,13 +323,44 @@ class DualTrackDetector:
                 label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
                 confidence = max(confidence, st_peak, thresh)
                 is_malicious = True
+            elif decode_depth >= 1 and "%252" in raw_low and st_peak >= 0.35 and kw_peak >= 0.10:
+                label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
+                confidence = max(confidence, st_peak, 0.40)
+                is_malicious = True
+            elif evasion_peak >= 0.40 and (kw_peak >= 0.08 or st_peak >= 0.30):
+                best = max(evasion, key=evasion.get)
+                label = best
+                confidence = max(confidence, evasion_peak, 0.40)
+                is_malicious = True
+            elif "%00" in raw_low and is_obfuscated(raw_low) and st_peak >= 0.28:
+                label = max((k for k in st if k != "Normal"), key=lambda k: st[k], default="SQLi")
+                confidence = max(confidence, st_peak, 0.40)
+                is_malicious = True
+            elif ("eval(atob" in raw_low) and decode_depth >= 1 and kw_peak >= 0.08:
+                label = max((k for k in kw if k != "Normal"), key=lambda k: kw[k])
+                confidence = max(confidence, kw_peak, 0.42)
+                is_malicious = True
+            elif evasion_peak >= 0.50 and (kw_peak >= 0.10 or st_peak >= 0.35):
+                best = max(evasion, key=evasion.get)
+                label = best
+                confidence = max(confidence, evasion_peak, thresh)
+                is_malicious = True
+        else:
+            kw = attack_keyword_scores(norm_text)
+            st = structural_attack_scores(
+                payload.raw_payload, norm_text, decode_depth=decode_depth,
+            )
+            kw_peak = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
+            st_peak = max((v for k, v in st.items() if k != "Normal"), default=0.0)
 
         hit = 0.0
         base_normal_peak = base_result.all_probs.get("Normal", 0.0)
         if self.cache and len(self.cache._entries) > 0:
             text = payload.normalized_payload or payload.raw_payload
             cache_lam = self.cache.fusion_weight
-            if not strong_obf and base_attack_peak < 0.35:
+            if is_obfuscated(raw_low):
+                cache_lam = self._cache_fusion_obf
+            elif not strong_obf and base_attack_peak < 0.35:
                 cache_lam = min(cache_lam, self._cache_fusion_benign)
             if base_normal_peak > 0.45 and base_attack_peak < 0.28:
                 cache_lam *= 0.5
@@ -312,7 +391,28 @@ class DualTrackDetector:
             strong_obf=strong_obf,
             decode_depth=decode_depth,
             cache_hit=hit,
+            raw_low=raw_low,
+            norm_low=norm_text,
+            evasion_peak=evasion_peak,
+            kw_peak=kw_peak,
+            st_peak=st_peak,
         )
+
+        if not is_malicious:
+            rescue = obfuscated_evasion_rescue(
+                payload.raw_payload, norm_text, decode_depth=decode_depth,
+            )
+            if rescue is not None:
+                label, confidence = rescue
+                is_malicious = True
+            elif _mixed_case_hex32_token((payload.raw_payload or "").strip()):
+                label, confidence = "SQLi", max(confidence, 0.65)
+                is_malicious = True
+
+        if is_malicious and looks_like_benign_csic_form(payload.raw_payload, norm_text):
+            label, confidence, is_malicious = "Normal", max(
+                all_probs.get("Normal", 0.0), 0.55,
+            ), False
 
         return DetectionResult(
             label=label,

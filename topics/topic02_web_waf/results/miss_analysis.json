@@ -1,198 +1,175 @@
 {
-  "total": 2000,
+  "total": 91,
   "by_label": {
-    "CMD": 1198,
-    "SQLi": 786,
-    "PathTraversal": 2,
-    "XSS": 12,
-    "PromptInjection": 1,
-    "108": 1
+    "SQLi": 56,
+    "CMD": 33,
+    "XSS": 2
   },
   "by_source_prefix": {
-    "seclists_cmd": 285,
-    "obfuscation": 1697,
-    "csic_gsi": 14,
-    "community": 4
+    "obfuscation": 76,
+    "seclists_cmd": 12,
+    "csic_gsi": 3
   },
   "by_source": {
-    "obfuscation:null_byte": 299,
-    "seclists_cmd": 285,
-    "obfuscation:unicode_escape": 280,
-    "obfuscation:url_encode": 211,
-    "obfuscation:double_url_encode": 206,
-    "obfuscation:multipart_boundary_sim": 195,
-    "obfuscation:unicode_normalization": 189,
-    "obfuscation:case_random": 163,
-    "obfuscation:char_function": 75,
-    "obfuscation:base64_fragment": 31,
-    "obfuscation:hex_escape": 18,
-    "csic_gsi:cisc_anomalousTraffic_test.txt": 14,
-    "obfuscation:keyword_concat_split": 13,
-    "obfuscation:json_nested_escape": 5,
-    "community:payloads_seed": 4,
-    "obfuscation:nested_comment": 4,
-    "obfuscation:logic_or_tautology": 3,
-    "obfuscation:hpp_duplicate_param": 2,
-    "obfuscation:tab_newline": 1,
-    "obfuscation:html_entity_full": 1,
-    "obfuscation:html_entity_partial": 1
+    "obfuscation:null_byte": 29,
+    "seclists_cmd": 12,
+    "obfuscation:url_encode": 12,
+    "obfuscation:case_random": 9,
+    "obfuscation:unicode_normalization": 7,
+    "obfuscation:multipart_boundary_sim": 5,
+    "obfuscation:keyword_concat_split": 3,
+    "obfuscation:base64_fragment": 3,
+    "csic_gsi:cisc_anomalousTraffic_test.txt": 3,
+    "obfuscation:unicode_escape": 3,
+    "obfuscation:logic_or_tautology": 2,
+    "obfuscation:hex_escape": 2,
+    "obfuscation:json_nested_escape": 1
   },
   "cross_label_source_prefix": {
-    "108": {
-      "obfuscation": 1
-    },
     "CMD": {
-      "seclists_cmd": 285,
-      "obfuscation": 913
-    },
-    "PathTraversal": {
-      "obfuscation": 2
-    },
-    "PromptInjection": {
-      "obfuscation": 1
+      "seclists_cmd": 12,
+      "obfuscation": 21
     },
     "SQLi": {
-      "obfuscation": 768,
-      "csic_gsi": 14,
-      "community": 4
+      "obfuscation": 53,
+      "csic_gsi": 3
     },
     "XSS": {
-      "obfuscation": 12
+      "obfuscation": 2
     }
   },
   "top_patterns": [
     {
-      "pattern": "double_url_encode_cmd",
-      "count": 473,
-      "pct": 23.6
-    },
-    {
       "pattern": "null_byte_in_params",
-      "count": 277,
-      "pct": 13.8
-    },
-    {
-      "pattern": "unicode_escape_sqli",
-      "count": 253,
-      "pct": 12.7
+      "count": 29,
+      "pct": 31.9
     },
     {
       "pattern": "seclists_echo_shell",
-      "count": 240,
-      "pct": 12.0
-    },
-    {
-      "pattern": "multipart_boundary_sqli",
-      "count": 192,
-      "pct": 9.6
-    },
-    {
-      "pattern": "unicode_normalization",
-      "count": 167,
-      "pct": 8.3
-    },
-    {
-      "pattern": "case_random_cmd",
-      "count": 133,
-      "pct": 6.7
-    },
-    {
-      "pattern": "char_function_sqli",
-      "count": 75,
-      "pct": 3.8
-    },
-    {
-      "pattern": "double_url_encode_sqli",
-      "count": 48,
-      "pct": 2.4
+      "count": 12,
+      "pct": 13.2
     },
     {
       "pattern": "other:url_encode",
-      "count": 45,
-      "pct": 2.2
+      "count": 12,
+      "pct": 13.2
+    },
+    {
+      "pattern": "case_random_cmd",
+      "count": 9,
+      "pct": 9.9
+    },
+    {
+      "pattern": "unicode_normalization",
+      "count": 7,
+      "pct": 7.7
+    },
+    {
+      "pattern": "multipart_boundary_sqli",
+      "count": 5,
+      "pct": 5.5
+    },
+    {
+      "pattern": "other:keyword_concat_split",
+      "count": 3,
+      "pct": 3.3
+    },
+    {
+      "pattern": "base64_fragment_sqli",
+      "count": 3,
+      "pct": 3.3
+    },
+    {
+      "pattern": "other:cisc_anomalousTraffic_test.txt",
+      "count": 3,
+      "pct": 3.3
+    },
+    {
+      "pattern": "unicode_escape_sqli",
+      "count": 3,
+      "pct": 3.3
     }
   ],
   "top_5_miss_patterns": [
     {
-      "pattern": "double_url_encode_cmd",
-      "count": 473,
-      "pct": 23.6
-    },
-    {
       "pattern": "null_byte_in_params",
-      "count": 277,
-      "pct": 13.8
-    },
-    {
-      "pattern": "unicode_escape_sqli",
-      "count": 253,
-      "pct": 12.7
+      "count": 29,
+      "pct": 31.9
     },
     {
       "pattern": "seclists_echo_shell",
-      "count": 240,
-      "pct": 12.0
+      "count": 12,
+      "pct": 13.2
     },
     {
-      "pattern": "multipart_boundary_sqli",
-      "count": 192,
-      "pct": 9.6
+      "pattern": "other:url_encode",
+      "count": 12,
+      "pct": 13.2
+    },
+    {
+      "pattern": "case_random_cmd",
+      "count": 9,
+      "pct": 9.9
+    },
+    {
+      "pattern": "unicode_normalization",
+      "count": 7,
+      "pct": 7.7
     }
   ],
   "score_diagnostics": {
     "kw_peak_distribution": {
-      "0.88": 694,
-      "0.95": 332,
-      "0.00": 278,
-      "0.97": 230,
-      "0.93": 204,
-      "0.98": 72,
-      "0.72": 60,
-      "0.64": 34,
-      "0.78": 30,
-      "0.47": 16
+      "0.95": 21,
+      "0.88": 20,
+      "0.00": 19,
+      "0.93": 13,
+      "0.97": 11,
+      "0.72": 2,
+      "0.47": 2,
+      "0.64": 1,
+      "0.58": 1,
+      "0.78": 1
     },
     "st_peak_distribution": {
-      "0.92": 594,
-      "0.00": 498,
-      "0.93": 391,
-      "0.96": 208,
-      "0.89": 162,
-      "0.74": 42,
-      "0.48": 31,
-      "0.64": 30,
-      "0.54": 13,
-      "0.68": 11
+      "0.00": 36,
+      "0.96": 22,
+      "0.89": 13,
+      "0.92": 7,
+      "0.55": 6,
+      "0.94": 3,
+      "0.74": 2,
+      "0.65": 1,
+      "0.49": 1
     },
     "fallback_would_catch": {
-      "total": 2000,
-      "caught": 1470,
-      "catch_rate_pct": 73.5,
+      "total": 91,
+      "caught": 54,
+      "catch_rate_pct": 59.3,
       "top_5_pattern_coverage": {
-        "double_url_encode_cmd": {
-          "total": 473,
-          "caught": 434,
-          "catch_rate_pct": 91.8
-        },
         "null_byte_in_params": {
-          "total": 277,
-          "caught": 276,
-          "catch_rate_pct": 99.6
-        },
-        "unicode_escape_sqli": {
-          "total": 253,
-          "caught": 200,
-          "catch_rate_pct": 79.1
+          "total": 29,
+          "caught": 22,
+          "catch_rate_pct": 75.9
         },
         "seclists_echo_shell": {
-          "total": 240,
-          "caught": 240,
+          "total": 12,
+          "caught": 12,
           "catch_rate_pct": 100.0
         },
-        "multipart_boundary_sqli": {
-          "total": 192,
-          "caught": 88,
-          "catch_rate_pct": 45.8
+        "other:url_encode": {
+          "total": 12,
+          "caught": 0,
+          "catch_rate_pct": 0.0
+        },
+        "case_random_cmd": {
+          "total": 9,
+          "caught": 8,
+          "catch_rate_pct": 88.9
+        },
+        "unicode_normalization": {
+          "total": 7,
+          "caught": 1,
+          "catch_rate_pct": 14.3
         }
       }
     }

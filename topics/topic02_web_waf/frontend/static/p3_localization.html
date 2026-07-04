@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P3 载荷定位 · IGA-Guard</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
+</head>
+<body>
+<div id="app">
+  <header class="iga-header">
+    <div>
+      <h1>IGA-Guard 3.0 · P3 载荷定位</h1>
+      <small id="iga-subtitle">WebSpotter 字段贡献 · 恶意片段高亮</small>
+    </div>
+    <span class="badge">v{{ version }} · {{ health }}</span>
+  </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
+
+  <div class="grid">
+    <div class="card span3">
+      <h2>检测与高亮</h2>
+      <div class="row">
+        <select v-model="method"><option>GET</option><option>POST</option></select>
+        <input v-model="url" style="flex:1;min-width:200px" />
+        <button @click="detect">定位</button>
+      </div>
+      <div v-if="result" style="margin-top:.75rem">
+        <p>
+          <strong :class="result.detection.is_malicious?'danger':'ok'">{{ result.detection.label }}</strong>
+          · token_range {{ result.explanation?.token_range }}
+        </p>
+        <div class="nl" v-if="result.explanation?.highlight_html">
+          <div v-html="result.explanation.highlight_html"></div>
+        </div>
+        <div class="nl" v-else-if="result.explanation?.natural_language" v-html="nlHtml"></div>
+        <div v-if="result.explanation?.heatmap?.length" style="margin-top:.5rem">
+          <p style="font-size:.75rem;color:#64748b">ASCII 热力</p>
+          <div class="mono" v-for="(line,i) in result.explanation.heatmap" :key="i">{{ line }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h2>字段贡献度 (WebSpotter)</h2>
+      <div id="contribChart" class="chart-lg"></div>
+      <p v-if="!hasFieldContributions" style="color:#64748b;font-size:.85rem">执行检测后显示各 HTTP 字段对判定的贡献</p>
+    </div>
+
+    <div class="card">
+      <h2>定位元数据</h2>
+      <div v-if="result?.explanation" class="nl" style="border-left-color:#8b5cf6">
+        <p>方法: {{ result.explanation.method }}</p>
+        <p>恶意字段: {{ result.explanation.malicious_field }}</p>
+        <p>片段: <code>{{ result.explanation.malicious_span }}</code></p>
+        <p>置信度: {{ (result.explanation.confidence*100).toFixed(1) }}%</p>
+      </div>
+      <p v-else style="color:#64748b;font-size:.85rem">等待检测…</p>
+    </div>
+  </div>
+</div>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      version: '3.0.0', health: '...', method: 'GET',
+      url: 'http://demo/login?id=1+union+select+1,2--', result: null, chart: null,
+    };
+  },
+  computed: {
+    nlHtml() {
+      return (this.result?.explanation?.natural_language || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    },
+    hasFieldContributions() {
+      const fc = this.result?.explanation?.field_contributions;
+      return fc && Object.keys(fc).length > 0;
+    },
+  },
+  mounted() {
+    igaMountShell('p3');
+    igaFetchHealth(this);
+    this.$nextTick(() => { this.chart = echarts.init(document.getElementById('contribChart')); });
+  },
+  methods: {
+    async detect() {
+      const r = await fetch('/api/detect', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: this.method, url: this.url }),
+      });
+      this.result = await r.json();
+      this.$nextTick(() => this.updateContribChart());
+    },
+    updateContribChart() {
+      if (!this.chart) return;
+      const fc = this.result?.explanation?.field_contributions || {};
+      const entries = Object.entries(fc).sort((a, b) => a[1] - b[1]);
+      if (!entries.length) { this.chart.clear(); return; }
+      this.chart.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+          formatter: (p) => `${p[0].name}<br/>贡献度: ${(p[0].value * 100).toFixed(1)}%` },
+        grid: { left: '28%', right: '8%', top: '4%', bottom: '4%', containLabel: true },
+        xAxis: { type: 'value', max: 1, axisLabel: { color: '#94a3b8', formatter: (v) => (v * 100).toFixed(0) + '%' } },
+        yAxis: { type: 'category', data: entries.map((e) => e[0]), axisLabel: { color: '#cbd5e1', fontSize: 11 } },
+        series: [{ type: 'bar', data: entries.map((e) => e[1]),
+          itemStyle: { color: (p) => (p.value >= 0.5 ? '#dc2626' : '#3b82f6') },
+          label: { show: true, position: 'right', color: '#94a3b8', formatter: (p) => (p.value * 100).toFixed(1) + '%' } }],
+      });
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

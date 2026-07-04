@@ -8,13 +8,21 @@ import csv
 import json
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from iga_guard import IgaGuardEngine
-from iga_guard.obfuscation_signals import OBFUSCATED_MARKERS, is_obfuscated
+from iga_guard.obfuscation_signals import is_obfuscated
 from iga_guard.pipeline import load_config
+
+
+def _eval_request(payload: str) -> tuple[str, str, str]:
+    """构造评测 HTTP 请求：含 &/换行/超长载荷走 POST body，避免 query 被截断。"""
+    if "&" in payload or "\n" in payload or "\r" in payload or len(payload) > 1800:
+        return "POST", "http://eval.local/test", payload
+    return "GET", f"http://eval.local/test?p={quote(payload, safe='')}", ""
 
 
 def main() -> None:
@@ -22,6 +30,10 @@ def main() -> None:
     parser.add_argument("--data", default=str(ROOT / "data" / "master" / "test_obfuscated.csv"))
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--output", default=str(ROOT / "results" / "v2_exp1_overall.json"))
+    parser.add_argument(
+        "--export-misses",
+        default=str(ROOT / "data" / "cache" / "eval_obf_misses.jsonl"),
+    )
     args = parser.parse_args()
     max_samples = args.max_samples if args.max_samples and args.max_samples > 0 else None
 
@@ -35,17 +47,33 @@ def main() -> None:
     normal_bin_true: list[bool] = []
     normal_bin_pred: list[bool] = []
 
+    misses_path = Path(args.export_misses)
+    misses_path.parent.mkdir(parents=True, exist_ok=True)
+    miss_rows: list[dict] = []
+
     with open(args.data, encoding="utf-8", newline="") as f:
         for i, row in enumerate(csv.DictReader(f)):
             if max_samples is not None and i >= max_samples:
                 break
             payload = row["payload"]
             label = row["label"]
-            url = f"http://eval.local/test?p={payload}"
-            report = engine.analyze_url("GET", url)
+            method, url, body = _eval_request(payload)
+            report = engine.analyze_url(method, url, body=body)
             pred = report.detection.label
             is_attack_pred = report.detection.is_malicious or pred != "Normal"
             is_attack_true = label != "Normal"
+
+            if (
+                is_obfuscated(payload)
+                and is_attack_true
+                and not is_attack_pred
+            ):
+                miss_rows.append({
+                    "payload": payload,
+                    "label": label,
+                    "source": row.get("source", ""),
+                    "pred": pred,
+                })
 
             y_true.append(label)
             y_pred.append(pred)
@@ -124,6 +152,10 @@ def main() -> None:
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+    with misses_path.open("w", encoding="utf-8") as mf:
+        for row in miss_rows:
+            mf.write(json.dumps(row, ensure_ascii=False) + "\n")
+    print(f"Exported {len(miss_rows)} obf misses -> {misses_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

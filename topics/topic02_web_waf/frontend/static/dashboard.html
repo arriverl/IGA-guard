@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IGA-Guard 2.0 安全防御大屏</title>
+  <title>IGA-Guard 3.0 安全防御大屏</title>
+  <link rel="stylesheet" href="/static/assets/common.css" />
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="/static/assets/iga-common.js"></script>
   <style>
     :root { --bg:#060a13; --card:#111827; --accent:#2563eb; --danger:#dc2626; --ok:#16a34a; --text:#f1f5f9; }
     *{box-sizing:border-box} body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--text)}
-    header{padding:1rem 1.5rem;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
-    .badge{background:#1e3a5f;padding:.2rem .6rem;border-radius:999px;font-size:.75rem}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;padding:1rem 1.5rem}
     .span2{grid-column:span 2} .span3{grid-column:span 3}
     .card{background:var(--card);border:1px solid #1f2937;border-radius:12px;padding:1rem}
@@ -49,13 +49,14 @@
 </head>
 <body>
 <div id="app">
-  <header>
+  <header class="iga-header">
     <div>
-      <h1 style="margin:0;font-size:1.25rem">IGA-Guard 2.0 · 可解释自演化 Web 安全防御系统</h1>
-      <small style="color:#64748b">Dual-Track · WebSpotter · Online RL</small>
+      <h1 style="margin:0;font-size:1.25rem">IGA-Guard 3.0 · 可解释自演化 Web 安全防御系统</h1>
+      <small id="iga-subtitle" style="color:#64748b">综合大屏 · Dual-Track · WebSpotter · Online RL</small>
     </div>
     <span class="badge">v{{ version }} · {{ health }}</span>
   </header>
+  <nav id="iga-nav" class="iga-nav"></nav>
 
   <div class="grid">
     <div class="card">
@@ -171,7 +172,7 @@
 const { createApp } = Vue;
 createApp({
   data(){return{
-    version:'2.0.0', health:'...', method:'GET',
+    version:'3.0.0', health:'...', method:'GET',
     url:'http://demo/login?id=1+union+select+1,2--',
     result:null, alerts:[], stats:{}, latency:{}, evoHistory:[],
     latencyHistory:[],
@@ -199,7 +200,8 @@ createApp({
     }
   },
   mounted(){
-    fetch('/api/health').then(r=>r.json()).then(d=>{this.health=d.status;this.version=d.version});
+    igaMountShell('dash');
+    igaFetchHealth(this);
     this.refresh(); this.charts= {};
     this.$nextTick(()=>{ this.initCharts(); setInterval(this.refresh, 8000); });
   },

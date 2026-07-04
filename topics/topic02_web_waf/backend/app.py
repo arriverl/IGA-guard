@@ -11,7 +11,9 @@ IGA-Guard 2.0 Flask REST API
   POST /api/obfuscate        — 对抗混淆变体生成
   POST /api/evolve           — 漏检样本 + base_train_csv 合并重训
   GET  /api/evolution/history — 自演化训练历史
-  GET  /                      — 前端大屏 dashboard.html
+  GET  /api/rules/virtual-patches — CVE 虚拟补丁库
+  POST /api/rules/match      — 载荷虚拟补丁匹配
+  GET  /                      — 六页导航 hub.html
 
 依赖：IgaGuardEngine（pipeline.py）+ OnlineRLController（阈值演化）
 """
@@ -155,6 +157,40 @@ def cache_stats():
 @app.get("/api/evolution/history")
 def evolution_history():
     return jsonify({"history": rl_controller.history()})
+
+
+@app.get("/api/rules/virtual-patches")
+def rules_virtual_patches():
+    from iga_guard.rules.virtual_patch import CVE_PATTERNS, export_virtual_patch_rule
+
+    patches = []
+    for cve_id, meta in CVE_PATTERNS.items():
+        stub = {
+            "cve_id": cve_id,
+            "name": meta["name"],
+            "label": meta["label"],
+            "pattern": meta["pattern"],
+            "action": "block",
+        }
+        patches.append({**stub, "modsecurity_preview": export_virtual_patch_rule(stub)})
+    return jsonify({"patches": patches, "count": len(patches)})
+
+
+@app.post("/api/rules/match")
+def rules_match():
+    from iga_guard.rules.virtual_patch import export_virtual_patch_rule, match_virtual_patch
+
+    data = request.get_json(force=True, silent=True) or {}
+    payload = data.get("payload", "")
+    if not payload:
+        return jsonify({"error": "payload required"}), 400
+    match = match_virtual_patch(payload)
+    if match is None:
+        return jsonify({"match": None})
+    return jsonify({"match": {**match, "modsecurity": export_virtual_patch_rule(match)}})
+
+
+@app.post("/api/feedback")
 def feedback():
     data = request.get_json(force=True, silent=True) or {}
     true_label = data.get("true_label", "SQLi")
@@ -267,7 +303,7 @@ def obfuscate():
 
 @app.get("/")
 def index():
-    return send_from_directory(app.static_folder, "dashboard.html")
+    return send_from_directory(app.static_folder, "hub.html")
 
 
 def create_app() -> Flask:
