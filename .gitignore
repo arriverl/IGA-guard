@@ -1,0 +1,17 @@
+# 竞赛提交打包产物（含模型，体积 >100MB，勿提交 GitHub）
+topics/topic02_web_waf/IGA-Guard3_submission.zip
+topics/topic02_web_waf/IGA-Guard3_submission/05_source_code.zip
+topics/topic02_web_waf/_pack_staging/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+tests/__pycache__/
+
+# 日志与临时
+*.log
+logs/

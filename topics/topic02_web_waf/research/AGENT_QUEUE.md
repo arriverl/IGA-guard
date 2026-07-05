@@ -31,6 +31,7 @@
 - [x] **已完成**: 混淆逃逸兜底 `obfuscated_evasion_rescue` + pipeline 恶意优先合并
 - [x] **已完成**: evaluate.py URL 编码/POST body 修复（含 `&` 载荷不再被 query 截断）
 - [x] **已完成**: 全量重评 n=19,411 → 混淆 **99.95%** / FPR **5.63%** / 漏检 **5**（`v2_exp1_overall.json`）
+- [x] **已完成**: 自我迭代闭环 `auto-evolve` — 漏检发现新手法 → 动态注册表 → 扩缓存/重训
 - [ ] **下一项**: FPR 压至 <3% + EXPERIMENT_REPORT 刷新
 
 ### Agent 4 · 数据集采集代理（新增）

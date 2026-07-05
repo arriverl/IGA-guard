@@ -262,6 +262,48 @@ def evolve():
     return jsonify({**result, "continual_cache": cache_result})
 
 
+@app.get("/api/llm/status")
+def llm_status():
+    from iga_guard.adversarial.llm_agent import LLMAdversarialAgent
+    cfg = load_config(ROOT / "configs" / "default.yaml")
+    agent = LLMAdversarialAgent(cfg.get("llm_agent", {}))
+    return jsonify(agent.status())
+
+
+@app.post("/api/auto-evolve")
+def auto_evolve_api():
+    """运行一轮自我迭代：检测 → 漏检发现新手法 → 可选扩缓存/重训。"""
+    from iga_guard.evolution.auto_evolve import AutoEvolveLoop
+
+    data = request.get_json(force=True, silent=True) or {}
+    cfg = load_config(ROOT / "configs" / "default.yaml")
+    ae_cfg = cfg.get("evolution", {}).get("auto_evolve", {})
+    rounds = min(int(data.get("rounds", ae_cfg.get("default_rounds", 1))), 5)
+    max_variants = min(int(data.get("max_variants", ae_cfg.get("max_variants_per_round", 100))), 500)
+    learn = data.get("learn", True)
+
+    loop = AutoEvolveLoop(ROOT)
+    results = loop.run(
+        rounds=rounds,
+        max_variants=max_variants,
+        learn_each_round=bool(learn),
+    )
+    summary = loop.summary(results)
+    summary["rounds_detail"] = [
+        {"round": r.round, "recall": r.recall, "missed": r.missed,
+         "new_techniques": r.new_techniques}
+        for r in results
+    ]
+    return jsonify(summary)
+
+
+@app.get("/api/techniques/discovered")
+def discovered_techniques():
+    from iga_guard.evolution.technique_registry import TechniqueRegistry
+    reg = TechniqueRegistry(str(ROOT / "data" / "cache" / "discovered_techniques.json"))
+    return jsonify({"stats": reg.stats(), "techniques": reg.techniques})
+
+
 @app.post("/api/obfuscate")
 def obfuscate():
     """混淆生成器 API：对输入载荷生成 mutator + AST + 社区手法变体。"""
@@ -283,6 +325,15 @@ def obfuscate():
         variants.append({"payload": v, "source": "ast"})
     for item in expand_payload(payload, label, n=count, seed=hash(payload) % (2**31)):
         variants.append({"payload": item["payload"], "source": item.get("source", "obfuscation")})
+
+    cfg = load_config(ROOT / "configs" / "default.yaml")
+    llm_cfg = cfg.get("llm_agent", {})
+    if llm_cfg.get("enabled") or data.get("use_llm"):
+        from iga_guard.adversarial.llm_agent import LLMAdversarialAgent
+        agent = LLMAdversarialAgent(llm_cfg)
+        if agent.available():
+            for v in agent.generate_variants(payload, label, n=min(count, 6)):
+                variants.append({"payload": v, "source": "llm"})
 
     seen: set[str] = set()
     out: list[dict] = []

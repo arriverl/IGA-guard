@@ -97,6 +97,21 @@ def cmd_adversarial(args: argparse.Namespace) -> int:
     return _run(cmd, f"对抗演化 {args.rounds} 轮")
 
 
+def cmd_auto_evolve(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py, "scripts/auto_evolve.py",
+        "--rounds", str(args.rounds),
+        "--max-variants", str(args.max_variants),
+        "--variants-per-seed", str(args.variants_per_seed),
+    ]
+    if args.no_learn:
+        cmd.append("--no-learn")
+    if args.use_llm:
+        cmd.append("--use-llm")
+    return _run(cmd, f"自我迭代演化 {args.rounds} 轮")
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     py = sys.executable
     print(f"\n>>> Web 大屏: http://127.0.0.1:{args.port}/")
@@ -256,6 +271,14 @@ def main() -> int:
     p_adv.add_argument("--max-seeds", type=int, default=150)
     p_adv.add_argument("--max-variants", type=int, default=3000)
     p_adv.set_defaults(func=cmd_adversarial)
+
+    p_ae = sub.add_parser("auto-evolve", help="自我迭代：发现新手法+更新检测器")
+    p_ae.add_argument("--rounds", type=int, default=2)
+    p_ae.add_argument("--max-variants", type=int, default=100)
+    p_ae.add_argument("--variants-per-seed", type=int, default=3)
+    p_ae.add_argument("--no-learn", action="store_true")
+    p_ae.add_argument("--use-llm", action="store_true", help="启用 Ollama/LLM 自主迭代")
+    p_ae.set_defaults(func=cmd_auto_evolve)
 
     p_srv = sub.add_parser("serve", help="启动 Web")
     p_srv.add_argument("--port", type=int, default=5000)

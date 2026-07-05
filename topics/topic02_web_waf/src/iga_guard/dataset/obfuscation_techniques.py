@@ -101,8 +101,16 @@ NEW_TECHNIQUES_V31: frozenset[str] = frozenset({
 
 
 def apply_technique(payload: str, technique: str, rng: random.Random | None = None) -> str:
-    """对单条载荷应用指定混淆技术。"""
+    """对单条载荷应用指定混淆技术（含动态 discovered 手法）。"""
     r = rng or random.Random()
+    # 动态注册表优先
+    try:
+        from iga_guard.evolution.technique_registry import TechniqueRegistry
+        reg = TechniqueRegistry()
+        if technique in reg.techniques:
+            return reg.apply(payload, technique, r)
+    except Exception:
+        pass
     fn = _DISPATCH.get(technique)
     if fn is None:
         return payload

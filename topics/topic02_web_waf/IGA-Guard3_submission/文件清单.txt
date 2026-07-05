@@ -1,0 +1,23 @@
+IGA-Guard 3.0 竞赛提交包
+生成时间: 2026-07-04 18:02:22
+
+文件列表:
+  - 05_source_code.zip (374796.5 KB)
+  - 交付物清单.md (3.8 KB)
+  - 作品报告.md (15.7 KB)
+  - 原创性声明.svg (5.6 KB)
+  - 原创性声明说明.md (1.0 KB)
+  - 测试报告.md (10.0 KB)
+  - 演示说明.txt (1.3 KB)
+  - 运行说明.md (5.8 KB)
+
+待手动完成:
+  [ ] 将 作品报告.md 导出为 PDF
+  [ ] 打印 原创性声明.svg → 签字盖章 → 扫描为 PDF
+  [ ] 将 运行说明.md、测试报告.md 导出为 PDF
+
+核心指标 (results/v2_exp1_overall.json):
+  混淆 Recall: 99.95%
+  混淆 Precision: 100%
+  Normal FPR: 5.63%
+  P50 延迟: 2.92ms

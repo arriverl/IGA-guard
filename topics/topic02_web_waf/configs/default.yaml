@@ -51,6 +51,13 @@ evolution:
   failure_augment: 2
   online_rl_enabled: true
   learning_rate: 0.05
+  # 自我迭代：漏检 → 发现新手法 → 扩缓存 → 增量重训
+  auto_evolve:
+    enabled: true
+    registry_path: "data/cache/discovered_techniques.json"
+    history_path: "data/cache/auto_evolve_history.jsonl"
+    default_rounds: 2
+    max_variants_per_round: 200
 
 # Tip-Adapter 风格持续学习缓存（冻结编码器 + 动态 KV 库）
 continual_cache:
@@ -92,10 +99,16 @@ multimodal:
   byte_grid: [32, 64]
 
 llm_agent:
-  enabled: false
-  provider: "qwen"
-  api_base: ""
-  api_key_env: "IGA_LLM_API_KEY"
+  enabled: false                    # 设为 true 启用 LLM 自主迭代
+  provider: "ollama"                # ollama（本地小模型）| openai_compatible（DashScope/OpenAI）
+  model: "qwen2.5:0.5b"             # 推荐小模型: qwen2.5:0.5b / qwen2.5:1.5b / phi3:mini / gemma2:2b
+  api_base: "http://127.0.0.1:11434"
+  api_key_env: "IGA_LLM_API_KEY"    # Ollama 本地通常不需要；云端 API 必填
+  timeout_sec: 90
+  temperature: 0.85
+  max_tokens: 512
+  max_variants_per_call: 4
+  autonomous: true                  # 漏检反馈驱动下一轮生成
 
 explanation:
   nl_enabled: true

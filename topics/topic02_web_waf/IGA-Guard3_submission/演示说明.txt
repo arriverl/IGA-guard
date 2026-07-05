@@ -1,0 +1,36 @@
+IGA-Guard 3.0 快速演示说明
+============================
+
+一、环境准备
+  cd topics\topic02_web_waf
+  pip install -r requirements.txt
+  set PYTHONPATH=src          (Windows CMD)
+  $env:PYTHONPATH="src"      (PowerShell)
+
+二、启动服务
+  python scripts/iga_system.py serve
+  浏览器打开: http://127.0.0.1:5000/
+
+三、功能演示（3分钟）
+  1. 首页 hub → 点击「P1 实时监控」
+  2. 输入恶意 URL: http://test/login?id=1+union+select+1,2--
+     → 查看告警流出现 SQLi 告警
+  3. 点击「P2 检测详情」→ 查看红色高亮定位
+  4. 打开 dashboard.html → 查看攻击分布与延迟指标
+  5. 命令行检测:
+     python scripts/detect.py --url "http://x/?p=<script>alert(1)</script>" --json
+
+四、核心指标（全量评测 n=19,411）
+  混淆 Recall: 99.95%  |  Precision: 100%
+  Normal FPR:  5.63%   |  P50 延迟: 2.92ms
+  定位 IoU 提升: +37.9%
+
+五、测试验证
+  python -m pytest tests/ -v     → 预期 32 passed
+  python scripts/iga_system.py evaluate  → 重跑全量评测
+
+六、文档位置
+  作品报告: submission/作品报告.md
+  测试报告: submission/测试报告.md
+  运行说明: submission/运行说明.md
+  交付清单: submission/交付物清单.md
