@@ -1,0 +1,123 @@
+{
+  "rag_stats": {
+    "chunks": 1237,
+    "categories": {
+      "literature": 153,
+      "dataset": 6,
+      "architecture": 136,
+      "community": 55,
+      "miss_pattern": 886,
+      "technique": 1
+    },
+    "encoder": "st",
+    "dim": 384
+  },
+  "agents": [
+    {
+      "agent": "intel",
+      "rag_hits": [
+        {
+          "query": "WAFFLED 协议层绕过 HPP JSON multipart",
+          "category": "community",
+          "score": 0.605,
+          "preview": "### 2.4 HTTP 协议层 / 结构绕过（2024–2025 爆发，WAFFLED 类，占 ~15%）\n\n| 手法 | 典型场景 | 绕过原理 | 文献/社区来源 |\n|------|----------|----------|---------------|\n| **HPP 参数污染** | `id=1&id=payload` | WAF 取首值、后端取末值 | FreeBuf 多篇 WA"
+        },
+        {
+          "query": "WAFFLED 协议层绕过 HPP JSON multipart",
+          "category": "architecture",
+          "score": 0.509,
+          "preview": "### P1 · WAFFLED 协议规范化轨（难度：中）\n\n| 项 | 内容 |\n|----|------|\n| **论文依据** | WAFFLED (arXiv 2025)：90%+ 绕过来自 **解析不一致**，非 payload 语义 |\n| **做法** | 在 `collector/protocol.py` 增加：HPP 双值解析、JSON 深层键展开、multipart 边界模拟；"
+        },
+        {
+          "query": "ModSec-AdvLearn 对抗学习 SQLi 混淆",
+          "category": "literature",
+          "score": 0.594,
+          "preview": "### 对抗场景（ModSec-AdvLearn, 2023）\n\n| 场景 | Vanilla PL4 TPR @ 1% FPR |\n|------|--------------------------|\n| 干净 SQLi 测试集 | ~68% |\n| 对抗 SQLi 测试集 | **<50%**（低于随机） |"
+        },
+        {
+          "query": "ModSec-AdvLearn 对抗学习 SQLi 混淆",
+          "category": "literature",
+          "score": 0.591,
+          "preview": "## 05-A · ModSec-AdvLearn — CRS 对抗训练加固（IEEE TIFS 2025）\n\n**标题**：ModSec-AdvLearn: Countering Adversarial SQL Injections with Robust Machine Learning  \n**作者**：Floris, Scano, Montaruli, Demetrio, Valenza,"
+        },
+        {
+          "query": "base64_fragment eval atob 混淆逃逸",
+          "category": "miss_pattern",
+          "score": 0.678,
+          "preview": "漏检样本 真实标签=SQLi 预测=Normal 来源=obfuscation:base64_fragment\n载荷: eval(atob('ZXJyb3JNc2c9cGFyb3MlMjIrc3R5bGUlM0QlMjJiYWNrZ3JvdW5kJQ=='))3Aurl%28javascript%3Aalert%28%27Paros%27%29%29&id=2\n分析提示: 该变种绕过了当前检测，需"
+        },
+        {
+          "query": "base64_fragment eval atob 混淆逃逸",
+          "category": "miss_pattern",
+          "score": 0.673,
+          "preview": "漏检样本 真实标签=SQLi 预测=Normal 来源=obfuscation:base64_fragment\n载荷: eval(atob('bW9kbz1lbnRyYXImbG9naW49YnJlZ2xlYyZwd2Q9YWxFR3Lvv71uJnJl'))member=on/&B1=Entrar\n分析提示: 该变种绕过了当前检测，需加强对应混淆手法规则。"
+        }
+      ]
+    },
+    {
+      "agent": "architecture",
+      "recommendations": [
+        "加强 eval(atob) 碎片拼接检测，避免 CSIC 护栏覆盖",
+        "扩展 P1 协议轨 multipart 边界解析权重"
+      ],
+      "rag_context_len": 2650
+    },
+    {
+      "agent": "engineering",
+      "new_techniques": [
+        "discovered_insert_null_byte_3",
+        "discovered_deep_inline_comment_4"
+      ],
+      "registry": {
+        "total": 5,
+        "templates": [
+          "deep_inline_comment",
+          "double_url_encode_plus",
+          "insert_null_byte",
+          "mixed_case_burst",
+          "zero_width_inject"
+        ],
+        "path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\discovered_techniques.json"
+      }
+    },
+    {
+      "agent": "dataset",
+      "expansion_hints": [
+        "## 合并到 master 数据集\n\n`dataset_agent.py` 合并顺序：\n\n```\nseed → public (SecLists/FuzzDB/PAT) → community → CSIC\n```\n\n产出：`data/master/full.csv`（去重基线）、`full_obfuscated.csv`（混淆扩充）。",
+        "## 数据源（全部真实，非模拟）\n\n| 来源 | 类型 | 路径 |\n|------|------|------|\n| **CSIC 2010** | 真实 HTTP 电商流量（GSI 标注版） | `data/raw/csic/cisc_*.txt` |\n| **SecLists** | 社区维护渗透测试字典 | `data/raw/public/seclists/` |\n| **FuzzDB** | 开源攻击载荷库 | `data/raw/public/fuzzdb/` |\n| **PayloadsAllTheThings** | OWASP 风格实战 Payload | `data/ra"
+      ]
+    }
+  ],
+  "miss_breakdown": {
+    "SQLi": 17,
+    "multipart": 4,
+    "CMD": 9
+  },
+  "evolution": {
+    "rounds": [
+      {
+        "round": 1,
+        "recall": 0.975,
+        "missed": 1,
+        "new_techniques": []
+      }
+    ],
+    "final_recall": 0.975,
+    "total_new_techniques": 0,
+    "registry": {
+      "total": 5,
+      "templates": [
+        "deep_inline_comment",
+        "double_url_encode_plus",
+        "insert_null_byte",
+        "mixed_case_burst",
+        "zero_width_inject"
+      ],
+      "path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\discovered_techniques.json"
+    },
+    "llm": {
+      "enabled": false
+    },
+    "history": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\auto_evolve_history.jsonl"
+  }
+}

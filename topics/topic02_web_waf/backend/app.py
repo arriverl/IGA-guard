@@ -270,6 +270,37 @@ def llm_status():
     return jsonify(agent.status())
 
 
+@app.get("/api/rag/status")
+def rag_status():
+    from iga_guard.rag.index import KnowledgeIndex
+    idx = KnowledgeIndex.load(ROOT / "data" / "cache" / "rag_index.npz")
+    return jsonify(idx.stats() if idx.chunks else {"chunks": 0, "hint": "run scripts/build_rag_index.py"})
+
+
+@app.get("/api/rag/search")
+def rag_search():
+    from iga_guard.rag.retriever import RagRetriever
+    q = request.args.get("q", "")
+    top_k = min(int(request.args.get("top_k", 5)), 15)
+    if not q:
+        return jsonify({"error": "q required"}), 400
+    retriever = RagRetriever(root=ROOT)
+    hits = retriever.retrieve(q, top_k=top_k)
+    return jsonify({
+        "query": q,
+        "hits": [{"score": s, "category": c, "preview": t[:400]} for t, s, c in hits],
+    })
+
+
+@app.post("/api/rag/rebuild")
+def rag_rebuild():
+    from iga_guard.rag.index import KnowledgeIndex
+    idx = KnowledgeIndex()
+    n = idx.build(ROOT)
+    idx.save(ROOT / "data" / "cache" / "rag_index.npz")
+    return jsonify({"chunks": n, "stats": idx.stats()})
+
+
 @app.post("/api/auto-evolve")
 def auto_evolve_api():
     """运行一轮自我迭代：检测 → 漏检发现新手法 → 可选扩缓存/重训。"""

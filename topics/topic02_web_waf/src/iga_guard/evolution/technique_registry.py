@@ -58,6 +58,12 @@ _TEMPLATE_DISPATCH: dict[str, TransformFn] = {
     "zero_width_inject": _zero_width_inject,
     "mixed_case_burst": _mixed_case_burst,
     "hex_wrap_keywords": _hex_wrap_keywords,
+    "md5_hex32_camouflage": lambda s, r: __import__(
+        "iga_guard.dataset.obfuscation_techniques", fromlist=["apply_technique"]
+    ).apply_technique(s, "md5_hex32_camouflage", r),
+    "json_null_in_key": lambda s, r: __import__(
+        "iga_guard.dataset.obfuscation_techniques", fromlist=["apply_technique"]
+    ).apply_technique(s, "json_null_in_key", r),
 }
 
 
@@ -103,7 +109,12 @@ class TechniqueRegistry:
             self.save()
             return False
         if template not in _TEMPLATE_DISPATCH:
-            return False
+            try:
+                from iga_guard.dataset.obfuscation_techniques import _DISPATCH
+                if template not in _DISPATCH:
+                    return False
+            except Exception:
+                return False
         self.techniques[name] = {
             "template": template,
             "attack_types": attack_types,
@@ -122,7 +133,11 @@ class TechniqueRegistry:
             return payload
         fn = _TEMPLATE_DISPATCH.get(meta["template"])
         if fn is None:
-            return payload
+            try:
+                from iga_guard.dataset.obfuscation_techniques import apply_technique
+                return apply_technique(payload, meta["template"], r)
+            except Exception:
+                return payload
         try:
             meta["use_count"] = meta.get("use_count", 0) + 1
             return fn(payload, r)

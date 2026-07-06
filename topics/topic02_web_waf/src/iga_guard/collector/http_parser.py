@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from urllib.parse import parse_qs, unquote_plus, urlparse
 
+from iga_guard.collector.protocol_normalize import iter_normalized_parts, protocol_anomaly_score
 from iga_guard.models import HttpRequest
 
 
@@ -74,7 +75,20 @@ def iter_payload_parts(req: HttpRequest) -> list[tuple[str, str, str]]:
                 for val in values:
                     parts.append(("form", key, val))
 
+    # P1：WAFFLED 协议轨 — 深层 JSON / multipart / HPP 全值展开
+    seen = {(loc, fld, val) for loc, fld, val in parts}
+    for loc, fld, val in iter_normalized_parts(req):
+        key = (loc, fld, val)
+        if key not in seen:
+            parts.append(key)
+            seen.add(key)
+
     return parts
+
+
+def protocol_score(req: HttpRequest) -> float:
+    """请求级协议异常分（供融合检测加权）。"""
+    return protocol_anomaly_score(req)
 
 
 def _looks_like_payload(segment: str) -> bool:

@@ -1,0 +1,56 @@
+{
+  "baseline": "OWASP_CRS_PL4_subset_offline",
+  "data": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\test_obfuscated.csv",
+  "overall": {
+    "detection_recall": 0.4541,
+    "detection_precision": 1.0,
+    "false_positive_rate": 0.0,
+    "tp": 6967,
+    "fp": 0,
+    "fn": 8376,
+    "tn": 4068,
+    "samples": 19411
+  },
+  "obfuscated_attack_subset": {
+    "detection_recall": 0.54,
+    "detection_precision": 1.0,
+    "false_positive_rate": 0,
+    "tp": 5579,
+    "fp": 0,
+    "fn": 4752,
+    "tn": 0,
+    "samples": 10331
+  },
+  "normal_subset": {
+    "detection_recall": 0,
+    "detection_precision": 0,
+    "false_positive_rate": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 4068,
+    "samples": 4068
+  },
+  "top_rules": {
+    "932110": 4732,
+    "942120": 2985,
+    "942130": 662,
+    "942140": 662,
+    "942150": 366,
+    "932120": 206,
+    "941140": 88,
+    "941100": 78,
+    "941110": 33,
+    "932100": 17,
+    "941120": 12,
+    "941130": 8
+  },
+  "comparison_vs_iga_guard": {
+    "iga_obf_recall": 0.9995,
+    "crs_obf_recall": 0.54,
+    "iga_fpr": 0.0167,
+    "crs_fpr": 0.0,
+    "iga_overall_recall": 0.8191,
+    "crs_overall_recall": 0.4541
+  }
+}

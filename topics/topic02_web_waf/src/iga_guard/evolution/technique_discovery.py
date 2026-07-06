@@ -15,6 +15,7 @@ _HEURISTICS: list[tuple[str, str, str]] = [
     (r"/\*.*?\*/", "deep_inline_comment", "discovered_comment"),
     (r"[\u200b-\u200d\ufeff]", "zero_width_inject", "discovered_zero_width"),
     (r"0x[0-9a-fA-F]{2,}", "hex_wrap_keywords", "discovered_hex_wrap"),
+    (r"^[0-9a-fA-F]{32}$", "md5_hex32_camouflage", "discovered_hex32"),
 ]
 
 

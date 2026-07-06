@@ -234,6 +234,20 @@ def cmd_compare_multimodal(args: argparse.Namespace) -> int:
     return _run(cmd, "全量多模态对比评估")
 
 
+def cmd_rag_build(_: argparse.Namespace) -> int:
+    return _run([sys.executable, "scripts/build_rag_index.py"], "构建 RAG 知识索引")
+
+
+def cmd_rag_cycle(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [py, "scripts/rag_agent_cycle.py", "--rounds", str(args.rounds), "--max-variants", str(args.max_variants)]
+    if args.build_index:
+        cmd.append("--build-index")
+    if args.use_llm:
+        cmd.append("--use-llm")
+    return _run(cmd, "RAG 多 Agent 深挖循环")
+
+
 def cmd_pipeline(args: argparse.Namespace) -> int:
     if cmd_dataset(args) != 0:
         return 1
@@ -325,6 +339,16 @@ def main() -> int:
     p_cmp.add_argument("--data", default=None)
     p_cmp.add_argument("--output", default=None)
     p_cmp.set_defaults(func=cmd_compare_multimodal)
+
+    p_rag = sub.add_parser("rag-build", help="构建 RAG 知识索引（文献+漏检+社区）")
+    p_rag.set_defaults(func=cmd_rag_build)
+
+    p_ragc = sub.add_parser("rag-cycle", help="RAG 增强多 Agent 深挖 + 演化")
+    p_ragc.add_argument("--build-index", action="store_true")
+    p_ragc.add_argument("--rounds", type=int, default=2)
+    p_ragc.add_argument("--max-variants", type=int, default=80)
+    p_ragc.add_argument("--use-llm", action="store_true")
+    p_ragc.set_defaults(func=cmd_rag_cycle)
 
     p_aug = sub.add_parser("augment-v3", help="v3.1 新混淆技术扩训练集")
     p_aug.add_argument("--data", default=None)

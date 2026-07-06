@@ -30,9 +30,29 @@
 - [x] **已完成**: 前端六页拆分 → `frontend/static/p1_monitor.html` … `p6_rules.html` + `hub.html`
 - [x] **已完成**: 混淆逃逸兜底 `obfuscated_evasion_rescue` + pipeline 恶意优先合并
 - [x] **已完成**: evaluate.py URL 编码/POST body 修复（含 `&` 载荷不再被 query 截断）
-- [x] **已完成**: 全量重评 n=19,411 → 混淆 **99.95%** / FPR **5.63%** / 漏检 **5**（`v2_exp1_overall.json`）
-- [x] **已完成**: 自我迭代闭环 `auto-evolve` — 漏检发现新手法 → 动态注册表 → 扩缓存/重训
-- [ ] **下一项**: FPR 压至 <3% + EXPERIMENT_REPORT 刷新
+- [x] **已完成**: 全量重评 n=19,411 → 混淆 **99.85%** / FPR **1.11%** / 漏检 **15**（P0 护栏，`v2_exp1_overall.json`）
+- [x] **已完成**: P8 ModSec CRS 离线基线 → `research/baselines/run_modsec.py` + `v2_exp8_modsec_baseline.json`（混淆 Recall 54%）
+- [x] **已完成**: P1 协议轨骨架 → `protocol_normalize.py` + `test_protocol_normalize.py`
+- [x] **已完成**: P2 E9 红队脚本 → `scripts/run_llm_redteam.py` + `v2_exp9_llm_redteam.json`
+- [x] **已完成**: **RAG 知识检索** → `src/iga_guard/rag/` + `scripts/build_rag_index.py` + `scripts/rag_agent_cycle.py`
+- [x] **已完成**: P5 手法 DSL → `technique_dsl.py` + `scripts/register_techniques_dsl.py`
+- [ ] **下一项**: `python scripts/iga_system.py rag-cycle --build-index` 全量深挖 + Ollama LLM 红队
+
+## RAG + 多 Agent 启动命令
+
+```powershell
+cd topics/topic02_web_waf
+# 1. 构建知识索引（文献 28 篇 + 漏检 + 社区情报）
+python scripts/iga_system.py rag-build
+
+# 2. RAG 四 Agent 深挖 + 演化闭环（无 LLM 可快速跑）
+python scripts/iga_system.py rag-cycle --build-index --rounds 2 --max-variants 100
+
+# 3. 接入 Ollama 后 RAG+LLM 红队
+python scripts/iga_system.py rag-cycle --use-llm --rounds 3
+
+# API: GET /api/rag/search?q=base64+atob  |  POST /api/rag/rebuild
+```
 
 ### Agent 4 · 数据集采集代理（新增）
 - [x] **核心库** `src/iga_guard/dataset/` — CSIC 解析、公开源拉取、20+ 混淆技术、合并划分

@@ -1,0 +1,45 @@
+{
+  "experiment": "E9_llm_redteam",
+  "llm_enabled": false,
+  "llm_status": null,
+  "rounds": 3,
+  "max_variants": 150,
+  "total_variants": 116,
+  "total_detected": 89,
+  "total_missed": 27,
+  "final_round_recall": 0.6604,
+  "pooled_recall": 0.7672,
+  "avg_recall": 0.7672,
+  "new_techniques_discovered": 2,
+  "rounds_detail": [
+    {
+      "round": 1,
+      "total": 45,
+      "detected": 43,
+      "missed": 2,
+      "recall": 0.9556,
+      "new_techniques": []
+    },
+    {
+      "round": 2,
+      "total": 18,
+      "detected": 11,
+      "missed": 7,
+      "recall": 0.6111,
+      "new_techniques": []
+    },
+    {
+      "round": 3,
+      "total": 53,
+      "detected": 35,
+      "missed": 18,
+      "recall": 0.6604,
+      "new_techniques": [
+        "discovered_double_url_encode_plus_1",
+        "discovered_zero_width_inject_2"
+      ]
+    }
+  ],
+  "target": "LLM-Evasion Recall > 95%",
+  "passed": false
+}

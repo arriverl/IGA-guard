@@ -25,7 +25,7 @@ from pathlib import Path
 
 import yaml
 
-from iga_guard.collector.http_parser import iter_payload_parts, parse_http_request
+from iga_guard.collector.http_parser import iter_payload_parts, parse_http_request, protocol_score
 from iga_guard.collector.timeseries_buffer import TimeSeriesBuffer
 from iga_guard.detector.dual_track import DualTrackDetector
 from iga_guard.detector.fusion_model import FusionDetector
@@ -34,6 +34,7 @@ from iga_guard.explainer.webspotter import webspotter_explain
 from iga_guard.models import DetectionResult, GuardReport, HttpRequest, NormalizedPayload, build_highlight_html
 from iga_guard.normalizer import normalize_payload
 from iga_guard.rules import generate_rule
+from iga_guard.obfuscation_signals import is_benign_traffic_context
 from iga_guard.rules.virtual_patch import export_virtual_patch_rule, match_virtual_patch
 
 # 置信度超过此阈值且判定为恶意时，跳过后续 payload 字段检测（降低延迟）
@@ -142,6 +143,38 @@ class IgaGuardEngine:
                 label="Normal", confidence=1.0, risk_level="low", is_malicious=False,
             )
             best_payload = _cached_normalize(req.url, "", "query", self.max_decode_rounds)
+
+        # P0：整请求聚合良性上下文（CSIC 表单/地址）→ 压多字段误报
+        aggregate = (req.body or "").strip()
+        if not aggregate and "?" in req.url:
+            from urllib.parse import urlparse
+            aggregate = urlparse(req.url).query
+        if aggregate and is_benign_traffic_context(aggregate, aggregate.lower()):
+            best_detection = DetectionResult(
+                label="Normal",
+                confidence=max(best_detection.all_probs.get("Normal", 0.0), 0.88),
+                risk_level="low",
+                is_malicious=False,
+                all_probs={**best_detection.all_probs, "Normal": 0.88},
+            )
+
+        # P1：协议异常分加权（WAFFLED 轨，与载荷检测正交）
+        pscore = protocol_score(req)
+        if pscore >= 0.3 and not best_detection.is_malicious:
+            atk = max(
+                (lb for lb in best_detection.all_probs if lb != "Normal"),
+                key=lambda lb: best_detection.all_probs.get(lb, 0.0),
+                default="SQLi",
+            )
+            boosted = min(0.85, best_detection.confidence + pscore * 0.25)
+            if boosted >= self.detector.confidence_threshold:
+                best_detection = DetectionResult(
+                    label=atk,
+                    confidence=boosted,
+                    risk_level="high",
+                    is_malicious=True,
+                    all_probs={**best_detection.all_probs, atk: boosted},
+                )
 
         best_detection.latency_ms = (time.perf_counter() - t0) * 1000
 

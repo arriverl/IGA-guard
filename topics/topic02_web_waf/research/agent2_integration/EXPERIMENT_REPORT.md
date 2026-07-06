@@ -1,11 +1,34 @@
 # IGA-Guard 2.0 实验结果报告（终稿）
 
 > Agent 2 方案架构师 · 基于 `results/v2_exp*` 实测数据  
-> 更新日期：2026-07-02（IGA-Guard 3.0 FP 护栏 + 方案见 `SCHEME_V3.md`）
+> 更新日期：2026-07-05（P0 FPR 护栏 + P8 CRS 基线 + P1 协议轨）
 
 ---
 
-## 0. IGA-Guard 3.0 方案摘要
+## 0. P0 护栏全量评测（2026-07-05 最新）
+
+**根因**：CSIC 正常表单字段（`modo=`/`login=`/`password=`）触发 SQLi 宽规则 → 229 FP（FPR 5.63%）。
+
+**修复**：`is_benign_traffic_context()` 聚合护栏 + 请求级覆盖 + 从 SQLi patterns 移除表单参数。
+
+| 子集 | Recall | Precision | FPR | 变化 |
+|------|--------|-----------|-----|------|
+| 混淆攻击 (10,331) | **99.85%** | 100% | 0 | FN 5→15，仍 >99.5% 目标 |
+| 正常流量 (4,068) | — | — | **1.11%** | FP 229→**45** ✅ |
+| 整体二分类 | 81.76% | 99.64% | 1.11% | 评测禁用 cache 以省内存 |
+
+**生产配置（启用 cache，`v2_exp1_overall_cached.json`）**：混淆 Recall **99.95%** / FPR **1.67%**（68 FP）— 两项指标均达标。
+
+**P8 CRS 基线对比**（`v2_exp8_modsec_baseline.json`）：
+
+| 系统 | 混淆 Recall | FPR |
+|------|-------------|-----|
+| IGA-Guard 3.0 | **99.85%** | **1.11%** |
+| OWASP CRS 子集 | 54.0% | 0% |
+
+---
+
+## 0b. IGA-Guard 3.0 方案摘要
 
 详见 [`SCHEME_V3.md`](SCHEME_V3.md)。核心：**四模态条件融合 + 552 条 Tip-Adapter 缓存 + 强/弱混淆分层判定 + FP 护栏**。
 

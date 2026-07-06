@@ -1,0 +1,120 @@
+{
+  "total_normal": 1076,
+  "fp_count": 15,
+  "fpr": 0.0139,
+  "by_category": {
+    "other_SQLi": 13,
+    "other_Normal": 2
+  },
+  "by_predicted_label": {
+    "SQLi": 13,
+    "Normal": 2
+  },
+  "samples": [
+    {
+      "payload": "Pla�a+Pau+Picasso,+88,+",
+      "pred": "SQLi",
+      "confidence": 0.5096,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "C/+Bascu�ana+52,+5-E",
+      "pred": "Normal",
+      "confidence": 0.5455,
+      "category": "other_Normal",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "Calle+Miguel+Lopez+De+Legazpi,+48,+8F",
+      "pred": "SQLi",
+      "confidence": 0.3611,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "C/+Font+Flavia,+14,+6C",
+      "pred": "SQLi",
+      "confidence": 0.3555,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "Travesia+Bazan,+S/N,+4-H",
+      "pred": "SQLi",
+      "confidence": 0.5462,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_test.txt"
+    },
+    {
+      "payload": "C/+San+Pascual+Bailon+142+2?F",
+      "pred": "SQLi",
+      "confidence": 0.3676,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_test.txt"
+    },
+    {
+      "payload": "Avenida+Municipal,+157,+10?E",
+      "pred": "SQLi",
+      "confidence": 0.3354,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_test.txt"
+    },
+    {
+      "payload": "C/+Cuenca+S/N+",
+      "pred": "SQLi",
+      "confidence": 0.5954,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "C/+Luis+Llorente,+S/N,+11?G",
+      "pred": "SQLi",
+      "confidence": 0.5999,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_test.txt"
+    },
+    {
+      "payload": "Passeig+De+Monjo+102,+11?A",
+      "pred": "SQLi",
+      "confidence": 0.3551,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "foody@cup-id.sd",
+      "pred": "SQLi",
+      "confidence": 0.6004,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "98p+e",
+      "pred": "Normal",
+      "confidence": 0.5486,
+      "category": "other_Normal",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "67",
+      "pred": "SQLi",
+      "confidence": 0.5533,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "Cami+Sant+Cugat+Al+Papiol+59,+",
+      "pred": "SQLi",
+      "confidence": 0.3554,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_train.txt"
+    },
+    {
+      "payload": "CoLipavA",
+      "pred": "SQLi",
+      "confidence": 0.3449,
+      "category": "other_SQLi",
+      "source": "csic_gsi:cisc_normalTraffic_test.txt"
+    }
+  ]
+}

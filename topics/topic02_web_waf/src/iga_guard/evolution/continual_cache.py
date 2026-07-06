@@ -127,6 +127,34 @@ class ContinualCacheAdapter:
         self.use_vision_keys = use_vision_keys
         self._vision_encoder = None
         self._entries: list[CacheEntry] = []
+        self._keys_matrix: np.ndarray | None = None
+        self._vision_matrix: np.ndarray | None = None
+
+    def _invalidate_matrices(self) -> None:
+        self._keys_matrix = None
+        self._vision_matrix = None
+
+    def _get_keys_matrix(self) -> np.ndarray:
+        if self._keys_matrix is None and self._entries:
+            self._keys_matrix = np.stack([e.key for e in self._entries], axis=0)
+        return self._keys_matrix if self._keys_matrix is not None else np.zeros((0, self.encoder.dim), dtype=np.float32)
+
+    def _get_vision_matrix(self, vision: np.ndarray) -> tuple[np.ndarray, list[bool]]:
+        if self._vision_matrix is not None:
+            vmask = [e.vision_key is not None for e in self._entries]
+            return self._vision_matrix, vmask
+        vkeys: list[np.ndarray] = []
+        vmask: list[bool] = []
+        for e in self._entries:
+            if e.vision_key is not None:
+                vkeys.append(e.vision_key)
+                vmask.append(True)
+            else:
+                vkeys.append(np.zeros_like(vision))
+                vmask.append(False)
+        if vkeys:
+            self._vision_matrix = np.stack(vkeys, axis=0)
+        return self._vision_matrix if self._vision_matrix is not None else np.zeros((0, vision.shape[0]), dtype=np.float32), vmask
 
     def _get_vision_encoder(self):
         if self._vision_encoder is None:
@@ -160,22 +188,13 @@ class ContinualCacheAdapter:
             return {lb: 0.0 for lb in self.labels}
 
         q = self.encoder.encode(text)
-        keys = np.stack([e.key for e in self._entries], axis=0)
+        keys = self._get_keys_matrix()
         sims = keys @ q
 
         if vision is not None and self.use_vision_keys and any(
             e.vision_key is not None for e in self._entries
         ):
-            vkeys = []
-            vmask = []
-            for e in self._entries:
-                if e.vision_key is not None:
-                    vkeys.append(e.vision_key)
-                    vmask.append(True)
-                else:
-                    vkeys.append(np.zeros_like(vision))
-                    vmask.append(False)
-            v_stack = np.stack(vkeys, axis=0)
+            v_stack, vmask = self._get_vision_matrix(vision)
             vsims = v_stack @ vision
             alpha = self.multimodal_alpha
             for i, has_v in enumerate(vmask):
@@ -224,7 +243,9 @@ class ContinualCacheAdapter:
         if not self._entries:
             return 0.0
         q = self.encoder.encode(text)
-        keys = np.stack([e.key for e in self._entries], axis=0)
+        keys = self._get_keys_matrix()
+        if keys.shape[0] == 0:
+            return 0.0
         return float(np.max(keys @ q))
 
     # ------------------------------------------------------------------
@@ -256,6 +277,7 @@ class ContinualCacheAdapter:
                 entry.ts = time.time()
                 entry.payload_snippet = text[:120]
                 entry.vision_key = vkey
+                self._invalidate_matrices()
                 if save:
                     self.save()
                 return False
@@ -269,6 +291,7 @@ class ContinualCacheAdapter:
                 vision_key=vkey,
             )
         )
+        self._invalidate_matrices()
         if len(self._entries) > self.max_size:
             self._evict_lru()
         if save:
@@ -280,6 +303,7 @@ class ContinualCacheAdapter:
         self._entries.sort(key=lambda e: (e.hits, e.ts))
         drop = max(1, len(self._entries) - self.max_size)
         self._entries = self._entries[drop:]
+        self._invalidate_matrices()
 
     def update_from_feedback(self, payload: str, true_label: str) -> dict:
         added = self.append(payload, true_label, source="feedback")
@@ -391,6 +415,7 @@ class ContinualCacheAdapter:
                     hits=int(hits[i]),
                 )
             )
+        adapter._invalidate_matrices()
         return adapter
 
     def stats(self) -> dict:

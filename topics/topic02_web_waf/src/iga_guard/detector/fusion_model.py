@@ -23,6 +23,7 @@ from iga_guard.obfuscation_signals import (
     has_strong_obfuscation,
     is_obfuscated,
     looks_like_benign_csic_form,
+    is_benign_traffic_context,
     structural_attack_scores,
 )
 
@@ -104,7 +105,11 @@ class FusionDetector:
         for label in self.labels:
             scores[label] += 0.3 * struct.get(label, 0.0)
 
-        if looks_like_benign_csic_form(payload.raw_payload, text):
+        if is_benign_traffic_context(payload.raw_payload, text):
+            scores["Normal"] += 0.55
+            for atk in ("SQLi", "XSS", "CMD"):
+                scores[atk] *= 0.35
+        elif looks_like_benign_csic_form(payload.raw_payload, text):
             scores["Normal"] += 0.35
             scores["SQLi"] *= 0.5
             scores["XSS"] *= 0.5

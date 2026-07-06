@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "techniques": {
+    "discovered_mixed_case_burst_0": {
+      "template": "mixed_case_burst",
+      "attack_types": [
+        "XSS"
+      ],
+      "source_miss": "id=1&ID=<sCrIPt>ALERT(1)</scrIpt>",
+      "params": {},
+      "created_at": "2026-07-05T10:38:06.699644+00:00",
+      "use_count": 6
+    },
+    "discovered_double_url_encode_plus_1": {
+      "template": "double_url_encode_plus",
+      "attack_types": [
+        "XSS"
+      ],
+      "source_miss": "%2526%25236%2526%252348%253B%253B%2526%252311%2526%252353%253B%253B%2526%2523%2526%252357%253B%2526%252357%253B%253B%2526%2523%2526%252349%253B%2526%252349%253B4%253B%2526%2523105%253B%2526%2523%2526%252349%253B%2526%252349%253B2%253B%2526%25231%2526%252349%253B6%253B%2526%2523%2526%252354%253B2%253B%2526%2523%2526%252357%253B%2526%252355%253B%253B%2526%2523%2526%252349%253B08%253B%2526%2523%2526%252349%253B0%2526%252349%253B%253B%2526%25231%2526%252349%253B4%253B%2526%252311%2526%252354%253B%253B%2526%2523",
+      "params": {},
+      "created_at": "2026-07-05T12:19:57.851102+00:00",
+      "use_count": 1
+    },
+    "discovered_zero_width_inject_2": {
+      "template": "zero_width_inject",
+      "attack_types": [
+        "XSS"
+      ],
+      "source_miss": "id=1&i‍d‍=&#60;&#115;&#99;&#114;&#105;&#112;&#116;&#62;&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;&#60;&#47;&#115;&#99;&#114;&#105;&#112;&#116;&#62;",
+      "params": {},
+      "created_at": "2026-07-05T12:19:58.761702+00:00",
+      "use_count": 1
+    },
+    "discovered_insert_null_byte_3": {
+      "template": "insert_null_byte",
+      "attack_types": [
+        "SQLi"
+      ],
+      "source_miss": "%00Lila",
+      "params": {},
+      "created_at": "2026-07-06T03:16:32.931493+00:00",
+      "use_count": 1
+    },
+    "discovered_deep_inline_comment_4": {
+      "template": "deep_inline_comment",
+      "attack_types": [
+        "SQLi"
+      ],
+      "source_miss": "modo=insertar&precio=4486&B1=Pasar+por+caja%7C/*--*/",
+      "params": {},
+      "created_at": "2026-07-06T03:16:32.932240+00:00",
+      "use_count": 1
+    }
+  }
+}

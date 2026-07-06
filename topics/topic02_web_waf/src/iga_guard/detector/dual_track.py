@@ -30,10 +30,11 @@ from iga_guard.obfuscation_signals import (
     has_strong_obfuscation,
     is_obfuscated,
     looks_like_benign_csic_form,
+    is_benign_traffic_context,
     obfuscated_evasion_rescue,
     structural_attack_scores,
 )
-from iga_guard.obfuscation_signals import _encoded_cmd_markers, _mixed_case_hex32_token  # noqa: PLC2701
+from iga_guard.obfuscation_signals import _encoded_cmd_markers, _eval_atob_decoded_attack, _mixed_case_hex32_token  # noqa: PLC2701
 
 
 class DualTrackDetector:
@@ -408,11 +409,17 @@ class DualTrackDetector:
             elif _mixed_case_hex32_token((payload.raw_payload or "").strip()):
                 label, confidence = "SQLi", max(confidence, 0.65)
                 is_malicious = True
+            else:
+                atob_hit = _eval_atob_decoded_attack(payload.raw_payload or "")
+                if atob_hit is not None:
+                    label, confidence = atob_hit[0], max(confidence, atob_hit[1])
+                    is_malicious = True
 
-        if is_malicious and looks_like_benign_csic_form(payload.raw_payload, norm_text):
-            label, confidence, is_malicious = "Normal", max(
-                all_probs.get("Normal", 0.0), 0.55,
-            ), False
+        if is_malicious and is_benign_traffic_context(payload.raw_payload, norm_text):
+            if _eval_atob_decoded_attack(payload.raw_payload or "") is None:
+                label, confidence, is_malicious = "Normal", max(
+                    all_probs.get("Normal", 0.0), 0.60,
+                ), False
 
         return DetectionResult(
             label=label,

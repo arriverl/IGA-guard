@@ -17,15 +17,23 @@ _SYSTEM_PROMPT = (
 
 
 class LLMAdversarialAgent:
-    """小模型自主对抗 Agent：种子生成 + 漏检反馈迭代。"""
+    """小模型自主对抗 Agent：种子生成 + 漏检反馈迭代 + RAG 知识增强。"""
 
-    def __init__(self, config: LLMConfig | dict | None = None) -> None:
+    def __init__(
+        self,
+        config: LLMConfig | dict | None = None,
+        *,
+        rag_retriever=None,
+    ) -> None:
         if isinstance(config, dict):
             self.config = LLMConfig.from_dict(config)
+            self._rag_enabled = bool(config.get("rag_enabled", True))
         else:
             self.config = config or LLMConfig()
+            self._rag_enabled = True
         self.client = LLMClient(self.config)
         self.history_path = Path("data/cache/llm_agent_history.jsonl")
+        self._rag = rag_retriever
 
     def available(self) -> bool:
         return self.config.is_configured()
@@ -108,12 +116,29 @@ class LLMAdversarialAgent:
                     return out
         return out
 
+    def _get_rag(self):
+        if self._rag is not None:
+            return self._rag
+        if not self._rag_enabled:
+            return None
+        try:
+            from iga_guard.rag.retriever import RagRetriever
+            self._rag = RagRetriever()
+            return self._rag
+        except Exception:
+            return None
+
     def _seed_prompt(self, payload: str, attack_type: str, n: int) -> str:
+        rag = self._get_rag()
+        rag_block = ""
+        if rag:
+            rag_block = rag.context_for_payload(payload, attack_type, top_k=3) + "\n\n"
         return (
-            f"攻击类型: {attack_type}\n"
+            rag_block
+            + f"攻击类型: {attack_type}\n"
             f"原始载荷:\n{payload}\n\n"
             f"请生成 {n} 条不同的混淆变种，用于 WAF 绕过测试。"
-            f"使用 URL 双重编码、内联注释、Unicode、关键字拆分等手法。"
+            f"参考 RAG 片段中的漏检模式与社区手法，使用 URL 双重编码、内联注释、Unicode、关键字拆分等。"
         )
 
     def _autonomous_prompt(
@@ -124,11 +149,16 @@ class LLMAdversarialAgent:
         n: int,
     ) -> str:
         miss_block = "\n".join(f"- {m[:200]}" for m in miss_samples)
+        rag = self._get_rag()
+        rag_block = ""
+        if rag:
+            rag_block = rag.context_for_misses(miss_samples, attack_type) + "\n\n"
         return (
-            f"攻击类型: {attack_type}\n"
+            rag_block
+            + f"攻击类型: {attack_type}\n"
             f"原始载荷:\n{payload}\n\n"
             f"以下变种成功绕过了 WAF 检测（漏检样本）:\n{miss_block}\n\n"
-            f"请分析这些漏检样本的混淆特征，生成 {n} 条**新的**、更难的变种。"
+            f"请结合 RAG 知识分析漏检特征，生成 {n} 条**新的**、更难的变种。"
             f"要求: 与漏检样本相似但不完全相同，测试 WAF 泛化能力。"
         )
 

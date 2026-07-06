@@ -126,3 +126,15 @@ protocols:
   http2: true
   http3: false
   websocket: true
+
+# RAG 知识检索（文献 + 漏检 + 社区情报 → LLM/Agent 增强）
+rag:
+  enabled: true
+  index_path: "data/cache/rag_index.npz"
+  meta_path: "data/cache/rag_index_meta.json"
+  top_k: 5
+  categories:
+    - miss_pattern
+    - technique
+    - community
+    - literature

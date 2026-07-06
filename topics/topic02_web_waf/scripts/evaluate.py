@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gc
 import json
 import sys
 from pathlib import Path
@@ -34,10 +35,14 @@ def main() -> None:
         "--export-misses",
         default=str(ROOT / "data" / "cache" / "eval_obf_misses.jsonl"),
     )
+    parser.add_argument("--no-cache", action="store_true", help="评测时禁用 continual_cache（省内存）")
     args = parser.parse_args()
     max_samples = args.max_samples if args.max_samples and args.max_samples > 0 else None
 
-    engine = IgaGuardEngine(load_config(ROOT / "configs" / "default.yaml"))
+    cfg = load_config(ROOT / "configs" / "default.yaml")
+    if args.no_cache:
+        cfg.setdefault("continual_cache", {})["enabled"] = False
+    engine = IgaGuardEngine(cfg)
     y_true: list[str] = []
     y_pred: list[str] = []
     bin_true: list[bool] = []
@@ -86,6 +91,10 @@ def main() -> None:
             if label == "Normal":
                 normal_bin_true.append(False)
                 normal_bin_pred.append(is_attack_pred)
+
+            if (i + 1) % 2000 == 0:
+                gc.collect()
+                print(f"  ... {i + 1} samples", file=sys.stderr, flush=True)
 
     def multiclass_metrics(true: list[str], pred: list[str]) -> dict:
         if not true:
