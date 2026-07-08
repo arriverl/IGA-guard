@@ -1,11 +1,8 @@
-{"label": "SQLi", "source": "auto_evolve", "snippet": "25dC452469D425BDF621F827dA23068E", "hits": 2}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "8a9c6b4Aa96632AeB2d2Af1FeAA5462D", "hits": 146}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7C6b4Aa96632AeB2d2Af1FeAA5462D", "hits": 238}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "Ab9C6b4Aa96632AeB2d2Af1Feaa5462D", "hits": 63}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "4a9c6b4Aa96632AeB2d2Af1FeAA5462D", "hits": 15}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "b9C6b4Aa96632AeB2d2Af1Feaa5462D", "hits": 43}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "79b4a54Aa96632AcB2d2Af1FeAA5462D", "hits": 115}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "08c6634Aa96632AcB2d2Af1FeAA5462D", "hits": 209}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "79b4a54Aa96632AcB2d2Af1FeAA5462D", "hits": 121}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "08c6634Aa96632AcB2d2Af1FeAA5462D", "hits": 215}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "5Cc6634Aa96632AcB2d2Af1Feaa5462D", "hits": 46}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "9a486b0Aa96632AeB2d2Af1Feaa5462D", "hits": 65}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "cC7d486b0Aa96632AeB2d2Af1FeAA5462D", "hits": 6}
@@ -13,7 +10,7 @@
 {"label": "SQLi", "source": "auto_evolve", "snippet": "A2b4c5d6e7f89aBcDeFgAhIjKlMnOpQrStuVwXyZa", "hits": 4}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "9aZzaYbCbDbCcDdBbAbBaAAcCCbBBa", "hits": 1}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "6329f9dbF56809B268650a6Bdd5600B1", "hits": 22}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "771055ff80A1f2d23AD12A2eafB42f99", "hits": 18}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "771055ff80A1f2d23AD12A2eafB42f99", "hits": 19}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "id=1&id=7C6b4Aa96632AeB2d2Af1Feaa5462D", "hits": 24}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "5f1fEf87896F63A646dD0b5C55F2AC4B", "hits": 4}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "73245d7d4f55E9fB8Cc17da05Db9B226", "hits": 5}
@@ -22,9 +19,9 @@
 {"label": "SQLi", "source": "auto_evolve", "snippet": "81cf4c4ad95f609fbabf11f1ce0d1d4b", "hits": 5}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "RQqBfTfUWcKvD4aHd8b9J2IeYgKlMnNpOqP", "hits": 8}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "-78C6634Aa96632AEb2d2AF1FeAA5462D-", "hits": 53}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "uRrSsFfGgHhIiJjKkLlMmNnPpQqRrTtUuVvWwXxYyZzAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz", "hits": 132}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "uRrSsFfGgHhIiJjKkLlMmNnPpQqRrTtUuVvWwXxYyZzAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz", "hits": 133}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "118356AA9a5970e068e235c8A3665cb4", "hits": 43}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%2Fal", "hits": 250}
+{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%2Fal", "hits": 260}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "7C98B1A5A46632Aeb2D2Af1FEAA5462D", "hits": 72}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "f0b9C9A5a46632Aeb2D2aF1fEAa5462D", "hits": 36}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "E89c98B1A46632Aeb2D2Af1feaa5462D", "hits": 50}
@@ -47,14 +44,14 @@
 {"label": "SQLi", "source": "auto_evolve", "snippet": "id=1&id=f0b9C9a5A46632Aeb2d2Af1FEaa5462D", "hits": 19}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "91D6FEf0b50ED5d7dA70C0EB7e82647A", "hits": 51}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "03Ba310029af1F7Cf11A23Cc39f854eE", "hits": 71}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "E89c98B1A46632Aeb2D2Af1feaa5462D AND 1 LIKE 1", "hits": 222}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%25253A%25252F%25252Fevil.com%25252Fal", "hits": 256}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "E89c98B1A46632Aeb2D2Af1feaa5462D AND 1 LIKE 1", "hits": 246}
+{"label": "CMD", "source": "auto_evolve", "snippet": "http%25253A%25252F%25252Fevil.com%25252Fal", "hits": 262}
 {"label": "CMD", "source": "auto_evolve", "snippet": "http%2525253A%2525252F%2525252Fevil.com%2525252Fal", "hits": 235}
-{"label": "CMD", "source": "auto_evolve", "snippet": "hｔｔp%3A%2F%2Fｅvｉｌ.cｏm%2Fal", "hits": 73}
+{"label": "CMD", "source": "auto_evolve", "snippet": "hｔｔp%3A%2F%2Fｅvｉｌ.cｏm%2Fal", "hits": 74}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "68E85CA27086FBe58Ffbf607748bA009", "hits": 55}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "c63433eB33d6E55f3a2eB16793361f24", "hits": 61}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "%6F783D756E74696D61746963267374617475733D317C7374617475733D312670726F6A656374733D7B%69733D783D317D", "hits": 10}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "78c6634Aa96632Aeb2d2Af1FfAA5462D", "hits": 94}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "%6F783D756E74696D61746963267374617475733D317C7374617475733D312670726F6A656374733D7B%69733D783D317D", "hits": 11}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "78c6634Aa96632Aeb2d2Af1FfAA5462D", "hits": 101}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "78c6634Aa96632aeB2D2AF1Feaa5462d AND ASCII(SUBSTRING(@@version,1,1))>40", "hits": 5}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "69EB26a3D31B031Ea6EE55517D238160", "hits": 16}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "949a49068421C596f2149Fb578DC2FFF", "hits": 24}
@@ -62,12 +59,12 @@
 {"label": "SQLi", "source": "auto_evolve", "snippet": "nG654aBc9e8fDEgThiU2Vw", "hits": 26}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "1UN67Stt3X5ofOiHk2vW", "hits": 45}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "n8G655aBc9e8fDEgThiU2Vw", "hits": 4}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "1uN77sTt3x5oFoIhK2Vw", "hits": 14}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "1uN77sTt3x5oFoIhK2Vw", "hits": 15}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "tN57sTt1x4oFoIhK2Vw", "hits": 13}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "6uN67sTt3x5oFoIhK2Vw", "hits": 4}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "g8c6634Aa96632AbEb2d2Af1feAA5462D AND 1 LIKE 1", "hits": 1}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "7x5fAa96632Abd47aC8F1FEAA5462D", "hits": 5}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "fN67sTt3x5oFoIhKuVwAND1LIKE1", "hits": 13}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "fN67sTt3x5oFoIhKuVwAND1LIKE1", "hits": 14}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "GgYb5e58a96632ABc9eZdEfFFaaA462D", "hits": 2}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "90a78dF5a2b13C47aD685eEgTHiU2VwF3", "hits": 0}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "7c6634Aa96632Aeb2d2Af1FEAA5462DaF AND 1 LIKE 1", "hits": 7}
@@ -174,27 +171,30 @@
 {"label": "XSS", "source": "auto_evolve", "snippet": "%E6%B3%\\u00412%E4%B8%AA%61%70%74%69%6F%6E%2F68%70%282%29%3B%2523%6\\u0043%61%6E%67%74%28%22%2\\u0041%29%3B", "hits": 2}
 {"label": "XSS", "source": "auto_evolve", "snippet": "eval(/*x*/(%E6%B3%A2%E4%B8%AA%2561%2570%2574%2569%256F%256E%2F%2570%2568%2570%282%2529%253B%2523%256C%2561%256E%2567%257", "hits": 0}
 {"label": "XSS", "source": "auto_evolve", "snippet": "%\\u00456%B3%\\u00412%E4%\\u00428%\\u0041\\u0041%61%70%74%69%6F%6E%2\\u004670%75%6\\u0043%6C%69%6\\u0045%65%64%282%29%3\\u0042%25", "hits": 0}
-{"label": "CMD", "source": "auto_evolve", "snippet": "%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7", "hits": 5}
+{"label": "CMD", "source": "auto_evolve", "snippet": "%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7", "hits": 6}
 {"label": "CMD", "source": "auto_evolve", "snippet": "%2525C2%25258F%2525C2%25259C%2525CF%2525CA%2525C2%2525A5%2525C2%2525AE%2525C2%2525BB%2525C2%252584%2525C2%2525A1%2525C2%", "hits": 0}
 {"label": "CMD", "source": "auto_evolve", "snippet": "eval(/*x*/(%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7))", "hits": 1}
 {"label": "CMD", "source": "auto_evolve", "snippet": "%252525C2%2525258F%252525C2%2525259C%252525CF%252525CA%252525C2%252525A5%252525C2%252525AE%252525C2%252525BB%252525C2%25", "hits": 0}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A//www.example.com%3Fq%3DP085g%40f", "hits": 86}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue", "hits": 114}
+{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A//www.example.com%3Fq%3DP085g%40f", "hits": 97}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue", "hits": 124}
 {"label": "CMD", "source": "auto_evolve", "snippet": "%40b-sign.cg%0A+B1%3DRegistrar", "hits": 15}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "id%3D3&nombre=Vino%u00C9Rioja&precio=85&cantidad=31&B1=A%EF%BF%BDAadir%2Bal%2Bcarrito", "hits": 1}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue' OR '1'='1", "hits": 68}
-{"label": "CMD", "source": "auto_evolve", "snippet": "%40b-sign.cg%0A+B1%3DReg157r4r", "hits": 13}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue' OR '1'='1", "hits": 71}
+{"label": "CMD", "source": "auto_evolve", "snippet": "%40b-sign.cg%0A+B1%3DReg157r4r", "hits": 14}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value", "hits": 71}
-{"label": "CMD", "source": "auto_evolve", "snippet": "modo=registro&login=thyagara&password=fUeRTe&nombre=Sol&apellidos=Gorgone%2BOteo&email=tissier@b-sign.cg&dni=03028605B&d", "hits": 54}
-{"label": "CMD", "source": "auto_evolve", "snippet": "modo=regist1ro&login=thyagara%2Bpassword=fUeRTe%26nombre=S0l%26apellidos=Gorgone%2BOteo%26email=tissier@b-sign.cg%26dni=", "hits": 51}
-{"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=registro&login=thyagara%2Bpassword=fUeRTe%26nombre=Sol%26apellidos=Gorgone%2BOteo%26email=tissier@b-sig", "hits": 23}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%B8%8F/resource?key=value\"}}", "hits": 42}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https%3A%2F%2Fexample.%25EF%25B8%258F%2Fresource%3Fkey%3Dvalue", "hits": 51}
+{"label": "CMD", "source": "auto_evolve", "snippet": "modo=registro&login=thyagara&password=fUeRTe&nombre=Sol&apellidos=Gorgone%2BOteo&email=tissier@b-sign.cg&dni=03028605B&d", "hits": 58}
+{"label": "CMD", "source": "auto_evolve", "snippet": "modo=regist1ro&login=thyagara%2Bpassword=fUeRTe%26nombre=S0l%26apellidos=Gorgone%2BOteo%26email=tissier@b-sign.cg%26dni=", "hits": 56}
+{"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=registro&login=thyagara%2Bpassword=fUeRTe%26nombre=Sol%26apellidos=Gorgone%2BOteo%26email=tissier@b-sig", "hits": 24}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%B8%8F/resource?key=value\"}}", "hits": 45}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "https%3A%2F%2Fexample.%25EF%25B8%258F%2Fresource%3Fkey%3Dvalue", "hits": 59}
 {"label": "CMD", "source": "auto_evolve", "snippet": "m0do=r3gis7ro&l0gin=thy4gara&p455w0rd=fU3RT3&nombre=Sol&apell1do5=Gorgon3%2BOt3o&em41l=ti5s13r@b-5ign.cg&dni=03028605B&d", "hits": 12}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%BF%A1/resource?key=value\"}}", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value&param=anything", "hits": 15}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%BF%A1/resource?key=value\"}}", "hits": 3}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value&param=anything", "hits": 16}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%40/resource?key=value", "hits": 14}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "Https://eXAMPLe.%68%72%65%73%40/ReSoURce?kEY=valUE", "hits": 14}
-{"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=r3gis7ro&login=t1y4gara&p455w0rd=fUeRT3&nombre=Sol&apell1do=Gorgon3%2BOt3o&email=tissier@b-sign.cg&dni=", "hits": 1}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "Https://eXAMPLe.%68%72%65%73%40/ReSoURce?kEY=valUE", "hits": 18}
+{"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=r3gis7ro&login=t1y4gara&p455w0rd=fUeRT3&nombre=Sol&apell1do=Gorgon3%2BOt3o&email=tissier@b-sign.cg&dni=", "hits": 3}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value/*--*/", "hits": 6}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--", "hits": 27}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--", "hits": 37}
+{"label": "CMD", "source": "auto_evolve", "snippet": "MOdO=rEGiStro&", "hits": 7}
+{"label": "XSS", "source": "auto_evolve", "snippet": "inline_comment", "hits": 0}
+{"label": "CMD", "source": "auto_evolve", "snippet": "modo%3Dregistro%26", "hits": 0}

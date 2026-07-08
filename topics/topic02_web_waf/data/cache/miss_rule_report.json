@@ -1,0 +1,16 @@
+{
+  "processed": 4,
+  "clusters": 1,
+  "registered": [],
+  "rejected": [
+    {
+      "cluster": "SQLi:other",
+      "reason": "no_pattern"
+    }
+  ],
+  "store": {
+    "path": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/discovered_rescue_rules.json",
+    "total": 2,
+    "enabled": 2
+  }
+}

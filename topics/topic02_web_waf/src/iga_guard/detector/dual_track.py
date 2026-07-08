@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 
 from iga_guard.detector.dlinear_branch import DLinearBranch
+from iga_guard.detector.fusion_calibrator import apply_calibration, load_fusion_calibration
 from iga_guard.detector.fusion_model import FusionDetector
 from iga_guard.detector.multimodal_branch import MultimodalBranch
 from iga_guard.detector.semantic_branch import SemanticBranch
@@ -77,6 +78,8 @@ class DualTrackDetector:
         self._w_sem = float(mm_cfg.get("weight_semantic", 0.28))
         self._w_mm = float(mm_cfg.get("weight_multimodal", 0.14))
         self._w_dl = float(mm_cfg.get("weight_dlinear", 0.12))
+        cal_path = det.get("fusion_calibration_path", "data/cache/fusion_calibration.json")
+        self._fusion_calibration = load_fusion_calibration(cal_path)
         self.threshold = det.get("confidence_threshold", 0.38)
         self.confidence_threshold = self.threshold  # 兼容 pipeline / 外部脚本
         self._cache_force_hit = float(det.get("cache_force_hit_min", 0.92))
@@ -120,11 +123,14 @@ class DualTrackDetector:
             w_sem = float(cfg.get("weight_semantic_obfuscated", 0.32))
             w_mm = float(cfg.get("weight_multimodal_obfuscated", 0.04))
             w_dl = float(cfg.get("weight_dlinear_obfuscated", 0.12))
+            cal = apply_calibration(cfg, self._fusion_calibration, obfuscated=True)
         else:
             w_base = float(cfg.get("weight_base_benign", 0.34))
             w_sem = float(cfg.get("weight_semantic_benign", 0.24))
             w_mm = float(cfg.get("weight_multimodal_benign", 0.22))
             w_dl = float(cfg.get("weight_dlinear_benign", 0.10))
+            cal = apply_calibration(cfg, self._fusion_calibration, obfuscated=False)
+        w_base, w_sem, w_mm, w_dl = cal["base"], cal["semantic"], cal["multimodal"], cal["dlinear"]
 
         attack_peak_base = max(
             (v for k, v in base_result.all_probs.items() if k != "Normal"), default=0.0,
@@ -368,7 +374,23 @@ class DualTrackDetector:
 
         hit = 0.0
         base_normal_peak = base_result.all_probs.get("Normal", 0.0)
-        if self.cache and len(self.cache._entries) > 0:
+        raw_len = len(payload.raw_payload or "")
+        simple_literal = (
+            raw_len <= 16
+            and raw_low.isascii()
+            and not is_obfuscated(raw_low)
+            and raw_low.count("%") < 2
+        )
+        benign_fast_path = (
+            not is_obfuscated(raw_low)
+            and not strong_obf
+            and decode_depth < 2
+            and (
+                simple_literal
+                or (base_attack_peak < 0.22 and raw_len < 120)
+            )
+        )
+        if self.cache and len(self.cache._entries) > 0 and not benign_fast_path:
             text = payload.normalized_payload or payload.raw_payload
             cache_lam = self.cache.fusion_weight
             if is_obfuscated(raw_low):

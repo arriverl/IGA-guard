@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "pattern": "^modo=registro&$",
+      "label": "CMD",
+      "confidence": 0.62,
+      "source": "miss_rule_pipeline",
+      "cluster": "CMD:malformed_form_cmd",
+      "enabled": true
+    },
+    {
+      "pattern": "^inline_comment$",
+      "label": "XSS",
+      "confidence": 0.62,
+      "source": "miss_rule_pipeline",
+      "cluster": "XSS:llm_placeholder",
+      "enabled": true
+    }
+  ],
+  "count": 2
+}

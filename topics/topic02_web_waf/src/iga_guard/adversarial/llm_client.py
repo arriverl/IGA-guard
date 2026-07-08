@@ -22,6 +22,7 @@ class LLMConfig:
     timeout_sec: int = 90
     temperature: float = 0.80
     top_p: float = 0.92
+    seed: int | None = None
     max_tokens: int = 512
     num_ctx: int = 4096
     num_gpu: int = -1
@@ -45,6 +46,7 @@ class LLMConfig:
             timeout_sec=int(raw.get("timeout_sec", 90)),
             temperature=float(raw.get("temperature", 0.80)),
             top_p=float(raw.get("top_p", 0.92)),
+            seed=int(raw["seed"]) if raw.get("seed") is not None else None,
             max_tokens=int(raw.get("max_tokens", 512)),
             num_ctx=int(raw.get("num_ctx", 4096)),
             num_gpu=int(raw.get("num_gpu", -1)),
@@ -109,6 +111,8 @@ class LLMClient:
         }
         if cfg.num_gpu != 0:
             opts["num_gpu"] = cfg.num_gpu
+        if cfg.seed is not None:
+            opts["seed"] = int(cfg.seed)
         return opts
 
     def chat(

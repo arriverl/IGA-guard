@@ -220,11 +220,13 @@ class IgaGuardEngine:
                 aggregate.strip(),
             )
         )
+        aggregate_rescue_applied = False
         if aggregate:
             aggregate_rescue = obfuscated_evasion_rescue(
                 aggregate, aggregate.lower(), decode_depth=1,
             )
             if aggregate_rescue is not None:
+                aggregate_rescue_applied = True
                 rescue_label, rescue_conf = aggregate_rescue
                 best_detection = DetectionResult(
                     label=rescue_label,
@@ -245,6 +247,7 @@ class IgaGuardEngine:
 
         if (
             aggregate_is_benign
+            and not aggregate_rescue_applied
             and (
                 not best_detection.is_malicious
                 or (

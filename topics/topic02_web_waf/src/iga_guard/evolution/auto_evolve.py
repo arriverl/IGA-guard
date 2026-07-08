@@ -13,8 +13,10 @@ from iga_guard.adversarial.ast_mutator import ast_obfuscate, ast_obfuscate_batch
 from iga_guard.adversarial.mutator import mutate_batch
 from iga_guard.dataset.obfuscation_techniques import expand_payload
 from iga_guard.evolution.self_train import incremental_retrain, log_failure
+from iga_guard.evolution.miss_rule_pipeline import process_misses
 from iga_guard.evolution.technique_discovery import discover_from_miss
 from iga_guard.evolution.technique_registry import TechniqueRegistry
+from iga_guard.obfuscation_signals import reload_discovered_rescue_rules
 from iga_guard.eval_transport import build_eval_request, build_http_request
 
 
@@ -180,6 +182,24 @@ class AutoEvolveLoop:
                     cache.append(m["payload"], m["label"], source="auto_evolve", save=False)
                 cache.save()
                 cache_result = cache.stats()
+
+        miss_rule_cfg = evo.get("miss_rule_pipeline", {})
+        if miss_rule_cfg.get("enabled", True) and misses:
+            mr = process_misses(
+                misses,
+                rules_path=miss_rule_cfg.get(
+                    "rules_path",
+                    str(self.root / "data" / "cache" / "discovered_rescue_rules.json"),
+                ),
+                benign_path=miss_rule_cfg.get(
+                    "benign_path",
+                    str(self.root / "data" / "cache" / "eval_normal_fps.jsonl"),
+                ),
+                max_fp_rate=float(miss_rule_cfg.get("max_fp_rate", 0.02)),
+                min_cluster_size=int(miss_rule_cfg.get("min_cluster_size", 1)),
+            )
+            reload_discovered_rescue_rules()
+            cache_result = {**cache_result, "miss_rule_pipeline": mr}
         return retrain_result, cache_result
 
     def run_round(

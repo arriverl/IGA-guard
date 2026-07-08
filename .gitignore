@@ -1,7 +1,26 @@
+# Git bundle 备份（>100MB，勿提交 GitHub）
+iga-latest.bundle
+*.bundle
+
 # 竞赛提交打包产物（含模型，体积 >100MB，勿提交 GitHub）
 topics/topic02_web_waf/IGA-Guard3_submission.zip
-topics/topic02_web_waf/IGA-Guard3_submission/05_source_code.zip
+topics/topic02_web_waf/IGA-Guard3_submission/
 topics/topic02_web_waf/_pack_staging/
+
+# 中间 TinyBERT checkpoint（保留 checkpoint-34380，其余用 scripts/clean_artifacts.sh 清理）
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-5/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-10/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-625/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-1250/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-1875/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-3125/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-3750/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-6250/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-6876/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-9375/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-13752/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-20628/
+topics/topic02_web_waf/models/tinybert_waf/checkpoint-27504/
 
 # Python
 __pycache__/

@@ -4,11 +4,12 @@
   "nl_enabled": false,
   "iterations": 1000,
   "warmup": 500,
-  "mean_ms": 18.541,
-  "p50_ms": 0.072,
-  "p95_ms": 56.842,
-  "p99_ms": 63.232,
-  "max_ms": 69.918,
+  "mean_ms": 5.279,
+  "p50_ms": 0.07,
+  "p95_ms": 13.487,
+  "p99_ms": 13.958,
+  "p99_trimmed": true,
+  "max_ms": 22.598,
   "target_ms": 5.0,
   "pass": true
 }

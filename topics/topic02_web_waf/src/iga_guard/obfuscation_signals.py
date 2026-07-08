@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import re
 from collections import defaultdict
+from functools import lru_cache
 
 OBFUSCATED_MARKERS: tuple[str, ...] = (
     "%", "/**/", "fromcharcode", "eval(", "&#", "\\u", "0x", "char(",
@@ -330,6 +331,19 @@ def concat_reassembled(text: str) -> str:
     return re.sub(r"\s*\+\s*", "", t)
 
 
+def has_case_obfuscated_param(raw: str) -> bool:
+    """检测参数名大小写混杂（case_random 混淆），不应视为纯良性 CSIC 表单。"""
+    for m in _PARAM_PAIRS.finditer(raw or ""):
+        name = m.group(1)
+        if len(name) >= 3 and name != name.lower() and name != name.upper():
+            switches = sum(
+                1 for a, b in zip(name, name[1:]) if a.islower() != b.islower()
+            )
+            if switches >= 1:
+                return True
+    return False
+
+
 def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
     """
     CSIC 2010 正常登录/注册/购物表单：含 modo/login/password 等但无 SQL 注入痕迹。
@@ -337,6 +351,8 @@ def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
     """
     low = (norm or raw).lower()
     raw_low = raw.lower()
+    if has_case_obfuscated_param(raw):
+        return False
     if not (_BENIGN_CSIC_PARAMS.search(low) or _BENIGN_SHOPPING.search(low)):
         return False
     if _duplicate_params(raw_low):
@@ -459,11 +475,31 @@ _RE_URL_ENCODE_NAME = re.compile(
 )
 
 
-def obfuscated_evasion_rescue(
+_DISCOVERED_STORE = None
+
+
+def _discovered_rescue_store():
+    global _DISCOVERED_STORE
+    if _DISCOVERED_STORE is None:
+        from iga_guard.evolution.discovered_rescue_rules import DiscoveredRescueRules
+
+        _DISCOVERED_STORE = DiscoveredRescueRules()
+    return _DISCOVERED_STORE
+
+
+def reload_discovered_rescue_rules() -> None:
+    """miss→rule 闭环写入后热重载动态规则。"""
+    global _DISCOVERED_STORE
+    if _DISCOVERED_STORE is not None:
+        _DISCOVERED_STORE.load()
+    obfuscated_evasion_rescue_cached.cache_clear()
+
+
+@lru_cache(maxsize=8192)
+def obfuscated_evasion_rescue_cached(
     raw: str,
     norm: str,
-    *,
-    decode_depth: int = 0,
+    decode_depth: int,
 ) -> tuple[str, float] | None:
     """
     混淆逃逸兜底：针对漏检分析 Top 模式（null_byte / echo / homoglyph / url_encode）。
@@ -655,7 +691,27 @@ def obfuscated_evasion_rescue(
         if best and kw[best] >= 0.12:
             return best, max(kw[best], 0.55)
 
+    discovered = _discovered_rescue_store().match(raw, norm_low)
+    if discovered is not None:
+        return discovered
+
     return None
+
+
+def obfuscated_evasion_rescue(
+    raw: str,
+    norm: str,
+    *,
+    decode_depth: int = 0,
+) -> tuple[str, float] | None:
+    """对外入口：先查动态规则，再走 LRU 缓存的静态 rescue。"""
+    if not raw:
+        return None
+    norm_text = norm or raw
+    discovered = _discovered_rescue_store().match(raw, norm_text.lower())
+    if discovered is not None:
+        return discovered
+    return obfuscated_evasion_rescue_cached(raw, norm_text, int(decode_depth))
 
 
 def _eval_atob_decoded_attack(raw: str) -> tuple[str, float] | None:

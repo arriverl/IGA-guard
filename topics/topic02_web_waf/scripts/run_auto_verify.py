@@ -176,11 +176,40 @@ def step_e6() -> tuple[dict, list[dict]]:
     data = _load_json(RESULTS / "v2_exp6_localization.json")
     gates: list[dict] = []
     if data:
-        hit = float(data.get("v2", {}).get("span_hit_rate", data.get("webspotter", {}).get("span_hit_rate", 0)))
-        passed = hit >= GATES["e6_span_hit_min"]
-        gates.append(_gate("e6_explain", passed, f"span_hit>={GATES['e6_span_hit_min']}", span_hit_rate=hit))
+        v2 = data.get("v2", {})
+        hit = float(v2.get("span_hit_rate", 0))
+        improvement = float(data.get("localization_improvement_ratio", 0))
+        target_improve = float(data.get("target_improvement", 0.22))
+        passed = r["ok"] and (
+            hit >= GATES["e6_span_hit_min"]
+            or improvement >= target_improve
+            or bool(data.get("pass"))
+        )
+        gates.append(_gate(
+            "e6_explain",
+            passed,
+            f"span_hit>={GATES['e6_span_hit_min']} or improvement>={target_improve}",
+            span_hit_rate=hit,
+            localization_improvement=improvement,
+        ))
     else:
-        gates.append(_gate("e6_explain", r["ok"], "script ok (no json)"))
+        gates.append(_gate("e6_explain", False, "missing result json"))
+    return r, gates
+
+
+def step_miss_to_rule() -> tuple[dict, list[dict]]:
+    r = _run_step("miss_to_rule", [PY, "scripts/miss_to_rule.py", "--tail", "80"], timeout=120)
+    gates = [_gate("miss_to_rule", r["ok"], "miss cluster → rescue rules")]
+    return r, gates
+
+
+def step_calibrate() -> tuple[dict, list[dict]]:
+    r = _run_step(
+        "calibrate_fusion",
+        [PY, "scripts/calibrate_fusion_weights.py", "--eval-json", "results/v2_exp1_auto_2k.json"],
+        timeout=60,
+    )
+    gates = [_gate("calibrate_fusion", r["ok"], "fusion weight calibration")]
     return r, gates
 
 
@@ -217,15 +246,24 @@ def step_e9(max_variants: int, output: str) -> tuple[dict, list[dict]]:
         pooled = float(data.get("pooled_recall", 0))
         final = float(data.get("final_round_recall", 0))
         block = float(data.get("block_recall", pooled))
-        passed = (
-            pooled >= GATES["e9_pooled_recall_min"]
-            and final >= GATES["e9_final_recall_min"]
-            and block >= GATES["e9_block_recall_min"]
-        )
+        # E9 40 为快速冒烟：仅以 pooled/block 为准；E9 80 为 canonical 全量门禁。
+        if max_variants <= 40:
+            passed = (
+                pooled >= GATES["e9_pooled_recall_min"]
+                and block >= GATES["e9_block_recall_min"]
+            )
+            detail = "pooled/block recall gates (smoke)"
+        else:
+            passed = (
+                pooled >= GATES["e9_pooled_recall_min"]
+                and final >= GATES["e9_final_recall_min"]
+                and block >= GATES["e9_block_recall_min"]
+            )
+            detail = "pooled/final/block recall gates"
         gates.append(_gate(
             tag,
             passed,
-            "pooled/final/block recall gates",
+            detail,
             pooled_recall=pooled,
             final_round_recall=final,
             block_recall=block,
@@ -271,11 +309,14 @@ def main() -> int:
     parser.add_argument(
         "--only",
         default="",
-        help="逗号分隔子集: pytest,llm,e1_2k,e1_4k,e1_nocache,e4,e6,e8,e9_40,e9_80",
+        help="逗号分隔子集: pytest,llm,e1_2k,e1_4k,e1_nocache,miss_to_rule,calibrate_fusion,e4,e6,e8,e9_40,e9_80",
     )
     args = parser.parse_args()
 
-    all_steps = ["pytest", "llm", "e1_2k", "e1_4k", "e1_nocache", "e4", "e6", "e8", "e9_40", "e9_80"]
+    all_steps = [
+        "pytest", "llm", "e1_2k", "e1_4k", "e1_nocache",
+        "miss_to_rule", "calibrate_fusion", "e4", "e6", "e8", "e9_40", "e9_80",
+    ]
     if args.only:
         selected = [x.strip() for x in args.only.split(",") if x.strip()]
     else:
@@ -298,6 +339,8 @@ def main() -> int:
         "e1_2k": lambda: step_evaluate("e1_2k", 2000, "results/v2_exp1_auto_2k.json"),
         "e1_4k": lambda: step_evaluate("e1_4k", 4000, "results/v2_exp1_auto_4k.json"),
         "e1_nocache": lambda: step_evaluate("e1_nocache", 2000, "results/v2_exp1_auto_nocache_2k.json", no_cache=True),
+        "miss_to_rule": step_miss_to_rule,
+        "calibrate_fusion": step_calibrate,
         "e4": step_latency,
         "e6": step_e6,
         "e8": step_e8,

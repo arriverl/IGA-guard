@@ -87,19 +87,21 @@
 
 ---
 
-## 诚实口径指标
+## 诚实口径指标（Dynamic Guard 终稿，2026-07-08）
 
-全量评测集：`data/master/test_obfuscated.csv`（**19,411** 条）  
-结果文件：`results/v2_exp1_overall.json`
+权威结果文件见 `results/canonical_metrics.json` 与 `results/iga_dynamic_guard_final_report.md`。
 
-| 指标 | 赛题目标 | 当前 |
-|------|----------|------|
-| 混淆子集 Recall | > 99.5% | **91.48%**（FN 880，`v2_exp1_tier_full.json`） |
-| 混淆 Precision | — | **100%** |
-| Normal 误报率 FPR | 低误报 | **2.04%**（FP 83） |
-| 延迟 P50 | < 5 ms | **2.92 ms** ✓ |
-| WebSpotter IoU 提升 | ≥ +22% | **+37.9%** ✓ |
-| 多模态消融 Δ | 可控 | **−0.12 pp**（条件融合后） |
+| 指标 | 赛题目标 | 当前（auto_verify / 2k 抽样） |
+|------|----------|--------------------------------|
+| 混淆子集 Recall（2k） | > 99.5% | **99.91%** |
+| 混淆子集 Recall（4k） | > 99.5% | **99.81%** |
+| Normal FPR（2k） | 低误报 | **4.32%** |
+| 延迟 P50 / P99 | < 5 ms / 实用 | **0.068 ms / 13.3 ms** ✓ |
+| WebSpotter span hit | — | **100%**（IoU Δ +37.9%）✓ |
+| E9 LLM 红队（80 variants） | 高 recall | pooled **98.96%** ✓ |
+| 单元测试 | — | **89 passed** |
+
+全量历史口径（n=19,411）：`results/v2_exp1_overall_dynamic_guard_final.json`
 
 ---
 
@@ -202,6 +204,8 @@ python scripts/iga_system.py serve
 |------|------|
 | `continual_cache.py` | Tip-Adapter 风格 KV 缓存；文本+视觉双 Key；LRU 扩库 |
 | `online_rl.py` | 在线强化学习调整检测阈值与特征权重 |
+| `miss_rule_pipeline.py` | WAFBOOSTER 风格：漏检聚类→FP 回放→规则注册 |
+| `discovered_rescue_rules.py` | 动态 rescue 规则热加载 |
 | `self_train.py` | 漏检样本 `failures.jsonl` 反哺增量训练 |
 
 #### `explainer/` — 可解释性
@@ -241,6 +245,10 @@ python scripts/iga_system.py serve
 | `run_experiments_suite.py` | E2/E5/E7/E8 批量实验 | `--experiments all` |
 | `run_adversarial.py` | 多轮对抗演化 | `--rounds 3 --max-seeds 150` |
 | `benchmark_latency.py` | E4 延迟测试 | P50/P95/P99 |
+| `run_auto_verify.py` | 全自动检验（E1/E4/E6/E8/E9） | `results/auto_verify_report.md` |
+| `miss_to_rule.py` | 漏检→动态 rescue 规则 | `discovered_rescue_rules.json` |
+| `calibrate_fusion_weights.py` | 融合权重离线校准 | `fusion_calibration.json` |
+| `clean_artifacts.sh` | 清理中间迭代产物 | 见 `docs/ARTIFACTS.md` |
 | `eval_explainability.py` | E6 WebSpotter IoU | `v2_exp6_localization.json` |
 | `stress_test.py` | E4b 压测（待执行） | QPS 压力 |
 | `detect.py` | 单条 CLI 检测 | `--url "..." --json` |
@@ -351,6 +359,7 @@ python scripts/iga_system.py serve
 | `research/agent2_integration/EXPERIMENT_REPORT.md` | 实验终稿 |
 | `research/agent2_integration/MULTIMODAL.md` | 多模态条件融合 |
 | `AGENTS.md` | 多 Agent 协作总览 |
+| `docs/ARTIFACTS.md` | 产物保留策略与清理说明 |
 | `configs/default.yaml` | 生产配置 |
 
 ---

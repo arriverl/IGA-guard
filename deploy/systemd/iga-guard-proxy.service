@@ -1,0 +1,18 @@
+[Unit]
+Description=IGA-Guard Inline Traffic Proxy
+After=network.target iga-guard-api.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/iga-guard/topics/topic02_web_waf
+Environment=IGA_CONFIG=configs/proxy.yaml
+Environment=IGA_UPSTREAM_URL=http://127.0.0.1:3000
+Environment=IGA_PROXY_MODE=inline
+Environment=PYTHONPATH=/opt/iga-guard/topics/topic02_web_waf/src
+ExecStart=/usr/bin/python run_proxy.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

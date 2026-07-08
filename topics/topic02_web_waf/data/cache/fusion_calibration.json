@@ -1,0 +1,17 @@
+{
+  "source_eval": 2000,
+  "obfuscated_recall": 0.9991,
+  "normal_fpr": 0.0432,
+  "obfuscated": {
+    "base": 0.0,
+    "semantic": 0.0,
+    "multimodal": 0.0,
+    "dlinear": 0.0
+  },
+  "benign": {
+    "base": 0.0,
+    "semantic": 0.0,
+    "multimodal": 0.0,
+    "dlinear": 0.0
+  }
+}

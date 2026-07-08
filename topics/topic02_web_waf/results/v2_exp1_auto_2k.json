@@ -2,18 +2,18 @@
   "dataset": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/master/test_obfuscated.csv",
   "eval_samples": 2000,
   "overall_multiclass": {
-    "accuracy": 0.836,
-    "recall_malicious_exact_class": 0.8035,
+    "accuracy": 0.8375,
+    "recall_malicious_exact_class": 0.8061,
     "samples": 2000
   },
   "overall_binary": {
-    "detection_recall": 0.892,
-    "detection_precision": 0.9874,
-    "f1": 0.9373,
+    "detection_recall": 0.8964,
+    "detection_precision": 0.9875,
+    "f1": 0.9397,
     "false_positive_rate": 0.0432,
-    "tp": 1412,
+    "tp": 1419,
     "fp": 18,
-    "fn": 171,
+    "fn": 164,
     "tn": 399,
     "samples": 2000
   },

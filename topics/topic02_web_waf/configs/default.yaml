@@ -21,6 +21,7 @@ detector:
   cache_force_hit_min: 0.92
   cache_fusion_weight_benign: 0.12
   cache_fusion_weight_obfuscated: 0.42
+  fusion_calibration_path: "data/cache/fusion_calibration.json"
   fp_guard_max_base_attack: 0.32
   fp_guard_min_attack_conf: 0.55
   fp_guard_tier_b_enabled: true
@@ -60,6 +61,12 @@ evolution:
   failure_augment: 2
   online_rl_enabled: true
   learning_rate: 0.05
+  miss_rule_pipeline:
+    enabled: true
+    rules_path: "data/cache/discovered_rescue_rules.json"
+    benign_path: "data/cache/eval_normal_fps.jsonl"
+    max_fp_rate: 0.02
+    min_cluster_size: 1
   auto_evolve:
     enabled: true
     registry_path: "data/cache/discovered_techniques.json"
@@ -109,7 +116,9 @@ llm_agent:
   api_base: "http://127.0.0.1:11434"
   api_key_env: "IGA_LLM_API_KEY"
   timeout_sec: 120
-  temperature: 0.80
+  temperature: 0.45
+  redteam_temperature: 0.35
+  redteam_seed: 42
   top_p: 0.92
   max_tokens: 512
   num_ctx: 4096                    # 限制 KV，避免默认 32K 浪费 ~1GB VRAM

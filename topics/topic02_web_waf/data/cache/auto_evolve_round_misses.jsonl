@@ -294,3 +294,7 @@
 {"ts": "2026-07-08T04:24:44.263765+00:00", "round": 3, "payload": "https://example.%EF%B8%91/resource?key=value", "label": "SQLi", "predicted": "Normal", "confidence": 0.4109, "source": "seed"}
 {"ts": "2026-07-08T04:26:06.585454+00:00", "round": 2, "payload": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--", "label": "SQLi", "predicted": "Normal", "confidence": 0.4204, "source": "llm:seed"}
 {"ts": "2026-07-08T04:26:30.563912+00:00", "round": 3, "payload": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--", "label": "SQLi", "predicted": "Normal", "confidence": 0.4074, "source": "seed"}
+{"ts": "2026-07-08T05:53:01.625666+00:00", "round": 2, "payload": "modo=registro&", "label": "CMD", "predicted": "Normal", "confidence": 0.88, "source": "llm:seed"}
+{"ts": "2026-07-08T05:53:42.491508+00:00", "round": 3, "payload": "inline_comment", "label": "XSS", "predicted": "Normal", "confidence": 0.7975, "source": "llm:autonomous"}
+{"ts": "2026-07-08T05:53:42.491558+00:00", "round": 3, "payload": "MOdO=rEGiStro&", "label": "CMD", "predicted": "Normal", "confidence": 0.88, "source": "obfuscation:case_random"}
+{"ts": "2026-07-08T05:53:42.491582+00:00", "round": 3, "payload": "modo%3Dregistro%26", "label": "CMD", "predicted": "Normal", "confidence": 0.62, "source": "obfuscation:url_encode"}

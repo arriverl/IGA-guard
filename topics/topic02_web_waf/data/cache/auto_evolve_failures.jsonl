@@ -694,3 +694,7 @@
 {"url": "http://auto.local/test?p=https%3A%2F%2Fexample.%25EF%25B8%2591%2Fresource%3Fkey%3Dvalue", "true_label": "SQLi", "predicted": "Normal", "payload": "https://example.%EF%B8%91/resource?key=value"}
 {"url": "http://auto.local/test?p=http%253A%252F%252Fwww.example.com%252Ftest.php%253Fparam1%3Dvalue1%2526param2%3Dvalue2--", "true_label": "SQLi", "predicted": "Normal", "payload": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--"}
 {"url": "http://auto.local/test?p=http%253A%252F%252Fwww.example.com%252Ftest.php%253Fparam1%3Dvalue1%2526param2%3Dvalue2--", "true_label": "SQLi", "predicted": "Normal", "payload": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--"}
+{"url": "http://auto.local/test", "true_label": "CMD", "predicted": "Normal", "payload": "modo=registro&"}
+{"url": "http://auto.local/test?p=inline_comment", "true_label": "XSS", "predicted": "Normal", "payload": "inline_comment"}
+{"url": "http://auto.local/test", "true_label": "CMD", "predicted": "Normal", "payload": "MOdO=rEGiStro&"}
+{"url": "http://auto.local/test?p=modo%253Dregistro%2526", "true_label": "CMD", "predicted": "Normal", "payload": "modo%3Dregistro%26"}

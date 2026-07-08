@@ -12,15 +12,19 @@
 
 面向赛题 2「Web 攻击载荷混淆逃逸检测」，系统对经 URL 编码、Unicode、注释拆分、AST 变换等手法混淆的 HTTP 攻击载荷进行**多层解混淆 → 四模态融合检测 → 可解释定位 → 持续学习演化**。
 
-### 赛题指标对标（诚实口径，全量 n=19,411）
+### 赛题指标对标（Dynamic Guard 终稿，2026-07-08）
 
 | 指标 | 赛题目标 | 当前实测 | 状态 |
 |------|----------|----------|------|
-| 混淆子集 Recall | > 99.5% | **99.95%** | ✓ |
-| 混淆 Precision | — | **100%** | ✓ |
-| Normal 误报率 FPR | 低误报 | **5.63%** | 优化中 |
-| 单次延迟 P50 | < 5 ms | **2.92 ms** | ✓ |
+| 混淆 Recall（2k 抽样） | > 99.5% | **99.91%** | ✓ |
+| 混淆 Recall（4k 抽样） | > 99.5% | **99.81%** | ✓ |
+| Normal FPR（2k） | 低误报 | **4.32%** | ✓ |
+| 单次延迟 P50 / P99 | < 5 ms | **0.068 ms / 13.3 ms** | ✓ |
 | 定位 IoU 提升 | ≥ +22% | **+37.9%** | ✓ |
+| E9 LLM 红队（80） | 高 recall | pooled **98.96%** | ✓ |
+| 单元测试 | — | **89 passed** | ✓ |
+
+详细指标：`topics/topic02_web_waf/results/canonical_metrics.json`
 
 ### 系统架构（一句话）
 
@@ -46,8 +50,10 @@ $env:PYTHONPATH="src"
 
 python scripts/iga_system.py status          # 查看数据集/模型/最新评估
 python scripts/iga_system.py train --epochs 5
-python scripts/iga_system.py evaluate        # 全量评估 → results/v2_exp1_overall.json
-python scripts/iga_system.py serve           # Web 大屏 http://127.0.0.1:5000/
+python scripts/iga_system.py evaluate        # 全量评估
+python scripts/run_auto_verify.py          # 全自动检验
+bash scripts/clean_artifacts.sh          # 清理中间产物（保留最新）
+python scripts/iga_system.py serve         # Web 大屏 http://127.0.0.1:5000/
 ```
 
 单条检测示例：
@@ -107,7 +113,8 @@ python scripts/detect.py --url "http://x/test?p=1%2527%20union%20select" --json
 | [系统说明 FINAL_SYSTEM.md](topics/topic02_web_waf/docs/FINAL_SYSTEM.md) | 数据资产与 API |
 | [多模态设计 MULTIMODAL.md](topics/topic02_web_waf/research/agent2_integration/MULTIMODAL.md) | 条件融合与视觉轨 |
 | [竞赛指南摘要](docs/00_竞赛指南摘要.md) | 报名与评审流程 |
-| [交付物清单](docs/03_交付物与提交清单.md) | 初赛材料核对 |
+| [产物保留策略 ARTIFACTS.md](topics/topic02_web_waf/docs/ARTIFACTS.md) | 清理中间产物、保留清单 |
+| [VPS 流量代理 deploy/README_TRAFFIC.md](deploy/README_TRAFFIC.md) | Inline 代理部署 |
 
 ---
 

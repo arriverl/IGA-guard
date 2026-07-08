@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 
 from iga_guard.models import ATTACK_LABELS, NormalizedPayload
+from iga_guard.obfuscation_signals import is_benign_traffic_context
 
 # 项目根目录：src/iga_guard/detector/ → parents[3]
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -287,6 +288,9 @@ class SemanticBranch:
         if len(text) < 4:
             return False
         low = text.lower()
+        # 级联 NLP：CSIC 良性表单/地址短参跳过 BERT 深检，压 P99。
+        if is_benign_traffic_context(text, low) and low.count("%") < 4 and len(low) <= 120:
+            return False
         if any(k in low for k in _SUSPICIOUS_TOKENS):
             return True
         if any(m in low for m in ("%", "&#", "\\u", "/**/", "0x", "char(", "eval(", "boundary=")):

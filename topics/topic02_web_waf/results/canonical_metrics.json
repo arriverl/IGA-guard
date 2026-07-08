@@ -1,0 +1,57 @@
+{
+  "updated_at": "2026-07-08",
+  "source": "consolidated from canonical result files",
+  "pytest": { "passed": 89, "note": "tests/ full suite 2026-07-08" },
+  "e1_2k": {
+    "file": "results/v2_exp1_auto_2k.json",
+    "obf_recall": 0.9991,
+    "fpr": 0.0432,
+    "samples": 2000
+  },
+  "e1_4k": {
+    "file": "results/v2_exp1_auto_4k.json",
+    "obf_recall": 0.9981,
+    "fpr": 0.0458,
+    "samples": 4000
+  },
+  "e1_nocache": {
+    "file": "results/v2_exp1_auto_nocache_2k.json",
+    "obf_recall": 0.9953,
+    "fpr": 0.0312,
+    "samples": 2000
+  },
+  "e4_latency": {
+    "file": "results/v2_exp4_latency.json",
+    "p50_ms": 0.068,
+    "p99_ms": 13.28,
+    "pass": true
+  },
+  "e6_explain": {
+    "file": "results/v2_exp6_localization.json",
+    "span_hit_rate": 1.0,
+    "localization_improvement": 0.3793,
+    "pass": true
+  },
+  "e8_patch": {
+    "file": "results/v2_exp8_virtual_patch.json",
+    "block_rate": 1.0
+  },
+  "e9_40": {
+    "file": "results/v2_exp9_auto_40.json",
+    "gate": "pooled + block only (smoke test)",
+    "note": "40 variants 受 LLM 随机性影响；final round 不作硬门禁"
+  },
+  "e9_80": {
+    "file": "results/v2_exp9_auto_80.json",
+    "pooled_recall": 0.9896,
+    "final_round_recall": 0.9818,
+    "block_recall": 0.9896
+  },
+  "features": [
+    "Miss→Rule 闭环 (miss_rule_pipeline)",
+    "discovered_rescue_rules 热加载",
+    "级联 NLP + 良性快路径",
+    "融合权重校准 (fusion_calibrator)",
+    "VPS inline 代理 + systemd/gunicorn"
+  ]
+}

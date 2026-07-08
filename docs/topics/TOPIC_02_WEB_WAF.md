@@ -1,5 +1,29 @@
 # 题目 2：针对混淆逃逸的 Web 攻击载荷动态检测与对抗方案
 
+## 实现状态
+
+**作品路径**：[`topics/topic02_web_waf/`](../../topics/topic02_web_waf/)  
+**主入口**：[`topics/topic02_web_waf/README.md`](../../topics/topic02_web_waf/README.md)
+
+已实现模块：
+
+- 多层解混淆 + 四模态融合检测（RF / TinyBERT / 多模态 / DLinear）
+- Miss→Rule 闭环（`miss_rule_pipeline.py`）+ 动态 rescue 热加载
+- LLM 红队对抗演化（E9）+ 置信度引导变异
+- WebSpotter 可解释定位 + 虚拟补丁（E8）
+- VPS Inline 流量代理（`deploy/start_vps.sh`）
+
+## 最新指标（2026-07-08）
+
+见 [`results/canonical_metrics.json`](../../topics/topic02_web_waf/results/canonical_metrics.json)
+
+| 指标 | 实测 |
+|------|------|
+| E1 obf recall（2k） | 99.91% |
+| E4 P99 | 13.3 ms |
+| E9 pooled（80 variants） | 98.96% |
+| pytest | 89 passed |
+
 ## 题目背景
 
 传统 WAF 依赖已知特征库，攻击者通过编码混淆、SQL/命令变形、脚本模糊等绕过静态匹配。本赛题要求设计能应对混淆逃逸的动态检测方案。

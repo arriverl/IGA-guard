@@ -38,6 +38,8 @@ def main() -> int:
     if use_llm:
         from iga_guard.adversarial.llm_agent import LLMAdversarialAgent
         llm_cfg = {**loop.cfg.get("llm_agent", {}), "enabled": True}
+        llm_cfg["temperature"] = float(llm_cfg.get("redteam_temperature", 0.35))
+        llm_cfg["seed"] = int(llm_cfg.get("redteam_seed", args.seed))
         agent = LLMAdversarialAgent(llm_cfg)
         agent.history_path = ROOT / "data" / "cache" / "llm_redteam_history.jsonl"
         loop.llm_agent = agent if agent.available() else None

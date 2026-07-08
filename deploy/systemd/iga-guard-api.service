@@ -1,0 +1,16 @@
+[Unit]
+Description=IGA-Guard Management API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/iga-guard/topics/topic02_web_waf
+Environment=IGA_CONFIG=configs/default.yaml
+Environment=PYTHONPATH=/opt/iga-guard/topics/topic02_web_waf/src
+ExecStart=/usr/bin/gunicorn -c /opt/iga-guard/deploy/gunicorn.conf.py backend.app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
