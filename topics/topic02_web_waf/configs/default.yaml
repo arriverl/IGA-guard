@@ -1,13 +1,22 @@
-# IGA-Guard 3.0
+# IGA-Guard 3.0 — 服务器优化配置（V100S 32GB + 629GB RAM）
+# 调研结论：LLM 用 qwen2.5:3b；检测 TinyBERT@CUDA；RAG/ST@CPU；与 CHASM 7B 4bit 可共存
 version: "3.0.0"
 
 server:
-  host: "127.0.0.1"
+  host: "0.0.0.0"
   port: 5000
 
 detector:
-  engine: "dual_track"          # dual_track | fusion (legacy)
+  engine: "dual_track"
   model_path: "models/fusion_detector.joblib"
+  # 已微调 bert-tiny（checkpoint-34380 / 根目录 model.safetensors）
+  semantic_model: "prajjwal1/bert-tiny"
+  local_model_dir: "models/tinybert_waf"
+  use_semantic_branch: true
+  semantic_conditional: true       # 仅可疑载荷走 BERT（降延迟、减误报）
+  semantic_device: "cuda"          # V100 加速；CHASM 同卡时仍有余量
+  semantic_fp16: true              # FP16 推理降延迟
+  warmup_on_init: true             # 消除冷启动 P99 尖峰
   confidence_threshold: 0.38
   cache_force_hit_min: 0.92
   cache_fusion_weight_benign: 0.12
@@ -16,8 +25,7 @@ detector:
   fp_guard_min_attack_conf: 0.55
   fp_guard_tier_b_enabled: true
   obfuscation_boost_min_base_attack: 0.20
-  semantic_model: "distilbert-base-uncased"  # optional TinyBERT-v2
-  use_semantic_branch: true    # TinyBERT 已用 master 数据集微调
+  early_exit_confidence: 0.90
   labels:
     - Normal
     - SQLi
@@ -42,7 +50,8 @@ dlinear:
 
 latency:
   target_ms: 5
-  benchmark_iterations: 50000
+  benchmark_iterations: 1000
+  warmup_iterations: 500
 
 evolution:
   failure_cache: "data/cache/failures.jsonl"
@@ -51,15 +60,14 @@ evolution:
   failure_augment: 2
   online_rl_enabled: true
   learning_rate: 0.05
-  # 自我迭代：漏检 → 发现新手法 → 扩缓存 → 增量重训
   auto_evolve:
     enabled: true
     registry_path: "data/cache/discovered_techniques.json"
     history_path: "data/cache/auto_evolve_history.jsonl"
-    default_rounds: 2
+    default_rounds: 3
     max_variants_per_round: 200
+    use_llm: true
 
-# Tip-Adapter 风格持续学习缓存（冻结编码器 + 动态 KV 库）
 continual_cache:
   enabled: true
   path: "models/continual_cache.npz"
@@ -71,9 +79,8 @@ continual_cache:
   dedupe_threshold: 0.98
   multimodal_alpha: 0.85
   use_vision_keys: true
+  encoder_model: "sentence-transformers/all-MiniLM-L6-v2"  # CPU 384d，速度与质量平衡
 
-# IGA-Guard 3.0 多模态轨（协议 + 字节图视觉，冻结编码器）
-# 条件融合：混淆样本压低 mm 权重，Normal 流量加强压 FP
 multimodal:
   enabled: true
   vision_weight: 0.30
@@ -81,17 +88,14 @@ multimodal:
   weight_semantic: 0.28
   weight_multimodal: 0.14
   weight_dlinear: 0.12
-  # 混淆子集：主信号 RF+语义
   weight_base_obfuscated: 0.42
   weight_semantic_obfuscated: 0.32
   weight_multimodal_obfuscated: 0.04
   weight_dlinear_obfuscated: 0.12
-  # 非混淆（含 Normal）：多模态压误报
   weight_base_benign: 0.34
   weight_semantic_benign: 0.24
   weight_multimodal_benign: 0.22
   weight_dlinear_benign: 0.10
-  # 门控：base 已确信攻击时不掺 mm
   gate_base_attack_threshold: 0.45
   gate_base_low_threshold: 0.25
   gate_mm_normal_threshold: 0.5
@@ -99,20 +103,28 @@ multimodal:
   byte_grid: [32, 64]
 
 llm_agent:
-  enabled: false                    # 设为 true 启用 LLM 自主迭代
-  provider: "ollama"                # ollama（本地小模型）| openai_compatible（DashScope/OpenAI）
-  model: "qwen2.5:0.5b"             # 推荐小模型: qwen2.5:0.5b / qwen2.5:1.5b / phi3:mini / gemma2:2b
+  enabled: true
+  provider: "ollama"
+  model: "qwen2.5:3b"              # V100+CHASM 下质量/显存最优（调研首选）
   api_base: "http://127.0.0.1:11434"
-  api_key_env: "IGA_LLM_API_KEY"    # Ollama 本地通常不需要；云端 API 必填
-  timeout_sec: 90
-  temperature: 0.85
+  api_key_env: "IGA_LLM_API_KEY"
+  timeout_sec: 120
+  temperature: 0.80
+  top_p: 0.92
   max_tokens: 512
-  max_variants_per_call: 4
-  autonomous: true                  # 漏检反馈驱动下一轮生成
+  num_ctx: 4096                    # 限制 KV，避免默认 32K 浪费 ~1GB VRAM
+  num_gpu: -1                      # 全层 GPU offload
+  max_variants_per_call: 6
+  autonomous: true
+  rag_enabled: true
 
 explanation:
   nl_enabled: true
-  nl_provider: "template"       # template | local_llm | api
+  # 热路径用 template（~0ms）；local_llm 仅用于 /api/detect 按需或离线报告
+  nl_provider: "template"
+  nl_model: "qwen2.5:3b"
+  nl_max_tokens: 128
+  nl_num_ctx: 2048
 
 rules:
   export_dir: "data/rules_export"
@@ -124,15 +136,15 @@ timeseries:
 protocols:
   http1: true
   http2: true
-  http3: false
+  http3: true
   websocket: true
 
-# RAG 知识检索（文献 + 漏检 + 社区情报 → LLM/Agent 增强）
 rag:
   enabled: true
   index_path: "data/cache/rag_index.npz"
   meta_path: "data/cache/rag_index_meta.json"
   top_k: 5
+  encoder_model: "sentence-transformers/all-MiniLM-L6-v2"
   categories:
     - miss_pattern
     - technique

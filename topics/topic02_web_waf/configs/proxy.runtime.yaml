@@ -1,0 +1,27 @@
+include: default.yaml
+proxy:
+  api_mirror_url: http://127.0.0.1:5000/api/detect
+  block_on_malicious: true
+  block_status: 403
+  enabled: true
+  exclude_paths:
+  - /api/
+  - /_iga/
+  forward_timeout_s: 30
+  log_blocks: true
+  max_body_bytes: 1048576
+  mode: inline
+  strip_request_headers:
+  - host
+  - connection
+  - content-length
+  - transfer-encoding
+  - upgrade
+  - proxy-connection
+  - proxy-authorization
+  trust_x_forwarded: true
+  upstream_url: http://127.0.0.1:8765
+server:
+  host: 0.0.0.0
+  port: 8080
+version: 3.0.0

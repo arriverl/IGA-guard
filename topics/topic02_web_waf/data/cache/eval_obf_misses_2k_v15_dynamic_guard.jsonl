@@ -1,0 +1,3 @@
+{"payload": "modo%3Dregistro%26login%3Dhatti%26password%3DviTUpeRAdOr%26nombre%3D%3F%26apellidos%3DC%EF%BF%BDmara%2BDovale%26email%3Dtiensuwan%40zarasalud.py%26dni%3D84598781C%26direccion%3DCalle%2BSor%2BMercedes%2BS%2FN%2B12-D%26ciudad%3DLloar%2C%2BEl%26cp%3D24170%26provincia%3DValladolid%26ntc%3D4582509168680893%26B1%3DRegistrar", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Pl.%2BMerced%2C%2B147%2B", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "F8E98FEB0AEC1E6391F91E08313ED15E", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}

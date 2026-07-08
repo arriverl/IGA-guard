@@ -1,6 +1,6 @@
 {
   "experiment": "E5_ablation",
-  "dataset": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\test_obfuscated.csv",
+  "dataset": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/master/test_obfuscated.csv",
   "max_samples": 3000,
   "configs": [
     "full",
@@ -13,167 +13,171 @@
     "full": {
       "eval_samples": 3000,
       "overall_multiclass": {
-        "accuracy": 0.795,
-        "recall_malicious_exact_class": 0.7698,
+        "accuracy": 0.83,
+        "recall_malicious_exact_class": 0.7856,
         "samples": 3000
       },
       "overall_binary": {
-        "detection_recall": 0.8578,
-        "detection_precision": 0.9617,
-        "f1": 0.9068,
-        "false_positive_rate": 0.1214,
-        "tp": 2008,
-        "fp": 80,
-        "fn": 333,
-        "tn": 579,
+        "detection_recall": 0.8099,
+        "detection_precision": 0.9958,
+        "f1": 0.8933,
+        "false_positive_rate": 0.0121,
+        "tp": 1896,
+        "fp": 8,
+        "fn": 445,
+        "tn": 651,
         "samples": 3000
       },
       "obfuscated_attack_binary": {
-        "detection_recall": 0.9711,
+        "detection_recall": 0.9755,
         "detection_precision": 1.0,
-        "f1": 0.9853,
+        "f1": 0.9876,
         "false_positive_rate": 0,
-        "tp": 1545,
+        "tp": 1555,
         "fp": 0,
-        "fn": 46,
+        "fn": 39,
         "tn": 0,
-        "samples": 1591
+        "samples": 1594
       },
       "normal_binary": {
-        "false_positive_rate": 0.1214,
-        "fp": 80,
-        "tn": 579,
+        "false_positive_rate": 0.0121,
+        "fp": 8,
+        "tn": 651,
         "samples": 659
       },
       "target_obfuscated_recall": 0.995,
       "pass_binary_obfuscated": false,
-      "elapsed_sec": 267.0,
+      "elapsed_sec": 3047.8,
       "config_overrides": {},
       "cache_stats": {
-        "size": 552,
+        "size": 1450,
         "encoder_mode": "st",
         "multimodal_alpha": 0.85,
-        "vision_keys": 552,
+        "vision_keys": 1450,
         "max_size": 5000,
         "by_label": {
           "Normal": 25,
-          "CMD": 293,
-          "SQLi": 175,
-          "XSS": 26,
-          "PathTraversal": 24,
+          "CMD": 521,
+          "SQLi": 811,
+          "XSS": 55,
+          "PathTraversal": 29,
           "FileInclusion": 3,
           "XXE": 3,
           "PromptInjection": 3
         },
         "by_source": {
-          "few_shot_seed": 132,
-          "eval_miss": 420
+          "few_shot_seed": 129,
+          "evolve": 835,
+          "eval_miss": 377,
+          "auto_evolve": 109
         }
       }
     },
     "no_semantic": {
       "eval_samples": 3000,
       "overall_multiclass": {
-        "accuracy": 0.7953,
-        "recall_malicious_exact_class": 0.7702,
+        "accuracy": 0.8297,
+        "recall_malicious_exact_class": 0.7851,
         "samples": 3000
       },
       "overall_binary": {
-        "detection_recall": 0.8582,
-        "detection_precision": 0.9617,
-        "f1": 0.907,
-        "false_positive_rate": 0.1214,
-        "tp": 2009,
-        "fp": 80,
-        "fn": 332,
-        "tn": 579,
+        "detection_recall": 0.8099,
+        "detection_precision": 0.9958,
+        "f1": 0.8933,
+        "false_positive_rate": 0.0121,
+        "tp": 1896,
+        "fp": 8,
+        "fn": 445,
+        "tn": 651,
         "samples": 3000
       },
       "obfuscated_attack_binary": {
-        "detection_recall": 0.9711,
+        "detection_recall": 0.9755,
         "detection_precision": 1.0,
-        "f1": 0.9853,
+        "f1": 0.9876,
         "false_positive_rate": 0,
-        "tp": 1545,
+        "tp": 1555,
         "fp": 0,
-        "fn": 46,
+        "fn": 39,
         "tn": 0,
-        "samples": 1591
+        "samples": 1594
       },
       "normal_binary": {
-        "false_positive_rate": 0.1214,
-        "fp": 80,
-        "tn": 579,
+        "false_positive_rate": 0.0121,
+        "fp": 8,
+        "tn": 651,
         "samples": 659
       },
       "target_obfuscated_recall": 0.995,
       "pass_binary_obfuscated": false,
-      "elapsed_sec": 230.7,
+      "elapsed_sec": 3033.4,
       "config_overrides": {
         "detector": {
           "use_semantic_branch": false
         }
       },
       "cache_stats": {
-        "size": 552,
+        "size": 1450,
         "encoder_mode": "st",
         "multimodal_alpha": 0.85,
-        "vision_keys": 552,
+        "vision_keys": 1450,
         "max_size": 5000,
         "by_label": {
           "Normal": 25,
-          "CMD": 293,
-          "SQLi": 175,
-          "XSS": 26,
-          "PathTraversal": 24,
+          "CMD": 521,
+          "SQLi": 811,
+          "XSS": 55,
+          "PathTraversal": 29,
           "FileInclusion": 3,
           "XXE": 3,
           "PromptInjection": 3
         },
         "by_source": {
-          "few_shot_seed": 132,
-          "eval_miss": 420
+          "few_shot_seed": 129,
+          "evolve": 835,
+          "eval_miss": 377,
+          "auto_evolve": 109
         }
       }
     },
     "no_multimodal": {
       "eval_samples": 3000,
       "overall_multiclass": {
-        "accuracy": 0.8007,
-        "recall_malicious_exact_class": 0.7723,
+        "accuracy": 0.8297,
+        "recall_malicious_exact_class": 0.7834,
         "samples": 3000
       },
       "overall_binary": {
-        "detection_recall": 0.8535,
-        "detection_precision": 0.9634,
-        "f1": 0.9051,
-        "false_positive_rate": 0.1153,
-        "tp": 1998,
-        "fp": 76,
-        "fn": 343,
-        "tn": 583,
+        "detection_recall": 0.8078,
+        "detection_precision": 0.9979,
+        "f1": 0.8928,
+        "false_positive_rate": 0.0061,
+        "tp": 1891,
+        "fp": 4,
+        "fn": 450,
+        "tn": 655,
         "samples": 3000
       },
       "obfuscated_attack_binary": {
-        "detection_recall": 0.9698,
+        "detection_recall": 0.9749,
         "detection_precision": 1.0,
-        "f1": 0.9847,
+        "f1": 0.9873,
         "false_positive_rate": 0,
-        "tp": 1543,
+        "tp": 1554,
         "fp": 0,
-        "fn": 48,
+        "fn": 40,
         "tn": 0,
-        "samples": 1591
+        "samples": 1594
       },
       "normal_binary": {
-        "false_positive_rate": 0.1153,
-        "fp": 76,
-        "tn": 583,
+        "false_positive_rate": 0.0061,
+        "fp": 4,
+        "tn": 655,
         "samples": 659
       },
       "target_obfuscated_recall": 0.995,
       "pass_binary_obfuscated": false,
-      "elapsed_sec": 199.2,
+      "elapsed_sec": 2959.2,
       "config_overrides": {
         "multimodal": {
           "enabled": false
@@ -183,65 +187,67 @@
         }
       },
       "cache_stats": {
-        "size": 552,
+        "size": 1450,
         "encoder_mode": "st",
         "multimodal_alpha": 0.85,
-        "vision_keys": 552,
+        "vision_keys": 1450,
         "max_size": 5000,
         "by_label": {
           "Normal": 25,
-          "CMD": 293,
-          "SQLi": 175,
-          "XSS": 26,
-          "PathTraversal": 24,
+          "CMD": 521,
+          "SQLi": 811,
+          "XSS": 55,
+          "PathTraversal": 29,
           "FileInclusion": 3,
           "XXE": 3,
           "PromptInjection": 3
         },
         "by_source": {
-          "few_shot_seed": 132,
-          "eval_miss": 420
+          "few_shot_seed": 129,
+          "evolve": 835,
+          "eval_miss": 377,
+          "auto_evolve": 109
         }
       }
     },
     "no_cache": {
       "eval_samples": 3000,
       "overall_multiclass": {
-        "accuracy": 0.725,
-        "recall_malicious_exact_class": 0.654,
+        "accuracy": 0.813,
+        "recall_malicious_exact_class": 0.7621,
         "samples": 3000
       },
       "overall_binary": {
-        "detection_recall": 0.7749,
-        "detection_precision": 0.9918,
-        "f1": 0.87,
-        "false_positive_rate": 0.0228,
-        "tp": 1814,
-        "fp": 15,
-        "fn": 527,
-        "tn": 644,
+        "detection_recall": 0.8078,
+        "detection_precision": 0.9979,
+        "f1": 0.8928,
+        "false_positive_rate": 0.0061,
+        "tp": 1891,
+        "fp": 4,
+        "fn": 450,
+        "tn": 655,
         "samples": 3000
       },
       "obfuscated_attack_binary": {
-        "detection_recall": 0.9082,
+        "detection_recall": 0.9737,
         "detection_precision": 1.0,
-        "f1": 0.9519,
+        "f1": 0.9866,
         "false_positive_rate": 0,
-        "tp": 1445,
+        "tp": 1552,
         "fp": 0,
-        "fn": 146,
+        "fn": 42,
         "tn": 0,
-        "samples": 1591
+        "samples": 1594
       },
       "normal_binary": {
-        "false_positive_rate": 0.0228,
-        "fp": 15,
-        "tn": 644,
+        "false_positive_rate": 0.0061,
+        "fp": 4,
+        "tn": 655,
         "samples": 659
       },
       "target_obfuscated_recall": 0.995,
       "pass_binary_obfuscated": false,
-      "elapsed_sec": 134.9,
+      "elapsed_sec": 2811.6,
       "config_overrides": {
         "continual_cache": {
           "enabled": false
@@ -251,41 +257,41 @@
     "no_dlinear": {
       "eval_samples": 3000,
       "overall_multiclass": {
-        "accuracy": 0.7837,
-        "recall_malicious_exact_class": 0.7446,
+        "accuracy": 0.8287,
+        "recall_malicious_exact_class": 0.7821,
         "samples": 3000
       },
       "overall_binary": {
-        "detection_recall": 0.8266,
-        "detection_precision": 0.9738,
-        "f1": 0.8942,
-        "false_positive_rate": 0.0789,
-        "tp": 1935,
-        "fp": 52,
-        "fn": 406,
-        "tn": 607,
+        "detection_recall": 0.8056,
+        "detection_precision": 0.9979,
+        "f1": 0.8915,
+        "false_positive_rate": 0.0061,
+        "tp": 1886,
+        "fp": 4,
+        "fn": 455,
+        "tn": 655,
         "samples": 3000
       },
       "obfuscated_attack_binary": {
-        "detection_recall": 0.9459,
+        "detection_recall": 0.9743,
         "detection_precision": 1.0,
-        "f1": 0.9722,
+        "f1": 0.987,
         "false_positive_rate": 0,
-        "tp": 1505,
+        "tp": 1553,
         "fp": 0,
-        "fn": 86,
+        "fn": 41,
         "tn": 0,
-        "samples": 1591
+        "samples": 1594
       },
       "normal_binary": {
-        "false_positive_rate": 0.0789,
-        "fp": 52,
-        "tn": 607,
+        "false_positive_rate": 0.0061,
+        "fp": 4,
+        "tn": 655,
         "samples": 659
       },
       "target_obfuscated_recall": 0.995,
       "pass_binary_obfuscated": false,
-      "elapsed_sec": 183.8,
+      "elapsed_sec": 3043.7,
       "config_overrides": {
         "multimodal": {
           "weight_dlinear": 0.0,
@@ -294,32 +300,34 @@
         }
       },
       "cache_stats": {
-        "size": 552,
+        "size": 1450,
         "encoder_mode": "st",
         "multimodal_alpha": 0.85,
-        "vision_keys": 552,
+        "vision_keys": 1450,
         "max_size": 5000,
         "by_label": {
           "Normal": 25,
-          "CMD": 293,
-          "SQLi": 175,
-          "XSS": 26,
-          "PathTraversal": 24,
+          "CMD": 521,
+          "SQLi": 811,
+          "XSS": 55,
+          "PathTraversal": 29,
           "FileInclusion": 3,
           "XXE": 3,
           "PromptInjection": 3
         },
         "by_source": {
-          "few_shot_seed": 132,
-          "eval_miss": 420
+          "few_shot_seed": 129,
+          "evolve": 835,
+          "eval_miss": 377,
+          "auto_evolve": 109
         }
       }
     }
   },
   "delta_obfuscated_recall_vs_full": {
     "no_semantic": 0.0,
-    "no_multimodal": -0.0013,
-    "no_cache": -0.0629,
-    "no_dlinear": -0.0252
+    "no_multimodal": -0.0006,
+    "no_cache": -0.0018,
+    "no_dlinear": -0.0012
   }
 }

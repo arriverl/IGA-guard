@@ -35,6 +35,8 @@ _SUSPICIOUS_TOKENS: frozenset[str] = frozenset({
 
 # 判定本地目录是否“可加载”的权重文件名
 _WEIGHT_FILES = ("model.safetensors", "pytorch_model.bin")
+_HEX32_TOKEN = re.compile(r"\b[0-9a-f]{32}\b", re.I)
+_HPP_DUP_PARAM = re.compile(r"(?:^|[?&])([a-z0-9_]{1,32})=.*(?:[?&]\1=)", re.I)
 
 
 class SemanticBranch:
@@ -49,17 +51,35 @@ class SemanticBranch:
         model_name: str = "distilbert-base-uncased",
         enabled: bool = False,
         local_model_dir: str | Path | None = None,
+        *,
+        conditional: bool = True,
+        fp16: bool = True,
     ):
         # model_name / enabled 保留以兼容旧配置；本地目录存在时优先使用 TinyBERT
         self.model_name = model_name
         self.enabled = enabled
+        self.conditional = conditional
+        self.fp16 = fp16
         self.local_model_dir = Path(local_model_dir) if local_model_dir else _DEFAULT_TINYBERT_DIR
-        self._classifier = None  # transformers pipeline 实例
+        self._device = None  # lazy: cuda / cpu from config
+        self._tokenizer = None
+        self._model = None  # transformers 模型（直连推理，避免 pipeline 逐条 GPU 告警）
         self._mode: str = "pending"  # pending | bert | keyword
 
-    # ------------------------------------------------------------------
-    # 模型路径解析与懒加载
-    # ------------------------------------------------------------------
+    def configure_runtime(self, *, device: str | None = None) -> None:
+        """由 DualTrackDetector 注入 device（cuda/cpu）。"""
+        if device:
+            self._device = 0 if device == "cuda" else -1
+
+    def _pipeline_device(self) -> int:
+        if self._device is not None:
+            return self._device
+        try:
+            import torch
+            self._device = 0 if torch.cuda.is_available() else -1
+        except Exception:
+            self._device = -1
+        return self._device
 
     def _resolve_model_path(self) -> Path | None:
         """
@@ -99,13 +119,13 @@ class SemanticBranch:
 
     def _lazy_load_classifier(self) -> bool:
         """
-        懒加载 text-classification pipeline。
+        懒加载 TinyBERT 分类器（tokenizer + model 直连，避免 pipeline 逐条推理告警）。
 
         成功 → ``_mode='bert'``；失败或目录缺失 → ``_mode='keyword'``。
         """
         if self._mode == "keyword":
             return False
-        if self._classifier is not None:
+        if self._model is not None and self._tokenizer is not None:
             return True
 
         model_path = self._resolve_model_path()
@@ -114,21 +134,26 @@ class SemanticBranch:
             return False
 
         try:
-            from transformers import pipeline  # type: ignore
+            import torch
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer  # type: ignore
 
             tok_path = self._tokenizer_path(model_path)
-            self._classifier = pipeline(
-                "text-classification",
-                model=str(model_path),
-                tokenizer=str(tok_path),
-                top_k=None,
-                truncation=True,
-                max_length=128,
+            device_idx = self._pipeline_device()
+            device = torch.device(f"cuda:{device_idx}" if device_idx >= 0 else "cpu")
+
+            dtype = torch.float16 if self.fp16 and device_idx >= 0 else torch.float32
+            self._tokenizer = AutoTokenizer.from_pretrained(str(tok_path))
+            self._model = AutoModelForSequenceClassification.from_pretrained(
+                str(model_path),
+                dtype=dtype,
             )
+            self._model.to(device)
+            self._model.eval()
             self._mode = "bert"
             return True
         except Exception:
-            self._classifier = None
+            self._tokenizer = None
+            self._model = None
             self._mode = "keyword"
             return False
 
@@ -152,19 +177,29 @@ class SemanticBranch:
     def _classify_with_bert(self, text: str) -> dict[str, float]:
         """
         调用微调 TinyBERT，返回 8 类 softmax 概率字典。
-
-        pipeline(top_k=None) 返回形如 [{label, score}, ...] 的列表。
         """
-        assert self._classifier is not None
-        raw = self._classifier(text[:512])
-        # batch_size=1 时可能再包一层 list
-        items = raw[0] if raw and isinstance(raw[0], list) else raw
+        import torch
 
+        assert self._model is not None and self._tokenizer is not None
+        inputs = self._tokenizer(
+            text[:512],
+            return_tensors="pt",
+            truncation=True,
+            max_length=128,
+        )
+        device = next(self._model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        with torch.no_grad():
+            logits = self._model(**inputs).logits
+        scores = torch.softmax(logits, dim=-1)[0].tolist()
+
+        id2label = getattr(self._model.config, "id2label", None) or {}
         probs: dict[str, float] = {label: 0.0 for label in ATTACK_LABELS}
-        for item in items or []:
-            mapped = self._map_hf_label(str(item.get("label", "")))
+        for idx, score in enumerate(scores):
+            raw_label = id2label.get(idx, id2label.get(str(idx), f"LABEL_{idx}"))
+            mapped = self._map_hf_label(str(raw_label))
             if mapped is not None:
-                probs[mapped] = float(item.get("score", 0.0))
+                probs[mapped] = float(score)
         return probs
 
     # ------------------------------------------------------------------
@@ -232,7 +267,7 @@ class SemanticBranch:
         """
         text = (payload.normalized_payload or payload.raw_payload).lower()
 
-        if self._lazy_load_classifier() and self._classifier is not None:
+        if self._lazy_load_classifier() and self._model is not None:
             try:
                 probs = self._classify_with_bert(text)
                 features: dict[str, float] = {
@@ -256,6 +291,13 @@ class SemanticBranch:
             return True
         if any(m in low for m in ("%", "&#", "\\u", "/**/", "0x", "char(", "eval(", "boundary=")):
             return True
+        # E9 常见绕过：hex32 token / HPP 重复参数，强制走语义深检。
+        if _HEX32_TOKEN.search(low):
+            return True
+        if _HPP_DUP_PARAM.search(low):
+            return True
+        if low.count("%") >= 6:
+            return True
         return len(low) > 80
 
     def class_bias(self, payload: NormalizedPayload) -> dict[str, float]:
@@ -266,7 +308,15 @@ class SemanticBranch:
         """
         text = (payload.normalized_payload or payload.raw_payload).lower()
 
-        if self._needs_semantic_deep(text) and self._lazy_load_classifier() and self._classifier is not None:
+        if not self.enabled:
+            return self._keyword_class_bias(text)
+
+        use_bert = (
+            self._needs_semantic_deep(text)
+            if self.conditional
+            else True
+        )
+        if use_bert and self._lazy_load_classifier() and self._model is not None:
             try:
                 probs = self._classify_with_bert(text)
                 bias = {label: probs.get(label, 0.0) for label in ATTACK_LABELS}
@@ -277,3 +327,19 @@ class SemanticBranch:
                 pass
 
         return self._keyword_class_bias(text)
+
+    def warmup(self) -> None:
+        """预加载 BERT 并跑一次推理，消除冷启动延迟尖峰。"""
+        from iga_guard.models import NormalizedPayload
+
+        for s in ("1 union select null--", "http://example.com/login?id=1"):
+            try:
+                p = NormalizedPayload(
+                    raw_payload=s,
+                    normalized_payload=s,
+                    field_name="id",
+                    location="query",
+                )
+                self.class_bias(p)
+            except Exception:
+                pass

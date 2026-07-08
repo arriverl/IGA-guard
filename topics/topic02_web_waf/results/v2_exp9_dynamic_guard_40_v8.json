@@ -1,0 +1,57 @@
+{
+  "experiment": "E9_llm_redteam",
+  "llm_enabled": true,
+  "llm_status": {
+    "enabled": true,
+    "configured": true,
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "api_base": "http://127.0.0.1:11434",
+    "ollama_reachable": true,
+    "local_models": [
+      "qwen2.5:3b",
+      "qwen2.5:1.5b",
+      "qwen2.5:0.5b"
+    ],
+    "model_available": true,
+    "autonomous": true
+  },
+  "rounds": 3,
+  "max_variants": 40,
+  "total_variants": 120,
+  "total_detected": 120,
+  "total_missed": 0,
+  "final_round_recall": 1.0,
+  "pooled_recall": 1.0,
+  "avg_recall": 1.0,
+  "new_techniques_discovered": 0,
+  "round_misses_path": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_evolve_round_misses.jsonl",
+  "rounds_detail": [
+    {
+      "round": 1,
+      "total": 40,
+      "detected": 40,
+      "missed": 0,
+      "recall": 1.0,
+      "new_techniques": []
+    },
+    {
+      "round": 2,
+      "total": 40,
+      "detected": 40,
+      "missed": 0,
+      "recall": 1.0,
+      "new_techniques": []
+    },
+    {
+      "round": 3,
+      "total": 40,
+      "detected": 40,
+      "missed": 0,
+      "recall": 1.0,
+      "new_techniques": []
+    }
+  ],
+  "target": "LLM-Evasion Recall > 95%",
+  "passed": true
+}

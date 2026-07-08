@@ -55,9 +55,12 @@ class FrozenTextEncoder:
         try:
             from sentence_transformers import SentenceTransformer  # type: ignore
 
-            self._st = SentenceTransformer(self.model_name)
+            self._st = SentenceTransformer(self.model_name, local_files_only=True)
             self._mode = "st"
-            self.dim = int(self._st.get_sentence_embedding_dimension())
+            if hasattr(self._st, "get_embedding_dimension"):
+                self.dim = int(self._st.get_embedding_dimension())
+            else:
+                self.dim = int(self._st.get_sentence_embedding_dimension())
         except Exception:
             self._st = None
             self._mode = "hash"
@@ -378,7 +381,9 @@ class ContinualCacheAdapter:
     ) -> ContinualCacheAdapter:
         cfg = config or {}
         npz_path = Path(path or cfg.get("path", _DEFAULT_CACHE_PATH))
+        enc_name = cfg.get("encoder_model", "sentence-transformers/all-MiniLM-L6-v2")
         adapter = cls(
+            encoder=FrozenTextEncoder(enc_name),
             labels=cfg.get("labels", ATTACK_LABELS),
             max_size=int(cfg.get("max_size", 5000)),
             beta=float(cfg.get("beta", 5.0)),
@@ -392,6 +397,11 @@ class ContinualCacheAdapter:
             return adapter
 
         data = np.load(npz_path, allow_pickle=True)
+        saved_mode = str(data.get("encoder_mode", adapter.encoder.mode))
+        saved_dim = int(data.get("dim", adapter.encoder.dim))
+        if saved_mode != adapter.encoder.mode or saved_dim != adapter.encoder.dim:
+            # 不同 encoder 产生的向量空间不可混用；直接空缓存回退，避免误融合。
+            return adapter
         keys = data["keys"]
         labels = data["labels"]
         sources = data["sources"]

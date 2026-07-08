@@ -1,0 +1,15 @@
+{"payload": "rEpRoDucCi�N", "label": "Normal", "pred": "SQLi", "confidence": 0.6811, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Carrer+De+Francesc+Boix+i+Campo,+194+10?G", "label": "Normal", "pred": "SQLi", "confidence": 0.3909, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Pla+del+Pened�s,+El", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Argim�n", "label": "Normal", "pred": "SQLi", "confidence": 0.6862, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Camin+Ca+n+Abadal,+90,+", "label": "Normal", "pred": "SQLi", "confidence": 0.3086, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Pla�a+Pau+Picasso,+88,+", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "C/+Bascu�ana+52,+5-E", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Muntan�+Pros", "label": "Normal", "pred": "SQLi", "confidence": 0.6666, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "JuanMar�a", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "I�igo", "label": "Normal", "pred": "SQLi", "confidence": 0.6447, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Di�guez+Urkijo", "label": "Normal", "pred": "SQLi", "confidence": 0.6855, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "prepost1ra9i�n", "label": "Normal", "pred": "SQLi", "confidence": 0.6834, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Saetero+Farrer�", "label": "Normal", "pred": "SQLi", "confidence": 0.6627, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Travesia+Bazan,+S/N,+4-H", "label": "Normal", "pred": "SQLi", "confidence": 0.4751, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "C/+San+Pascual+Bailon+142+2?F", "label": "Normal", "pred": "SQLi", "confidence": 0.3756, "source": "csic_gsi:cisc_normalTraffic_test.txt"}

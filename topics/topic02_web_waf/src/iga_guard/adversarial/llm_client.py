@@ -16,12 +16,15 @@ import requests
 class LLMConfig:
     enabled: bool = False
     provider: str = "ollama"          # ollama | openai_compatible
-    model: str = "qwen2.5:0.5b"       # 推荐小模型：qwen2.5:0.5b / 1.5b / phi3:mini
+    model: str = "qwen2.5:3b"
     api_base: str = "http://127.0.0.1:11434"
     api_key: str = ""
     timeout_sec: int = 90
-    temperature: float = 0.85
+    temperature: float = 0.80
+    top_p: float = 0.92
     max_tokens: int = 512
+    num_ctx: int = 4096
+    num_gpu: int = -1
     max_variants_per_call: int = 4
 
     @classmethod
@@ -36,12 +39,15 @@ class LLMConfig:
         return cls(
             enabled=bool(raw.get("enabled", False)),
             provider=raw.get("provider", "ollama"),
-            model=raw.get("model", "qwen2.5:0.5b"),
+            model=os.environ.get("IGA_LLM_MODEL", raw.get("model", "qwen2.5:3b")),
             api_base=base,
             api_key=api_key,
             timeout_sec=int(raw.get("timeout_sec", 90)),
-            temperature=float(raw.get("temperature", 0.85)),
+            temperature=float(raw.get("temperature", 0.80)),
+            top_p=float(raw.get("top_p", 0.92)),
             max_tokens=int(raw.get("max_tokens", 512)),
+            num_ctx=int(raw.get("num_ctx", 4096)),
+            num_gpu=int(raw.get("num_gpu", -1)),
             max_variants_per_call=int(raw.get("max_variants_per_call", 4)),
         )
 
@@ -93,6 +99,18 @@ class LLMClient:
                 out["error"] = str(exc)
         return out
 
+    def _ollama_options(self, temperature: float | None) -> dict[str, Any]:
+        cfg = self.config
+        opts: dict[str, Any] = {
+            "temperature": temperature if temperature is not None else cfg.temperature,
+            "top_p": cfg.top_p,
+            "num_predict": cfg.max_tokens,
+            "num_ctx": cfg.num_ctx,
+        }
+        if cfg.num_gpu != 0:
+            opts["num_gpu"] = cfg.num_gpu
+        return opts
+
     def chat(
         self,
         user_prompt: str,
@@ -103,7 +121,7 @@ class LLMClient:
         if not self.config.is_configured():
             return LLMResponse(ok=False, error="llm not configured")
         if self.config.provider == "ollama":
-            return self._chat_ollama(user_prompt, system_prompt=system_prompt, temperature=temperature)
+            return self._chat_ollama_native(user_prompt, system_prompt=system_prompt, temperature=temperature)
         return self._chat_openai_compatible(user_prompt, system_prompt=system_prompt, temperature=temperature)
 
     def _chat_ollama(
@@ -167,7 +185,7 @@ class LLMClient:
             "model": cfg.model,
             "messages": [{"role": "user", "content": user_prompt}],
             "stream": False,
-            "options": {"temperature": temperature if temperature is not None else cfg.temperature},
+            "options": self._ollama_options(temperature),
         }
         if system_prompt:
             body["messages"].insert(0, {"role": "system", "content": system_prompt})

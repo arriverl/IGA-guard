@@ -9,7 +9,7 @@
       "source_miss": "id=1&ID=<sCrIPt>ALERT(1)</scrIpt>",
       "params": {},
       "created_at": "2026-07-05T10:38:06.699644+00:00",
-      "use_count": 6
+      "use_count": 8
     },
     "discovered_double_url_encode_plus_1": {
       "template": "double_url_encode_plus",
@@ -19,7 +19,7 @@
       "source_miss": "%2526%25236%2526%252348%253B%253B%2526%252311%2526%252353%253B%253B%2526%2523%2526%252357%253B%2526%252357%253B%253B%2526%2523%2526%252349%253B%2526%252349%253B4%253B%2526%2523105%253B%2526%2523%2526%252349%253B%2526%252349%253B2%253B%2526%25231%2526%252349%253B6%253B%2526%2523%2526%252354%253B2%253B%2526%2523%2526%252357%253B%2526%252355%253B%253B%2526%2523%2526%252349%253B08%253B%2526%2523%2526%252349%253B0%2526%252349%253B%253B%2526%25231%2526%252349%253B4%253B%2526%252311%2526%252354%253B%253B%2526%2523",
       "params": {},
       "created_at": "2026-07-05T12:19:57.851102+00:00",
-      "use_count": 1
+      "use_count": 3
     },
     "discovered_zero_width_inject_2": {
       "template": "zero_width_inject",
@@ -29,7 +29,7 @@
       "source_miss": "id=1&i‍d‍=&#60;&#115;&#99;&#114;&#105;&#112;&#116;&#62;&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;&#60;&#47;&#115;&#99;&#114;&#105;&#112;&#116;&#62;",
       "params": {},
       "created_at": "2026-07-05T12:19:58.761702+00:00",
-      "use_count": 1
+      "use_count": 3
     },
     "discovered_insert_null_byte_3": {
       "template": "insert_null_byte",
@@ -39,7 +39,7 @@
       "source_miss": "%00Lila",
       "params": {},
       "created_at": "2026-07-06T03:16:32.931493+00:00",
-      "use_count": 1
+      "use_count": 4
     },
     "discovered_deep_inline_comment_4": {
       "template": "deep_inline_comment",
@@ -49,6 +49,26 @@
       "source_miss": "modo=insertar&precio=4486&B1=Pasar+por+caja%7C/*--*/",
       "params": {},
       "created_at": "2026-07-06T03:16:32.932240+00:00",
+      "use_count": 4
+    },
+    "discovered_md5_hex32_camouflage_5": {
+      "template": "md5_hex32_camouflage",
+      "attack_types": [
+        "SQLi"
+      ],
+      "source_miss": "78C6634aa96632AEB2D2AF1FEaa5462d",
+      "params": {},
+      "created_at": "2026-07-06T10:48:07.681598+00:00",
+      "use_count": 3
+    },
+    "discovered_repeat_url_encode_6": {
+      "template": "repeat_url_encode",
+      "attack_types": [
+        "CMD"
+      ],
+      "source_miss": "http%3A%2F%2F%25C3%25A1%252B%25C3%25A9%25256F%25256E%253Devil.com%2Fa",
+      "params": {},
+      "created_at": "2026-07-06T16:11:40.759153+00:00",
       "use_count": 1
     }
   }

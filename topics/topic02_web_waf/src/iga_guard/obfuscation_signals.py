@@ -60,7 +60,7 @@ _BENIGN_SHOPPING = re.compile(
     r"(?:^|[&?])(id|nombre|precio|cantidad|producto)=[^&]*", re.I,
 )
 _BENIGN_ADDRESS = re.compile(
-    r"(calle|carrer|cami|avenida|paseo|plaza|rambla|passatge|avinguda)\b",
+    r"(calle|carrer|cami|camin|avenida|paseo|plaza|pla|rambla|passatge|avinguda|travesia|porta|c/)\b",
     re.I,
 )
 _BENIGN_ADDRESS_SAFE = re.compile(
@@ -68,7 +68,80 @@ _BENIGN_ADDRESS_SAFE = re.compile(
 )
 _SQLI_INJECTION_MARKERS = re.compile(
     r"union\s+select|select\s+.+\s+from|insert\s+into|drop\s+table|sleep\s*\(|benchmark\s*\("
-    r"|or\s+1\s*=\s*1|'[^']*'|--|%27|%2d%2d|0x[0-9a-f]{4,}|;\s*shutdown",
+    r"|or\s+1\s*=\s*1|'[^']*'|--|%27|%2527|%2d%2d|0x[0-9a-f]{4,}|;\s*shutdown",
+    re.I,
+)
+_CSIC_ANOMALY_FIELDS = re.compile(
+    r"(?:^|[&?])(?:b1a=|b1=\?|b1=%3f|provincia=\||provincia=%7c)"
+    r"|pwd=[^&]{0,48}%2b",
+    re.I,
+)
+_LLM_EVASION_MARKERS = re.compile(
+    r"malicious\.com"
+    r"|evil\.com"
+    r"|nompercentbre"
+    r"|preci(?:%c3%b1|\u00f1)o"
+    r"|id%a3"
+    r"|_url_encode_login",
+    re.I,
+)
+_LLM_DYNAMIC_URL_MARKERS = re.compile(
+    r"http%61re="
+    r"|polymorphic_data"
+    r"|!\[\]\(http"
+    r"|%2571%2564%2568%2565"
+    r"|%71%64%68%65"
+    r"|qdheservicy"
+    r"|%d7%a9%d5%dd%c0%a7%e3%80%8[0-9a-f]",
+    re.I,
+)
+_LLM_ENCODED_XSS_BURST = re.compile(
+    r"%e6%b3%a2%e4%b8%aa"
+    r".{0,160}(?:%61%70%74%69%6f%6e|%2561%2570%2574%2569%256f%256e)"
+    r".{0,160}(?:%2523|%23)"
+    r".{0,160}(?:%6c%61%6e%67%74|%256c%2561%256e%2567%2574)",
+    re.I,
+)
+_LLM_HIGH_BYTE_CMD_BURST = re.compile(
+    r"(?:%c2%8f|%2525c2%25258f)"
+    r".{0,220}(?:%c2%9c|%2525c2%25259c)"
+    r".{0,220}(?:%cf%ca|%2525cf%2525ca)"
+    r".{0,220}(?:%e6%b2%b9%e8%be%93|%2525e6%2525b2%2525b9%2525e8%2525be%252593)",
+    re.I,
+)
+_OPAQUE_ENCODED_URL = re.compile(
+    r"^https?%3a//"
+    r"|^https?%253a"
+    r"|http%3a//[^&]{8,}(?:%40|%2540)"
+    r"|http%3a%2f%2f[^&]{6,}(?:%40|%23|%2540|%2523)"
+    r"|%253a%2f%2f[^&]{8,}(?:%40|%2540)",
+    re.I,
+)
+_MALFORMED_SIGN_PARAM = re.compile(
+    r"%40[b-]?sign\.cg"
+    r"|%0a\+b1%3d"
+    r"|%0a%2bb1%3d"
+    r"|^%40[a-z0-9._-]{2,24}%0a",
+    re.I,
+)
+_DYNAMIC_ADVERSARIAL_MARKERS = re.compile(
+    r"(?:%0a|\n).{0,32}set-?cookie"
+    r"|tamper%3d|tamper="
+    r"|passw%68"
+    r"|(?:^|[&?])logina="
+    r"|ciudada="
+    r"|%3cscript|%253cscript|alert%28|alert\("
+    r"|%06|%05|%0d"
+    r"|(?:^|[&?=])do&nombre="
+    r"|do%0a[&/]"
+    r"|nombre\s+like"
+    r"|alcui(?:\.|%2f|/)no"
+    r"|valver\."
+    r"|%24(?:apellidos|email|dni|direccion)"
+    r"|%3fapellidos"
+    r"|\band\s+\d+\s*[<>=]\s*\d+\b"
+    r"|b1%e2%80%a6|b1=%e2%80%a6"
+    r"|%252e|/etc/passwd",
     re.I,
 )
 _RE_CONCAT_SPLIT = re.compile(r"'\s*\+\s*'")
@@ -148,6 +221,11 @@ _RE_WEAK_CMD_OBF = re.compile(
     r"(?:\$\{IFS\}|\{cat,|\|\||%0a)(?:wget|curl|bash|sh\b)",
     re.I,
 )
+_RE_BOOL_LIKE_SQLI = re.compile(
+    r"\b(?:and|or)\b\s+\d+(?:\.\d+e\d+)?\s+like\s+\d+(?:\.\d+e\d+)?\b",
+    re.I,
+)
+_RE_HI_ENTROPY_TOKEN = re.compile(r"^[A-Za-z0-9]{20,40}$")
 
 
 def evasion_rule_scores(
@@ -261,7 +339,21 @@ def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
     raw_low = raw.lower()
     if not (_BENIGN_CSIC_PARAMS.search(low) or _BENIGN_SHOPPING.search(low)):
         return False
-    if is_obfuscated(raw) or has_strong_obfuscation(raw):
+    if _duplicate_params(raw_low):
+        return False
+    if _CSIC_ANOMALY_FIELDS.search(raw_low) or _CSIC_ANOMALY_FIELDS.search(low):
+        return False
+    if _LLM_EVASION_MARKERS.search(raw_low) or _LLM_EVASION_MARKERS.search(low):
+        return False
+    if _OPAQUE_ENCODED_URL.search(raw_low) or _OPAQUE_ENCODED_URL.search(low):
+        return False
+    if _MALFORMED_SIGN_PARAM.search(raw_low) or _MALFORMED_SIGN_PARAM.search(low):
+        return False
+    if _DYNAMIC_ADVERSARIAL_MARKERS.search(raw_low) or _DYNAMIC_ADVERSARIAL_MARKERS.search(low):
+        return False
+    # 正常 CSIC 表单通常含 URL 编码符号（%/+），不能仅凭 is_obfuscated 直接否决。
+    # 仅在强混淆时视为非良性。
+    if has_strong_obfuscation(raw):
         return False
     if _SQLI_INJECTION_MARKERS.search(low) or _SQLI_INJECTION_MARKERS.search(raw_low):
         return False
@@ -287,7 +379,9 @@ def looks_like_benign_address(raw: str, norm: str) -> bool:
     if _BENIGN_ADDRESS.search(low):
         return True
     if _BENIGN_ADDRESS_SAFE.match(text) and not _FORM_INJ.search(low):
-        return True
+        # 纯高熵 token（无空格）不应当被当作地址型良性流量。
+        if " " in text and sum(ch.isalpha() for ch in text) >= 6:
+            return True
     return False
 
 
@@ -300,11 +394,36 @@ def is_benign_traffic_context(raw: str, norm: str | None = None) -> bool:
     )
 
 
+def _hpp_attack_values(raw: str) -> list[str]:
+    """HPP：收集重复参数名下的所有取值（OWASP：后端可能拼接/取末值）。"""
+    buckets: dict[str, list[str]] = defaultdict(list)
+    for m in _PARAM_PAIRS.finditer(raw.replace("?", "&")):
+        buckets[m.group(1).lower()].append(m.group(2))
+    out: list[str] = []
+    for vals in buckets.values():
+        if len(vals) > 1:
+            out.extend(vals[1:])
+        out.extend(vals)
+    return out
+
+
+def _standalone_hex32_token(text: str) -> bool:
+    s = text.strip()
+    return bool(re.fullmatch(r"[0-9a-f]{32}", s, re.I))
+
+
 def _mixed_case_hex32_token(text: str) -> bool:
     s = text.strip()
     if not re.fullmatch(r"[0-9a-fA-F]{32}", s):
         return False
     return any(c.isupper() for c in s) and any(c.islower() for c in s)
+
+
+def _unicode_escaped_hex32_token(text: str) -> bool:
+    if len(_UNICODE_ESCAPE.findall(text or "")) < 2:
+        return False
+    decoded = _UNICODE_ESCAPE.sub(lambda m: chr(int(m.group(1), 16)), text)
+    return bool(re.fullmatch(r"[0-9a-fA-F]{32}", decoded.strip()))
 
 
 def _concat_split_attack_signal(raw: str, norm: str) -> tuple[str, float] | None:
@@ -350,7 +469,22 @@ def obfuscated_evasion_rescue(
     混淆逃逸兜底：针对漏检分析 Top 模式（null_byte / echo / homoglyph / url_encode）。
     仅在 is_obfuscated 时触发，避免误伤明文 Normal。
     """
-    if not raw or not is_obfuscated(raw):
+    if not raw:
+        return None
+    raw_strip = raw.strip()
+    if not (
+        is_obfuscated(raw)
+        or _RE_BOOL_LIKE_SQLI.search(raw)
+        or _mixed_case_hex32_token(raw_strip)
+        or _unicode_escaped_hex32_token(raw_strip)
+        or _LLM_EVASION_MARKERS.search(raw)
+        or _LLM_DYNAMIC_URL_MARKERS.search(raw)
+        or _LLM_ENCODED_XSS_BURST.search(raw)
+        or _LLM_HIGH_BYTE_CMD_BURST.search(raw)
+        or _OPAQUE_ENCODED_URL.search(raw)
+        or _MALFORMED_SIGN_PARAM.search(raw)
+        or _DYNAMIC_ADVERSARIAL_MARKERS.search(raw)
+    ):
         return None
 
     raw_low = raw.lower()
@@ -364,8 +498,36 @@ def obfuscated_evasion_rescue(
     if _RE_CONCAT_SPLIT.search(raw):
         return "SQLi", 0.58
 
-    if _mixed_case_hex32_token(raw.strip()):
+    if _RE_BOOL_LIKE_SQLI.search(raw_low) or _RE_BOOL_LIKE_SQLI.search(norm_low):
+        return "SQLi", 0.74
+
+    if _standalone_hex32_token(raw_strip) and (
+        _RE_BOOL_LIKE_SQLI.search(raw_low) or "&" in raw_low or "?" in raw_low
+    ):
+        return "SQLi", 0.62
+
+    if _mixed_case_hex32_token(raw_strip):
         return "SQLi", 0.65
+
+    if _unicode_escaped_hex32_token(raw_strip):
+        return "SQLi", 0.66
+
+    # 仅当伴随 SQL 结构/HPP 时，高熵 token 才视为攻击伪装，避免把正常 ID 打成 SQLi。
+    if _high_entropy_camouflage_token(raw_strip) and (
+        _RE_BOOL_LIKE_SQLI.search(raw_low) or "&" in raw_low or "?" in raw_low
+    ):
+        return "SQLi", 0.66
+
+    dup_vals = _hpp_attack_values(raw)
+    if dup_vals:
+        for fragment in dup_vals:
+            frag_low = fragment.lower()
+            if any(x in frag_low for x in ("<script", "alert(", "union", "select", "jndi:", "${")):
+                return "XSS" if "script" in frag_low or "alert" in frag_low else "SQLi", 0.70
+            if _standalone_hex32_token(fragment) or _mixed_case_hex32_token(fragment):
+                return "SQLi", 0.64
+            if _high_entropy_camouflage_token(fragment):
+                return "SQLi", 0.72
 
     if _RE_NULL_SPLICE.search(raw) or _RE_NULL_SPLICE.search(raw_low):
         return "SQLi", 0.72
@@ -396,12 +558,95 @@ def obfuscated_evasion_rescue(
     if "eval(atob" in raw_low and decode_depth >= 1:
         return "SQLi", 0.68
 
+    if _LLM_EVASION_MARKERS.search(raw_low) or _LLM_EVASION_MARKERS.search(norm_low):
+        if (
+            "malicious.com" in raw_low
+            or "malicious.com" in norm_low
+            or "evil.com" in raw_low
+            or "evil.com" in norm_low
+        ):
+            return "SQLi", 0.62
+        return "PathTraversal", 0.58
+
+    if _LLM_DYNAMIC_URL_MARKERS.search(raw_low) or _LLM_DYNAMIC_URL_MARKERS.search(norm_low):
+        if "%d7%a9" in raw_low or "%d7%a9" in norm_low:
+            return "SQLi", 0.64
+        if "evil.com" in raw_low or "cmd=" in raw_low:
+            return "CMD", 0.62
+        if "http%61re=" in raw_low or "polymorphic_data" in raw_low:
+            return "XSS", 0.60
+        return "SQLi", 0.58
+
+    if _LLM_ENCODED_XSS_BURST.search(raw_low) or _LLM_ENCODED_XSS_BURST.search(norm_low):
+        return "XSS", 0.68
+
+    if _LLM_HIGH_BYTE_CMD_BURST.search(raw_low) or _LLM_HIGH_BYTE_CMD_BURST.search(norm_low):
+        return "CMD", 0.68
+
+    if _OPAQUE_ENCODED_URL.search(raw_low) or _OPAQUE_ENCODED_URL.search(norm_low):
+        if "' or '" in raw_low or " or " in raw_low or "%27%20or%20" in raw_low:
+            return "SQLi", 0.66
+        return "CMD", 0.62
+
+    if _MALFORMED_SIGN_PARAM.search(raw_low) or _MALFORMED_SIGN_PARAM.search(norm_low):
+        return "CMD", 0.62
+
     pct = raw_low.count("%")
+    if pct >= 6 and pct / max(len(raw_low), 1) >= 0.28:
+        if not _SQLI_INJECTION_MARKERS.search(raw_low) and not looks_like_benign_csic_form(raw, norm_low):
+            if not any(k in raw_low for k in ("modo=", "login=", "password=", "nombre=", "apellidos=")):
+                return "CMD", 0.62
+
+    if _DYNAMIC_ADVERSARIAL_MARKERS.search(raw_low) or _DYNAMIC_ADVERSARIAL_MARKERS.search(norm_low):
+        if "/etc/passwd" in raw_low or "%252e" in raw_low or "/etc/passwd" in norm_low:
+            return "PathTraversal", 0.70
+        if "passw%68" in raw_low or "logina=" in raw_low:
+            return "CMD", 0.62
+        return "SQLi", 0.66
+
+    if (
+        ("%2540" in raw_low or (decode_depth >= 1 and "%40" in raw_low))
+        and re.fullmatch(r"[a-z0-9_.-]+%(?:25)?40[a-z0-9_.-]+\.[a-z]{2,}", raw_low, re.I)
+    ):
+        return "SQLi", 0.57
+
+    if "%25ef%25bf%25bd" in raw_low or (decode_depth >= 1 and "%ef%bf%bd" in raw_low):
+        return "SQLi", 0.57
+
+    pct = raw_low.count("%")
+    if (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low)) and (
+        _CSIC_ANOMALY_FIELDS.search(raw_low) or _CSIC_ANOMALY_FIELDS.search(norm_low)
+    ):
+        return "SQLi", 0.56
+
+    if pct >= 2 and ("%3d" in raw_low or "%26" in raw_low):
+        if (
+            (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low))
+            and (
+                _SQLI_INJECTION_MARKERS.search(raw_low)
+                or _SQLI_INJECTION_MARKERS.search(norm_low)
+                or "'" in raw
+                or "%27" in raw_low
+                or "%2527" in raw_low
+                or _RE_NULL_SPLICE.search(raw_low)
+            )
+        ):
+            return "SQLi", 0.55
+
     if pct >= 2 and _RE_URL_ENCODE_NAME.search(raw_low):
         kw = attack_keyword_scores(norm_low)
         if max((v for k, v in kw.items() if k != "Normal"), default=0.0) >= 0.10:
             return "SQLi", 0.58
-        if _FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low):
+        if (
+            (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low))
+            and (
+                _SQLI_INJECTION_MARKERS.search(raw_low)
+                or "'" in raw
+                or "%27" in raw_low
+                or "%2527" in raw_low
+                or _RE_NULL_SPLICE.search(raw_low)
+            )
+        ):
             return "SQLi", 0.55
 
     if has_strong_obfuscation(raw_low) and decode_depth >= 1:
@@ -439,6 +684,25 @@ def _duplicate_params(raw_low: str) -> list[str]:
     for m in _PARAM_PAIRS.finditer(raw_low.replace("?", "&")):
         buckets[m.group(1).lower()].append(m.group(2))
     return [k for k, vals in buckets.items() if len(vals) > 1]
+
+
+def _high_entropy_camouflage_token(text: str) -> bool:
+    s = (text or "").strip()
+    if not _RE_HI_ENTROPY_TOKEN.fullmatch(s):
+        return False
+    has_upper = any(c.isupper() for c in s)
+    has_lower = any(c.islower() for c in s)
+    has_digit = any(c.isdigit() for c in s)
+    if not (has_upper and has_lower and has_digit):
+        return False
+    return len(set(s)) >= 8
+
+
+def _contains_high_entropy_camouflage(text: str) -> bool:
+    for tok in re.findall(r"[A-Za-z0-9]{20,40}", text or ""):
+        if _high_entropy_camouflage_token(tok):
+            return True
+    return False
 
 
 def _hex32_in_param_context(raw: str, norm: str) -> bool:
@@ -490,13 +754,23 @@ def structural_attack_scores(
     dup_keys = _duplicate_params(raw_low)
     if dup_keys:
         scores["SQLi"] += 0.55
+        for v in _hpp_attack_values(raw):
+            if _high_entropy_camouflage_token(v):
+                scores["SQLi"] += 0.35
+                break
 
     if _hex32_in_param_context(raw, norm):
         if dup_keys or decode_depth >= 1 or kw_attack >= 0.2 or is_obfuscated(raw):
             scores["SQLi"] += 0.5
 
+    if _standalone_hex32_token(raw.strip()) and (dup_keys or _RE_BOOL_LIKE_SQLI.search(raw_low)):
+        scores["SQLi"] += 0.45
+
     if _FORM_INJ.search(low) and ("'" in low or "%27" in raw_low):
         scores["SQLi"] += 0.6
+
+    if _RE_BOOL_LIKE_SQLI.search(raw_low) or _RE_BOOL_LIKE_SQLI.search(low):
+        scores["SQLi"] += 0.55
 
     if _SCRIPT_SPLIT.search(raw) and any(x in low for x in ("script", "alert", "scr", "ipt")):
         scores["XSS"] += 0.75

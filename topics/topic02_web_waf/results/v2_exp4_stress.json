@@ -1,0 +1,12 @@
+{
+  "requests": 2000,
+  "workers": 50,
+  "errors": 0,
+  "error_rate": 0.0,
+  "first_error": null,
+  "elapsed_s": 57.29,
+  "qps": 34.9,
+  "mean_ms": 1419.454,
+  "p99_ms": 1901.728,
+  "pass": true
+}

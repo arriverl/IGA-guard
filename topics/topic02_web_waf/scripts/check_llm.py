@@ -24,9 +24,9 @@ def main() -> int:
     if not status.get("configured"):
         print("\n[!] LLM 未配置。请编辑 configs/default.yaml:")
         print('    llm_agent.enabled: true')
-        print('    llm_agent.model: "qwen2.5:0.5b"')
-        print("\n本地 Ollama 安装小模型:")
-        print("    ollama pull qwen2.5:0.5b")
+        print('    llm_agent.model: "qwen2.5:3b"')
+        print("\n本地 Ollama 安装（V100 推荐）:")
+        print("    ollama pull qwen2.5:3b")
         return 1
 
     if status.get("provider") == "ollama" and not status.get("ollama_reachable"):
@@ -34,7 +34,7 @@ def main() -> int:
         return 1
 
     if status.get("provider") == "ollama" and not status.get("model_available"):
-        model = status.get("model", "qwen2.5:0.5b")
+        model = status.get("model", "qwen2.5:3b")
         print(f"\n[!] 模型 {model} 未安装。运行: ollama pull {model}")
         return 1
 

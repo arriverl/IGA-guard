@@ -5,8 +5,10 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+import numpy as np
 import pytest
 
+from iga_guard.evolution.continual_cache import ContinualCacheAdapter, FrozenTextEncoder
 from iga_guard.evolution.technique_discovery import discover_from_miss, infer_templates
 from iga_guard.evolution.technique_registry import TechniqueRegistry
 
@@ -34,3 +36,32 @@ class TestTechniqueDiscovery:
             out = reg.apply("union select", "test_triple")
             assert "%" in out
             assert out != "union select"
+
+
+class TestContinualCacheLoad:
+    def test_drops_cache_when_encoder_mode_mismatches(self, monkeypatch):
+        def _force_hash(self):
+            self._st = None
+            self._mode = "hash"
+
+        monkeypatch.setattr(FrozenTextEncoder, "_try_load_st", _force_hash)
+
+        with tempfile.TemporaryDirectory() as td:
+            cache_path = Path(td) / "cache.npz"
+            np.savez_compressed(
+                cache_path,
+                keys=np.zeros((1, 384), dtype=np.float32),
+                vision_keys=np.zeros((1, 64), dtype=np.float32),
+                labels=np.array(["SQLi"], dtype=object),
+                sources=np.array(["test"], dtype=object),
+                snippets=np.array(["payload"], dtype=object),
+                hits=np.array([0], dtype=np.int32),
+                ts=np.array([0.0], dtype=np.float64),
+                encoder_mode="st",
+                dim=384,
+            )
+
+            adapter = ContinualCacheAdapter.load(cache_path)
+
+        assert adapter.encoder.mode == "hash"
+        assert adapter.stats()["size"] == 0

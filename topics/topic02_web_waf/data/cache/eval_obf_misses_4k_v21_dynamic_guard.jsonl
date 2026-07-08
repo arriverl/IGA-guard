@@ -1,0 +1,4 @@
+{"payload": "F8E98FEB0AEC1E6391F91E08313ED15E", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}
+{"payload": "id=2&nombre=Jam�n+Ib�rico&precio=85&cantidad=25%3F&B1=A�adir+al+carrito", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}
+{"payload": "modoA%3Dinsertar%26precio%3D5698%26B1%3DPasar%2Bpor%2Bcaja", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "modo=registro&login=arron&password=boDegoNcillo&nombre=Betiana&apellidos=Argente+Botifoll&email=peckinpah-keams@juguetespersonales.tz&dni=10867689M&direccion=Periodista+Juanito+Cortes,+95+%7C&ciudad=Marug�n&cp=38770&provincia=Badajoz&ntc=6222371193056945&B1=Registrar", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}

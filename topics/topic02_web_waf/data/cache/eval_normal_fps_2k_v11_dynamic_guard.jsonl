@@ -1,0 +1,6 @@
+{"payload": "Carrer+De+Francesc+Boix+i+Campo,+194+10?G", "label": "Normal", "pred": "SQLi", "confidence": 0.3294, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Camin+Ca+n+Abadal,+90,+", "label": "Normal", "pred": "SQLi", "confidence": 0.3947, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Pla�a+Pau+Picasso,+88,+", "label": "Normal", "pred": "SQLi", "confidence": 0.4292, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "C/+Bascu�ana+52,+5-E", "label": "Normal", "pred": "Normal", "confidence": 0.3964, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Calle+Narciso+Monturiol+195,+", "label": "Normal", "pred": "SQLi", "confidence": 0.3455, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Travesia+Bazan,+S/N,+4-H", "label": "Normal", "pred": "SQLi", "confidence": 0.4763, "source": "csic_gsi:cisc_normalTraffic_test.txt"}

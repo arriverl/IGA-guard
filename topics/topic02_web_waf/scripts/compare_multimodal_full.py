@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from iga_guard import IgaGuardEngine
+from iga_guard.eval_transport import build_eval_request
 from iga_guard.obfuscation_signals import is_obfuscated
 from iga_guard.pipeline import load_config
 
@@ -35,8 +36,8 @@ def _run_eval(engine: IgaGuardEngine, data_path: Path, max_samples: int | None =
 
     for i, row in enumerate(rows):
         payload, label = row["payload"], row["label"]
-        url = f"http://eval.local/test?p={payload}"
-        report = engine.analyze_url("GET", url)
+        method, url, body = build_eval_request(payload)
+        report = engine.analyze_url(method, url, body=body, explain=False)
         pred = report.detection.label
         is_atk_pred = report.detection.is_malicious or pred != "Normal"
         is_atk_true = label != "Normal"

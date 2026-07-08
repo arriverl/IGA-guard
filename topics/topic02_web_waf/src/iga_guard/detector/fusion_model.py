@@ -10,10 +10,13 @@
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import joblib
 import numpy as np
+import sklearn
+from sklearn.exceptions import InconsistentVersionWarning
 from sklearn.ensemble import RandomForestClassifier
 
 from iga_guard.features import extract_features
@@ -39,13 +42,31 @@ class FusionDetector:
             self.load(model_path)
 
     def load(self, path: str) -> None:
-        bundle = joblib.load(path)
+        path_obj = Path(path)
+        version_stamp = path_obj.with_suffix(path_obj.suffix + ".sklearn_version")
+        needs_refresh = (
+            not version_stamp.is_file()
+            or version_stamp.read_text(encoding="utf-8").strip() != sklearn.__version__
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", InconsistentVersionWarning)
+            bundle = joblib.load(path)
         self.model = bundle["model"]
         self.labels = bundle.get("labels", ATTACK_LABELS)
+        if hasattr(self.model, "n_jobs"):
+            # 单条 predict_proba 时避免 joblib/sklearn 并行配置告警刷屏
+            self.model.n_jobs = 1
+        if needs_refresh:
+            self.save(path)
+            version_stamp.write_text(sklearn.__version__, encoding="utf-8")
 
     def save(self, path: str) -> None:
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        path_obj = Path(path)
+        path_obj.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump({"model": self.model, "labels": self.labels}, path)
+        path_obj.with_suffix(path_obj.suffix + ".sklearn_version").write_text(
+            sklearn.__version__, encoding="utf-8",
+        )
 
     def _rule_prior(self, payload: NormalizedPayload, fv: FeatureVector) -> dict[str, float]:
         text = (payload.normalized_payload or payload.raw_payload).lower()
@@ -77,7 +98,15 @@ class FusionDetector:
         if "boundary=" in text or "content-disposition" in text:
             scores["XSS"] += 0.25
             scores["SQLi"] += 0.2
-        if text.count("=") >= 3 and text.count("&") >= 2:
+        if (
+            text.count("=") >= 3
+            and text.count("&") >= 2
+            and any(
+                k in text for k in (
+                    "union", "select", "%27", "--", " or ", " and ", "sleep(", "benchmark(", "0x",
+                )
+            )
+        ):
             scores["SQLi"] += 0.15
         # 多层解码后暴露的攻击痕迹
         if len(payload.decode_chain) >= 2:
@@ -106,9 +135,9 @@ class FusionDetector:
             scores[label] += 0.3 * struct.get(label, 0.0)
 
         if is_benign_traffic_context(payload.raw_payload, text):
-            scores["Normal"] += 0.55
+            scores["Normal"] += 0.70
             for atk in ("SQLi", "XSS", "CMD"):
-                scores[atk] *= 0.35
+                scores[atk] *= 0.22
         elif looks_like_benign_csic_form(payload.raw_payload, text):
             scores["Normal"] += 0.35
             scores["SQLi"] *= 0.5

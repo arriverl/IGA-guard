@@ -1,6 +1,6 @@
 {
   "experiment": "E2_unknown_obfuscation",
-  "dataset": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\test_obfuscated.csv",
+  "dataset": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/master/test_obfuscated.csv",
   "train_obfuscation_types": [
     "base64_fragment",
     "case_random",

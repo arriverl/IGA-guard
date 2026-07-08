@@ -60,24 +60,23 @@
         "加强 eval(atob) 碎片拼接检测，避免 CSIC 护栏覆盖",
         "扩展 P1 协议轨 multipart 边界解析权重"
       ],
-      "rag_context_len": 2650
+      "rag_context_len": 2772
     },
     {
       "agent": "engineering",
-      "new_techniques": [
-        "discovered_insert_null_byte_3",
-        "discovered_deep_inline_comment_4"
-      ],
+      "new_techniques": [],
       "registry": {
-        "total": 5,
+        "total": 7,
         "templates": [
           "deep_inline_comment",
           "double_url_encode_plus",
           "insert_null_byte",
+          "md5_hex32_camouflage",
           "mixed_case_burst",
+          "repeat_url_encode",
           "zero_width_inject"
         ],
-        "path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\discovered_techniques.json"
+        "path": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/discovered_techniques.json"
       }
     },
     {
@@ -89,35 +88,53 @@
     }
   ],
   "miss_breakdown": {
-    "SQLi": 17,
-    "multipart": 4,
-    "CMD": 9
+    "SQLi": 5
   },
   "evolution": {
     "rounds": [
       {
         "round": 1,
-        "recall": 0.975,
-        "missed": 1,
+        "recall": 0.9692,
+        "missed": 2,
+        "new_techniques": []
+      },
+      {
+        "round": 2,
+        "recall": 0.5556,
+        "missed": 12,
         "new_techniques": []
       }
     ],
-    "final_recall": 0.975,
+    "final_recall": 0.5556,
     "total_new_techniques": 0,
     "registry": {
-      "total": 5,
+      "total": 7,
       "templates": [
         "deep_inline_comment",
         "double_url_encode_plus",
         "insert_null_byte",
+        "md5_hex32_camouflage",
         "mixed_case_burst",
+        "repeat_url_encode",
         "zero_width_inject"
       ],
-      "path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\discovered_techniques.json"
+      "path": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/discovered_techniques.json"
     },
     "llm": {
-      "enabled": false
+      "enabled": true,
+      "configured": true,
+      "provider": "ollama",
+      "model": "qwen2.5:3b",
+      "api_base": "http://127.0.0.1:11434",
+      "ollama_reachable": true,
+      "local_models": [
+        "qwen2.5:3b",
+        "qwen2.5:1.5b",
+        "qwen2.5:0.5b"
+      ],
+      "model_available": true,
+      "autonomous": true
     },
-    "history": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\auto_evolve_history.jsonl"
+    "history": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_evolve_history.jsonl"
   }
 }

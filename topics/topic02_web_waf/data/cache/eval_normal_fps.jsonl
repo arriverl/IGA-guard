@@ -1,0 +1,13 @@
+{"payload": "rEpRoDucCi�N", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Carrer+De+Francesc+Boix+i+Campo,+194+10?G", "label": "Normal", "pred": "SQLi", "confidence": 0.3092, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Pla+del+Pened�s,+El", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Argim�n", "label": "Normal", "pred": "SQLi", "confidence": 0.7665, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Pla�a+Pau+Picasso,+88,+", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "C/+Bascu�ana+52,+5-E", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Muntan�+Pros", "label": "Normal", "pred": "SQLi", "confidence": 0.7463, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "JuanMar�a", "label": "Normal", "pred": "SQLi", "confidence": 0.57, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "I�igo", "label": "Normal", "pred": "SQLi", "confidence": 0.7252, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "Di�guez+Urkijo", "label": "Normal", "pred": "SQLi", "confidence": 0.7655, "source": "csic_gsi:cisc_normalTraffic_test.txt"}
+{"payload": "prepost1ra9i�n", "label": "Normal", "pred": "SQLi", "confidence": 0.6963, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "Saetero+Farrer�", "label": "Normal", "pred": "SQLi", "confidence": 0.7527, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "C/+Almansa,+91,+6D", "label": "Normal", "pred": "SQLi", "confidence": 0.3817, "source": "csic_gsi:cisc_normalTraffic_train.txt"}

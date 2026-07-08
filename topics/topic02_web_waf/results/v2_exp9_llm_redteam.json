@@ -1,43 +1,55 @@
 {
   "experiment": "E9_llm_redteam",
-  "llm_enabled": false,
-  "llm_status": null,
+  "llm_enabled": true,
+  "llm_status": {
+    "enabled": true,
+    "configured": true,
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "api_base": "http://127.0.0.1:11434",
+    "ollama_reachable": true,
+    "local_models": [
+      "qwen2.5:3b",
+      "qwen2.5:1.5b",
+      "qwen2.5:0.5b"
+    ],
+    "model_available": true,
+    "autonomous": true
+  },
   "rounds": 3,
-  "max_variants": 150,
-  "total_variants": 116,
-  "total_detected": 89,
-  "total_missed": 27,
-  "final_round_recall": 0.6604,
-  "pooled_recall": 0.7672,
-  "avg_recall": 0.7672,
-  "new_techniques_discovered": 2,
+  "max_variants": 120,
+  "total_variants": 250,
+  "total_detected": 199,
+  "total_missed": 51,
+  "final_round_recall": 0.6333,
+  "pooled_recall": 0.796,
+  "avg_recall": 0.796,
+  "new_techniques_discovered": 0,
+  "round_misses_path": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_evolve_round_misses.jsonl",
   "rounds_detail": [
     {
       "round": 1,
-      "total": 45,
-      "detected": 43,
-      "missed": 2,
-      "recall": 0.9556,
+      "total": 69,
+      "detected": 68,
+      "missed": 1,
+      "recall": 0.9855,
       "new_techniques": []
     },
     {
       "round": 2,
-      "total": 18,
-      "detected": 11,
-      "missed": 7,
-      "recall": 0.6111,
+      "total": 61,
+      "detected": 55,
+      "missed": 6,
+      "recall": 0.9016,
       "new_techniques": []
     },
     {
       "round": 3,
-      "total": 53,
-      "detected": 35,
-      "missed": 18,
-      "recall": 0.6604,
-      "new_techniques": [
-        "discovered_double_url_encode_plus_1",
-        "discovered_zero_width_inject_2"
-      ]
+      "total": 120,
+      "detected": 76,
+      "missed": 44,
+      "recall": 0.6333,
+      "new_techniques": []
     }
   ],
   "target": "LLM-Evasion Recall > 95%",

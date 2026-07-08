@@ -1,0 +1,154 @@
+# IGA 评测 / 红队专用：与 CHASM 同卡时避免争抢 GPU
+# 用法: IGA_CONFIG=configs/eval_cpu.yaml python scripts/run_llm_redteam.py ...
+version: "3.0.0"
+
+server:
+  host: "0.0.0.0"
+  port: 5000
+
+detector:
+  engine: "dual_track"
+  model_path: "models/fusion_detector.joblib"
+  semantic_model: "prajjwal1/bert-tiny"
+  local_model_dir: "models/tinybert_waf"
+  use_semantic_branch: true
+  semantic_conditional: true
+  semantic_device: "cpu"
+  semantic_fp16: false
+  warmup_on_init: true
+  confidence_threshold: 0.38
+  cache_force_hit_min: 0.92
+  cache_fusion_weight_benign: 0.12
+  cache_fusion_weight_obfuscated: 0.42
+  fp_guard_max_base_attack: 0.32
+  fp_guard_min_attack_conf: 0.55
+  fp_guard_tier_b_enabled: true
+  obfuscation_boost_min_base_attack: 0.20
+  early_exit_confidence: 0.90
+  early_exit_margin: 0.25
+  protocol_boost_max: 0.18
+  protocol_boost_min_attack: 0.18
+  benign_override_max_attack: 0.32
+  labels:
+    - Normal
+    - SQLi
+    - XSS
+    - CMD
+    - PathTraversal
+    - FileInclusion
+    - XXE
+    - PromptInjection
+
+normalizer:
+  max_decode_rounds: 8
+
+features:
+  candidate_dims: 100
+  selected_dims: 15
+  rl_gwo_enabled: true
+
+dlinear:
+  seq_len: 16
+  moving_avg: 4
+
+latency:
+  target_ms: 5
+  benchmark_iterations: 1000
+  warmup_iterations: 500
+
+evolution:
+  failure_cache: "data/cache/failures.jsonl"
+  retrain_min_samples: 10
+  max_base_samples: 80000
+  failure_augment: 2
+  online_rl_enabled: true
+  learning_rate: 0.05
+  auto_evolve:
+    enabled: true
+    registry_path: "data/cache/discovered_techniques.json"
+    history_path: "data/cache/auto_evolve_history.jsonl"
+    default_rounds: 3
+    max_variants_per_round: 200
+    use_llm: true
+
+continual_cache:
+  enabled: true
+  path: "models/continual_cache.npz"
+  max_size: 5000
+  per_class_seed: 30
+  beta: 5.0
+  top_k: 8
+  fusion_weight: 0.28
+  dedupe_threshold: 0.98
+  multimodal_alpha: 0.85
+  use_vision_keys: true
+  encoder_model: "sentence-transformers/all-MiniLM-L6-v2"
+
+multimodal:
+  enabled: true
+  vision_weight: 0.30
+  weight_base: 0.38
+  weight_semantic: 0.28
+  weight_multimodal: 0.14
+  weight_dlinear: 0.12
+  weight_base_obfuscated: 0.42
+  weight_semantic_obfuscated: 0.32
+  weight_multimodal_obfuscated: 0.04
+  weight_dlinear_obfuscated: 0.12
+  weight_base_benign: 0.34
+  weight_semantic_benign: 0.24
+  weight_multimodal_benign: 0.22
+  weight_dlinear_benign: 0.10
+  gate_base_attack_threshold: 0.45
+  gate_base_low_threshold: 0.25
+  gate_mm_normal_threshold: 0.5
+  gate_mm_boost: 1.5
+  byte_grid: [32, 64]
+
+llm_agent:
+  enabled: true
+  provider: "ollama"
+  model: "qwen2.5:3b"
+  api_base: "http://127.0.0.1:11434"
+  api_key_env: "IGA_LLM_API_KEY"
+  timeout_sec: 120
+  temperature: 0.80
+  top_p: 0.92
+  max_tokens: 512
+  num_ctx: 4096
+  num_gpu: 0
+  max_variants_per_call: 6
+  autonomous: true
+  rag_enabled: true
+
+explanation:
+  nl_enabled: false
+  nl_provider: "template"
+  nl_model: "qwen2.5:3b"
+  nl_max_tokens: 128
+  nl_num_ctx: 2048
+
+rules:
+  export_dir: "data/rules_export"
+  virtual_patch_enabled: true
+
+timeseries:
+  window: 16
+
+protocols:
+  http1: true
+  http2: true
+  http3: true
+  websocket: true
+
+rag:
+  enabled: true
+  index_path: "data/cache/rag_index.npz"
+  meta_path: "data/cache/rag_index_meta.json"
+  top_k: 5
+  encoder_model: "sentence-transformers/all-MiniLM-L6-v2"
+  categories:
+    - miss_pattern
+    - technique
+    - community
+    - literature

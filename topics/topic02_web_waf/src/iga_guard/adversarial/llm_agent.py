@@ -174,7 +174,7 @@ def generate_llm_variants(payload: str, attack_type: str, n: int = 3) -> list[st
     cfg = LLMConfig(
         enabled=True,
         provider=os.environ.get("IGA_LLM_PROVIDER", "ollama"),
-        model=os.environ.get("IGA_LLM_MODEL", "qwen2.5:0.5b"),
+        model=os.environ.get("IGA_LLM_MODEL", "qwen2.5:3b"),
         api_base=os.environ.get("IGA_LLM_API_BASE", "http://127.0.0.1:11434"),
         api_key=os.environ.get("IGA_LLM_API_KEY", ""),
     )

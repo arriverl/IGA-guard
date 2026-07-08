@@ -17,6 +17,8 @@ def parse_http_request(
     url: str = "",
     headers: dict[str, str] | None = None,
     body: str = "",
+    *,
+    source: str = "api",
 ) -> HttpRequest:
     return HttpRequest(
         method=method.upper(),
@@ -24,7 +26,7 @@ def parse_http_request(
         headers=headers or {},
         body=body or "",
         cookies=_parse_cookies((headers or {}).get("Cookie", "")),
-        source="api",
+        source=source,
     )
 
 

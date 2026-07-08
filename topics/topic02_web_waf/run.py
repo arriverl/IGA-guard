@@ -16,4 +16,4 @@ if __name__ == "__main__":
     cfg = load_config(ROOT / "configs" / "default.yaml")
     host = cfg.get("server", {}).get("host", "127.0.0.1")
     port = cfg.get("server", {}).get("port", 5000)
-    create_app().run(host=host, port=port, debug=False, use_reloader=False)
+    create_app().run(host=host, port=port, debug=False, use_reloader=False, threaded=True)

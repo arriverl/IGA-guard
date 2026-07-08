@@ -34,7 +34,7 @@ from iga_guard.obfuscation_signals import (
     obfuscated_evasion_rescue,
     structural_attack_scores,
 )
-from iga_guard.obfuscation_signals import _encoded_cmd_markers, _eval_atob_decoded_attack, _mixed_case_hex32_token  # noqa: PLC2701
+from iga_guard.obfuscation_signals import _encoded_cmd_markers, _eval_atob_decoded_attack  # noqa: PLC2701
 
 
 class DualTrackDetector:
@@ -56,7 +56,15 @@ class DualTrackDetector:
         self.semantic = SemanticBranch(
             model_name=det.get("semantic_model", "distilbert-base-uncased"),
             enabled=det.get("use_semantic_branch", False),
+            local_model_dir=det.get("local_model_dir"),
+            conditional=bool(det.get("semantic_conditional", True)),
+            fp16=bool(det.get("semantic_fp16", True)),
         )
+        sem_dev = det.get("semantic_device", "auto")
+        if sem_dev == "cuda":
+            self.semantic.configure_runtime(device="cuda")
+        elif sem_dev == "cpu":
+            self.semantic.configure_runtime(device="cpu")
         self.dlinear = DLinearBranch(
             seq_len=dlinear_cfg.get("seq_len", 16),
             moving_avg=dlinear_cfg.get("moving_avg", 4),
@@ -70,6 +78,7 @@ class DualTrackDetector:
         self._w_mm = float(mm_cfg.get("weight_multimodal", 0.14))
         self._w_dl = float(mm_cfg.get("weight_dlinear", 0.12))
         self.threshold = det.get("confidence_threshold", 0.38)
+        self.confidence_threshold = self.threshold  # 兼容 pipeline / 外部脚本
         self._cache_force_hit = float(det.get("cache_force_hit_min", 0.92))
         self._cache_fusion_benign = float(det.get("cache_fusion_weight_benign", 0.12))
         self._fp_guard_conf_min = float(
@@ -81,6 +90,7 @@ class DualTrackDetector:
         self._obf_boost_min_base = float(det.get("obfuscation_boost_min_base_attack", 0.20))
         self._cache_fusion_obf = float(det.get("cache_fusion_weight_obfuscated", 0.42))
         self._fp_guard_tier_b = bool(det.get("fp_guard_tier_b_enabled", True))
+        self._benign_override_max_attack = float(det.get("benign_override_max_attack", 0.32))
         self._rl_thresholds: dict[str, float] = {l: self.threshold for l in self.labels}
 
         cache_cfg = cfg.get("continual_cache", {})
@@ -255,6 +265,22 @@ class DualTrackDetector:
             payload.raw_payload, norm_text, decode_depth=decode_depth,
         )
         evasion_peak = max(evasion.values(), default=0.0)
+        kw: dict[str, float] | None = None
+        st: dict[str, float] | None = None
+        kw_peak = 0.0
+        st_peak = 0.0
+
+        def _rule_signals() -> tuple[dict[str, float], dict[str, float]]:
+            nonlocal kw, st, kw_peak, st_peak
+            if kw is None:
+                kw = attack_keyword_scores(norm_text)
+                kw_peak = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
+            if st is None:
+                st = structural_attack_scores(
+                    payload.raw_payload, norm_text, decode_depth=decode_depth,
+                )
+                st_peak = max((v for k, v in st.items() if k != "Normal"), default=0.0)
+            return kw, st
 
         # 混淆 boost：强混淆 / 深解码 / evasion 规则 / base 攻击峰值达标
         should_boost = is_obfuscated(raw_low) and (
@@ -264,11 +290,7 @@ class DualTrackDetector:
             or evasion_peak >= 0.50
         )
         if should_boost:
-            norm = norm_text
-            kw = attack_keyword_scores(norm)
-            st = structural_attack_scores(
-                payload.raw_payload, norm, decode_depth=len(payload.decode_chain),
-            )
+            kw, st = _rule_signals()
             for label in self.labels:
                 if label != "Normal":
                     all_probs[label] = (
@@ -302,12 +324,7 @@ class DualTrackDetector:
             or ("%00" in raw_low and is_obfuscated(raw_low))
             or ("eval(atob" in raw_low and decode_depth >= 1)
         ):
-            kw = attack_keyword_scores(norm_text)
-            st = structural_attack_scores(
-                payload.raw_payload, norm_text, decode_depth=decode_depth,
-            )
-            kw_peak = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
-            st_peak = max((v for k, v in st.items() if k != "Normal"), default=0.0)
+            kw, st = _rule_signals()
             if decode_depth >= 2 and _encoded_cmd_markers(raw_low) and st_peak >= 0.35:
                 label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
                 confidence = max(confidence, st_peak, 0.42)
@@ -347,12 +364,7 @@ class DualTrackDetector:
                 confidence = max(confidence, evasion_peak, thresh)
                 is_malicious = True
         else:
-            kw = attack_keyword_scores(norm_text)
-            st = structural_attack_scores(
-                payload.raw_payload, norm_text, decode_depth=decode_depth,
-            )
-            kw_peak = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
-            st_peak = max((v for k, v in st.items() if k != "Normal"), default=0.0)
+            _rule_signals()
 
         hit = 0.0
         base_normal_peak = base_result.all_probs.get("Normal", 0.0)
@@ -406,9 +418,6 @@ class DualTrackDetector:
             if rescue is not None:
                 label, confidence = rescue
                 is_malicious = True
-            elif _mixed_case_hex32_token((payload.raw_payload or "").strip()):
-                label, confidence = "SQLi", max(confidence, 0.65)
-                is_malicious = True
             else:
                 atob_hit = _eval_atob_decoded_attack(payload.raw_payload or "")
                 if atob_hit is not None:
@@ -416,10 +425,22 @@ class DualTrackDetector:
                     is_malicious = True
 
         if is_malicious and is_benign_traffic_context(payload.raw_payload, norm_text):
+            # CSIC 正常表单在 URL 编码 + 商品参数下容易被“结构分”误提；放宽其反转阈值。
+            benign_csic = looks_like_benign_csic_form(payload.raw_payload, norm_text)
             if _eval_atob_decoded_attack(payload.raw_payload or "") is None:
-                label, confidence, is_malicious = "Normal", max(
-                    all_probs.get("Normal", 0.0), 0.60,
-                ), False
+                if benign_csic:
+                    if kw_peak < 0.35 and st_peak < 0.70 and base_attack_peak < 0.62:
+                        label, confidence, is_malicious = "Normal", max(
+                            all_probs.get("Normal", 0.0), 0.62,
+                        ), False
+                elif (
+                    kw_peak < 0.22
+                    and st_peak < 0.45
+                    and base_attack_peak < self._benign_override_max_attack
+                ):
+                    label, confidence, is_malicious = "Normal", max(
+                        all_probs.get("Normal", 0.0), 0.60,
+                    ), False
 
         return DetectionResult(
             label=label,

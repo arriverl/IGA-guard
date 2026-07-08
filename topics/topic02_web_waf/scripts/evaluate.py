@@ -9,21 +9,19 @@ import gc
 import json
 import sys
 from pathlib import Path
-from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from iga_guard import IgaGuardEngine
+from iga_guard.eval_transport import build_eval_request
 from iga_guard.obfuscation_signals import is_obfuscated
 from iga_guard.pipeline import load_config
 
 
 def _eval_request(payload: str) -> tuple[str, str, str]:
     """构造评测 HTTP 请求：含 &/换行/超长载荷走 POST body，避免 query 被截断。"""
-    if "&" in payload or "\n" in payload or "\r" in payload or len(payload) > 1800:
-        return "POST", "http://eval.local/test", payload
-    return "GET", f"http://eval.local/test?p={quote(payload, safe='')}", ""
+    return build_eval_request(payload)
 
 
 def main() -> None:
@@ -34,6 +32,11 @@ def main() -> None:
     parser.add_argument(
         "--export-misses",
         default=str(ROOT / "data" / "cache" / "eval_obf_misses.jsonl"),
+    )
+    parser.add_argument(
+        "--export-fps",
+        default=str(ROOT / "data" / "cache" / "eval_normal_fps.jsonl"),
+        help="导出 normal 样本被误报为攻击的明细",
     )
     parser.add_argument("--no-cache", action="store_true", help="评测时禁用 continual_cache（省内存）")
     args = parser.parse_args()
@@ -55,6 +58,7 @@ def main() -> None:
     misses_path = Path(args.export_misses)
     misses_path.parent.mkdir(parents=True, exist_ok=True)
     miss_rows: list[dict] = []
+    fp_rows: list[dict] = []
 
     with open(args.data, encoding="utf-8", newline="") as f:
         for i, row in enumerate(csv.DictReader(f)):
@@ -63,7 +67,7 @@ def main() -> None:
             payload = row["payload"]
             label = row["label"]
             method, url, body = _eval_request(payload)
-            report = engine.analyze_url(method, url, body=body)
+            report = engine.analyze_url(method, url, body=body, explain=False)
             pred = report.detection.label
             is_attack_pred = report.detection.is_malicious or pred != "Normal"
             is_attack_true = label != "Normal"
@@ -78,6 +82,14 @@ def main() -> None:
                     "label": label,
                     "source": row.get("source", ""),
                     "pred": pred,
+                })
+            if (not is_attack_true) and is_attack_pred:
+                fp_rows.append({
+                    "payload": payload,
+                    "label": label,
+                    "pred": pred,
+                    "confidence": round(report.detection.confidence, 4),
+                    "source": row.get("source", ""),
                 })
 
             y_true.append(label)
@@ -164,7 +176,13 @@ def main() -> None:
     with misses_path.open("w", encoding="utf-8") as mf:
         for row in miss_rows:
             mf.write(json.dumps(row, ensure_ascii=False) + "\n")
+    fps_path = Path(args.export_fps)
+    fps_path.parent.mkdir(parents=True, exist_ok=True)
+    with fps_path.open("w", encoding="utf-8") as ff:
+        for row in fp_rows:
+            ff.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"Exported {len(miss_rows)} obf misses -> {misses_path}", file=sys.stderr)
+    print(f"Exported {len(fp_rows)} normal FPs -> {fps_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

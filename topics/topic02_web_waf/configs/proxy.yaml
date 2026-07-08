@@ -1,0 +1,36 @@
+# IGA-Guard VPS 即插即用 — 流量转发配置
+# 用法: export IGA_CONFIG=configs/proxy.yaml && python run_proxy.py
+#   或: ./deploy/start_vps.sh --upstream http://127.0.0.1:3000
+
+version: "3.0.0"
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+
+proxy:
+  enabled: true
+  # inline: 检测后阻断或转发 | detect-only: 仅记录告警，始终转发 | mirror: 异步旁路检测+转发
+  mode: inline
+  upstream_url: "http://127.0.0.1:3000"
+  block_on_malicious: true
+  block_status: 403
+  forward_timeout_s: 30
+  max_body_bytes: 1048576
+  trust_x_forwarded: true
+  strip_request_headers:
+    - host
+    - connection
+    - content-length
+    - transfer-encoding
+    - upgrade
+    - proxy-connection
+    - proxy-authorization
+  exclude_paths:
+    - /api/
+    - /_iga/
+  api_mirror_url: "http://127.0.0.1:5000/api/detect"
+  log_blocks: true
+
+# 继承 default 检测配置（可通过 IGA_BASE_CONFIG 覆盖）
+include: default.yaml

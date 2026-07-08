@@ -20,10 +20,15 @@ IGA-Guard 2.0 主流水线（Pipeline）
 from __future__ import annotations
 
 import time
+import re
 from functools import lru_cache
 from pathlib import Path
 
 import yaml
+
+from iga_guard.runtime_env import configure_runtime_warnings
+
+configure_runtime_warnings()
 
 from iga_guard.collector.http_parser import iter_payload_parts, parse_http_request, protocol_score
 from iga_guard.collector.timeseries_buffer import TimeSeriesBuffer
@@ -34,11 +39,19 @@ from iga_guard.explainer.webspotter import webspotter_explain
 from iga_guard.models import DetectionResult, GuardReport, HttpRequest, NormalizedPayload, build_highlight_html
 from iga_guard.normalizer import normalize_payload
 from iga_guard.rules import generate_rule
-from iga_guard.obfuscation_signals import is_benign_traffic_context
+from iga_guard.obfuscation_signals import is_benign_traffic_context, obfuscated_evasion_rescue
 from iga_guard.rules.virtual_patch import export_virtual_patch_rule, match_virtual_patch
 
 # 置信度超过此阈值且判定为恶意时，跳过后续 payload 字段检测（降低延迟）
 _EARLY_EXIT_CONF = 0.88
+
+
+def _early_exit_threshold(config: dict) -> float:
+    return float(config.get("detector", {}).get("early_exit_confidence", _EARLY_EXIT_CONF))
+
+
+def _early_exit_margin(config: dict) -> float:
+    return float(config.get("detector", {}).get("early_exit_margin", 0.25))
 
 
 def _prefer_detection(candidate: DetectionResult, current: DetectionResult | None) -> bool:
@@ -52,13 +65,34 @@ def _prefer_detection(candidate: DetectionResult, current: DetectionResult | Non
     return candidate.confidence > current.confidence
 
 
+def _deep_merge(base: dict, override: dict) -> dict:
+    out = dict(base)
+    for key, val in override.items():
+        if key in out and isinstance(out[key], dict) and isinstance(val, dict):
+            out[key] = _deep_merge(out[key], val)
+        else:
+            out[key] = val
+    return out
+
+
 def load_config(path: str | Path = "configs/default.yaml") -> dict:
-    """加载 YAML 配置；默认路径相对于项目根目录 configs/default.yaml。"""
+    """加载 YAML 配置；支持 include 继承与深度合并。"""
     cfg_path = Path(path)
+    if not cfg_path.is_absolute():
+        root = Path(__file__).resolve().parents[2]
+        candidate = root / cfg_path
+        if candidate.exists():
+            cfg_path = candidate
     if not cfg_path.exists():
         return {}
     with cfg_path.open(encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+        data = yaml.safe_load(f) or {}
+    include = data.pop("include", None)
+    if include:
+        base_path = cfg_path.parent / str(include)
+        base = load_config(base_path)
+        return _deep_merge(base, data)
+    return data
 
 
 @lru_cache(maxsize=4096)
@@ -92,12 +126,26 @@ class IgaGuardEngine:
         self.detector = _create_detector(self.config)
         self.max_decode_rounds = self.config.get("normalizer", {}).get("max_decode_rounds", 6)
         self.nl_provider = self.config.get("explanation", {}).get("nl_provider", "template")
+        self.nl_model = self.config.get("explanation", {}).get("nl_model", "qwen2.5:3b")
+        self._early_exit = _early_exit_threshold(self.config)
+        self._early_exit_margin = _early_exit_margin(self.config)
+        det_cfg = self.config.get("detector", {})
+        if det_cfg.get("warmup_on_init", False) and hasattr(self.detector, "semantic"):
+            try:
+                self.detector.semantic.warmup()
+            except Exception:
+                pass
+        elif det_cfg.get("warmup_on_init", False):
+            try:
+                self.analyze_url("GET", "http://warmup.local/?id=1")
+            except Exception:
+                pass
         self.virtual_patch = self.config.get("rules", {}).get("virtual_patch_enabled", True)
         ts_cfg = self.config.get("timeseries", {})
         # 时序缓冲：window 与 DLinear seq_len 对齐（默认 16）
         self.ts_buffer = TimeSeriesBuffer(window=ts_cfg.get("window", 16))
 
-    def analyze_request(self, req: HttpRequest) -> GuardReport:
+    def analyze_request(self, req: HttpRequest, *, explain: bool = True) -> GuardReport:
         """对完整 HTTP 请求做检测，返回含解释与高亮的 GuardReport。"""
         t0 = time.perf_counter()
         normalized: list[NormalizedPayload] = []
@@ -135,8 +183,20 @@ class IgaGuardEngine:
                 best_detection = det
                 best_payload = norm
 
-            if best_detection and best_detection.confidence >= _EARLY_EXIT_CONF and best_detection.is_malicious:
-                break
+            if (
+                best_detection
+                and best_detection.confidence >= self._early_exit
+                and best_detection.is_malicious
+            ):
+                normal_prob = best_detection.all_probs.get("Normal", 0.0)
+                attack_edge = best_detection.confidence - normal_prob
+                req_raw = f"{req.url}\n{req.body or ''}"
+                # 良性上下文或攻击边界不足时，不提前退出，避免单字段误报放大。
+                if (
+                    attack_edge >= self._early_exit_margin
+                    and not is_benign_traffic_context(req_raw, req_raw.lower())
+                ):
+                    break
 
         if best_detection is None:
             best_detection = DetectionResult(
@@ -144,30 +204,86 @@ class IgaGuardEngine:
             )
             best_payload = _cached_normalize(req.url, "", "query", self.max_decode_rounds)
 
-        # P0：整请求聚合良性上下文（CSIC 表单/地址）→ 压多字段误报
+        # P0：整请求聚合良性上下文（CSIC 表单/地址）→ 压多字段误报。
+        # 已判恶意时仅反转弱证据结果，避免 HPP/POST 攻击被 id=1 等良性片段覆盖。
         aggregate = (req.body or "").strip()
         if not aggregate and "?" in req.url:
             from urllib.parse import urlparse
             aggregate = urlparse(req.url).query
-        if aggregate and is_benign_traffic_context(aggregate, aggregate.lower()):
+        aggregate_is_benign = bool(
+            aggregate and is_benign_traffic_context(aggregate, aggregate.lower())
+        )
+        aggregate_is_upper_hex_token = bool(
+            aggregate
+            and re.fullmatch(
+                r"(?:[A-Za-z0-9_]{1,32}=)?[0-9A-F]{32}",
+                aggregate.strip(),
+            )
+        )
+        if aggregate:
+            aggregate_rescue = obfuscated_evasion_rescue(
+                aggregate, aggregate.lower(), decode_depth=1,
+            )
+            if aggregate_rescue is not None:
+                rescue_label, rescue_conf = aggregate_rescue
+                best_detection = DetectionResult(
+                    label=rescue_label,
+                    confidence=max(best_detection.confidence, rescue_conf),
+                    risk_level="high" if rescue_conf >= 0.85 else "medium",
+                    is_malicious=True,
+                    all_probs={**best_detection.all_probs, rescue_label: rescue_conf},
+                )
+
+        if aggregate_is_upper_hex_token and not aggregate_is_benign:
             best_detection = DetectionResult(
                 label="Normal",
-                confidence=max(best_detection.all_probs.get("Normal", 0.0), 0.88),
+                confidence=max(best_detection.all_probs.get("Normal", 0.0), 0.82),
                 risk_level="low",
                 is_malicious=False,
-                all_probs={**best_detection.all_probs, "Normal": 0.88},
+                all_probs={**best_detection.all_probs, "Normal": 0.82},
+            )
+
+        if (
+            aggregate_is_benign
+            and (
+                not best_detection.is_malicious
+                or (
+                    best_detection.confidence < float(self.config.get("detector", {}).get("benign_aggregate_flip_max_conf", 0.80))
+                    and (
+                        best_detection.confidence
+                        - best_detection.all_probs.get("Normal", 0.0)
+                    ) < float(self.config.get("detector", {}).get("benign_aggregate_flip_max_edge", 0.60))
+                )
+            )
+        ):
+            adjusted_probs = {
+                k: (min(v, 0.05) if k != "Normal" else max(v, 0.88))
+                for k, v in best_detection.all_probs.items()
+            }
+            best_detection = DetectionResult(
+                label="Normal",
+                confidence=adjusted_probs.get("Normal", 0.88),
+                risk_level="low",
+                is_malicious=False,
+                all_probs=adjusted_probs,
             )
 
         # P1：协议异常分加权（WAFFLED 轨，与载荷检测正交）
         pscore = protocol_score(req)
-        if pscore >= 0.3 and not best_detection.is_malicious:
+        protocol_boost_max = float(self.config.get("detector", {}).get("protocol_boost_max", 0.18))
+        protocol_boost_min_attack = float(self.config.get("detector", {}).get("protocol_boost_min_attack", 0.18))
+        if pscore >= 0.3 and not best_detection.is_malicious and not aggregate_is_benign:
             atk = max(
                 (lb for lb in best_detection.all_probs if lb != "Normal"),
                 key=lambda lb: best_detection.all_probs.get(lb, 0.0),
                 default="SQLi",
             )
-            boosted = min(0.85, best_detection.confidence + pscore * 0.25)
-            if boosted >= self.detector.confidence_threshold:
+            attack_peak = max((v for k, v in best_detection.all_probs.items() if k != "Normal"), default=0.0)
+            boosted = min(0.85, best_detection.confidence + pscore * protocol_boost_max)
+            if (
+                attack_peak >= protocol_boost_min_attack
+                and boosted >= getattr(self.detector, "confidence_threshold", getattr(self.detector, "threshold", 0.38))
+            ):
                 best_detection = DetectionResult(
                     label=atk,
                     confidence=boosted,
@@ -179,10 +295,20 @@ class IgaGuardEngine:
         best_detection.latency_ms = (time.perf_counter() - t0) * 1000
 
         # --- 可解释性：WebSpotter 定位 + NL 解释 + HTML 高亮 ---
-        explanation = webspotter_explain(best_payload, best_detection, normalized) if best_payload else None
-        if explanation and best_payload:
+        explanation = None
+        if explain:
+            explanation = webspotter_explain(best_payload, best_detection, normalized) if best_payload else None
+        nl_enabled = self.config.get("explanation", {}).get("nl_enabled", True)
+        if explain and explanation and best_payload and nl_enabled:
             explanation.natural_language = generate_nl_explanation(
-                best_payload, best_detection, explanation, provider=self.nl_provider,
+                best_payload,
+                best_detection,
+                explanation,
+                provider=self.nl_provider,
+                model=self.nl_model,
+                api_base=self.config.get("llm_agent", {}).get("api_base", "http://127.0.0.1:11434"),
+                max_tokens=int(self.config.get("explanation", {}).get("nl_max_tokens", 128)),
+                num_ctx=int(self.config.get("explanation", {}).get("nl_num_ctx", 2048)),
             )
             text = best_payload.normalized_payload or best_payload.raw_payload
             if len(explanation.token_range) >= 2:
@@ -206,6 +332,6 @@ class IgaGuardEngine:
             generated_rule=rule,
         )
 
-    def analyze_url(self, method: str, url: str, body: str = "") -> GuardReport:
+    def analyze_url(self, method: str, url: str, body: str = "", *, explain: bool = True) -> GuardReport:
         """便捷接口：仅 URL + Method 的检测入口。"""
-        return self.analyze_request(parse_http_request(method=method, url=url, body=body))
+        return self.analyze_request(parse_http_request(method=method, url=url, body=body), explain=explain)

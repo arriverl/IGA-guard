@@ -14,17 +14,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from urllib.parse import quote
-
 from iga_guard import IgaGuardEngine
+from iga_guard.eval_transport import build_eval_request
 from iga_guard.obfuscation_signals import is_obfuscated, looks_like_benign_csic_form
 from iga_guard.pipeline import load_config
 
 
 def _eval_request(payload: str) -> tuple[str, str, str]:
-    if "&" in payload or "\n" in payload or "\r" in payload or len(payload) > 1800:
-        return "POST", "http://eval.local/test", payload
-    return "GET", f"http://eval.local/test?p={quote(payload, safe='')}", ""
+    return build_eval_request(payload)
 
 
 def _classify_fp(payload: str, pred: str) -> str:

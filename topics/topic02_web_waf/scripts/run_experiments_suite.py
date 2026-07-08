@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from iga_guard import IgaGuardEngine
+from iga_guard.eval_transport import build_eval_request
 from iga_guard.evolution.online_rl import OnlineRLController
 from iga_guard.obfuscation_signals import is_obfuscated
 from iga_guard.pipeline import load_config
@@ -152,8 +153,8 @@ def _run_eval(
 
     for i, row in enumerate(rows):
         payload, label = row["payload"], row["label"]
-        url = f"http://eval.local/test?p={payload}"
-        report = engine.analyze_url("GET", url)
+        method, url, body = build_eval_request(payload)
+        report = engine.analyze_url(method, url, body=body, explain=False)
         pred = report.detection.label
         is_attack_pred = report.detection.is_malicious or pred != "Normal"
         is_attack_true = label != "Normal"
@@ -341,8 +342,8 @@ def run_e7(misses_path: Path, cfg_path: Path, n_events: int = 50) -> dict:
                 record = json.loads(line)
                 true_label = record.get("true_label") or record.get("label", "Normal")
                 payload = record.get("payload", "")
-                url = record.get("url") or f"http://eval.local/?p={payload[:500]}"
-                report = engine.analyze_url("GET", url)
+                method, url, body = build_eval_request(payload)
+                report = engine.analyze_url(method, url, body=body, explain=False)
                 predicted = report.detection.label
 
                 top_feats: list[str] = []

@@ -1,0 +1,251 @@
+{
+  "experiment": "auto_verify",
+  "started_at": "2026-07-08T04:12:04.369272+00:00",
+  "finished_at": "2026-07-08T04:26:31.896399+00:00",
+  "elapsed_s": 867.53,
+  "passed": false,
+  "gates": [
+    {
+      "gate": "pytest",
+      "passed": true,
+      "detail": "all tests pass"
+    },
+    {
+      "gate": "llm",
+      "passed": true,
+      "detail": "ollama reachable"
+    },
+    {
+      "gate": "e1_2k",
+      "passed": true,
+      "detail": "obf_recall>=0.995, fpr<=0.05",
+      "obf_recall": 0.9991,
+      "fpr": 0.0432,
+      "samples": 2000
+    },
+    {
+      "gate": "e1_4k",
+      "passed": true,
+      "detail": "obf_recall>=0.995, fpr<=0.05",
+      "obf_recall": 0.9981,
+      "fpr": 0.0458,
+      "samples": 4000
+    },
+    {
+      "gate": "e1_nocache",
+      "passed": true,
+      "detail": "obf_recall>=0.992, fpr<=0.05",
+      "obf_recall": 0.9953,
+      "fpr": 0.0312,
+      "samples": 2000
+    },
+    {
+      "gate": "e4_latency",
+      "passed": false,
+      "detail": "p50<=5.0ms, p99<=50.0ms",
+      "p50_ms": 0.072,
+      "p99_ms": 63.232
+    },
+    {
+      "gate": "e6_explain",
+      "passed": false,
+      "detail": "span_hit>=1.0",
+      "span_hit_rate": 0.0
+    },
+    {
+      "gate": "e8_patch",
+      "passed": true,
+      "detail": "block_rate>=1.0",
+      "block_rate": 1.0
+    },
+    {
+      "gate": "e9_40",
+      "passed": false,
+      "detail": "pooled/final/block recall gates",
+      "pooled_recall": 0.775,
+      "final_round_recall": 0.625,
+      "block_recall": 0.775,
+      "total_missed": 27
+    },
+    {
+      "gate": "e9_80",
+      "passed": true,
+      "detail": "pooled/final/block recall gates",
+      "pooled_recall": 0.9896,
+      "final_round_recall": 0.9818,
+      "block_recall": 0.9896,
+      "total_missed": 2
+    }
+  ],
+  "steps": [
+    {
+      "name": "pytest",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "--tb=no"
+      ],
+      "returncode": 0,
+      "elapsed_s": 33.95,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/pytest.log",
+      "ok": true
+    },
+    {
+      "name": "check_llm",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/check_llm.py"
+      ],
+      "returncode": 0,
+      "elapsed_s": 10.85,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/check_llm.log",
+      "ok": true
+    },
+    {
+      "name": "e1_2k",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/evaluate.py",
+        "--max-samples",
+        "2000",
+        "--output",
+        "results/v2_exp1_auto_2k.json"
+      ],
+      "returncode": 0,
+      "elapsed_s": 164.98,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e1_2k.log",
+      "ok": true
+    },
+    {
+      "name": "e1_4k",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/evaluate.py",
+        "--max-samples",
+        "4000",
+        "--output",
+        "results/v2_exp1_auto_4k.json"
+      ],
+      "returncode": 0,
+      "elapsed_s": 325.73,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e1_4k.log",
+      "ok": true
+    },
+    {
+      "name": "e1_nocache",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/evaluate.py",
+        "--max-samples",
+        "2000",
+        "--output",
+        "results/v2_exp1_auto_nocache_2k.json",
+        "--no-cache"
+      ],
+      "returncode": 0,
+      "elapsed_s": 52.75,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e1_nocache.log",
+      "ok": true
+    },
+    {
+      "name": "e4_latency",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/benchmark_latency.py"
+      ],
+      "returncode": 0,
+      "elapsed_s": 36.84,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e4_latency.log",
+      "ok": true
+    },
+    {
+      "name": "e6_explain",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/eval_explainability.py"
+      ],
+      "returncode": 0,
+      "elapsed_s": 1.64,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e6_explain.log",
+      "ok": true
+    },
+    {
+      "name": "e8_patch",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/run_experiments_suite.py",
+        "--experiments",
+        "e8"
+      ],
+      "returncode": 0,
+      "elapsed_s": 1.58,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e8_patch.log",
+      "ok": true
+    },
+    {
+      "name": "e9_40",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/run_llm_redteam.py",
+        "--rounds",
+        "3",
+        "--max-variants",
+        "40",
+        "--output",
+        "results/v2_exp9_auto_40.json"
+      ],
+      "returncode": 1,
+      "elapsed_s": 132.84,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e9_40.log",
+      "ok": false
+    },
+    {
+      "name": "e9_80",
+      "cmd": [
+        "/root/miniconda3/bin/python",
+        "scripts/run_llm_redteam.py",
+        "--rounds",
+        "3",
+        "--max-variants",
+        "80",
+        "--output",
+        "results/v2_exp9_auto_80.json"
+      ],
+      "returncode": 0,
+      "elapsed_s": 106.36,
+      "log": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/cache/auto_verify_logs/e9_80.log",
+      "ok": true
+    }
+  ],
+  "selected_steps": [
+    "pytest",
+    "llm",
+    "e1_2k",
+    "e1_4k",
+    "e1_nocache",
+    "e4",
+    "e6",
+    "e8",
+    "e9_40",
+    "e9_80"
+  ],
+  "thresholds": {
+    "pytest_pass_rate": 1.0,
+    "e1_2k_obf_recall_min": 0.995,
+    "e1_2k_fpr_max": 0.05,
+    "e1_4k_obf_recall_min": 0.995,
+    "e1_4k_fpr_max": 0.05,
+    "e1_nocache_obf_recall_min": 0.992,
+    "e9_pooled_recall_min": 0.95,
+    "e9_final_recall_min": 0.95,
+    "e9_block_recall_min": 0.95,
+    "e4_p50_ms_max": 5.0,
+    "e4_p99_ms_max": 50.0,
+    "e6_span_hit_min": 1.0,
+    "e8_block_rate_min": 1.0,
+    "llm_reachable": true
+  }
+}

@@ -56,8 +56,12 @@ def main() -> int:
     summary = loop.summary(results)
     final_recall = results[-1].recall if results else 0.0
     total_detected = sum(r.detected for r in results)
+    total_blocked = sum(r.block_detected for r in results)
+    total_labeled = sum(r.label_detected for r in results)
     total_all = sum(r.total for r in results)
     pooled_recall = total_detected / total_all if total_all else 0.0
+    block_recall = total_blocked / total_all if total_all else 0.0
+    label_recall = total_labeled / total_all if total_all else 0.0
 
     report = {
         "experiment": "E9_llm_redteam",
@@ -67,11 +71,15 @@ def main() -> int:
         "max_variants": args.max_variants,
         "total_variants": total_all,
         "total_detected": total_detected,
+        "total_blocked": total_blocked,
         "total_missed": sum(r.missed for r in results),
         "final_round_recall": round(final_recall, 4),
         "pooled_recall": round(pooled_recall, 4),
+        "block_recall": round(block_recall, 4),
+        "label_recall": round(label_recall, 4),
         "avg_recall": round(pooled_recall, 4),
         "new_techniques_discovered": summary.get("total_new_techniques", 0),
+        "round_misses_path": str(loop.round_misses_path),
         "rounds_detail": [
             {
                 "round": r.round,
@@ -79,6 +87,8 @@ def main() -> int:
                 "detected": r.detected,
                 "missed": r.missed,
                 "recall": round(r.recall, 4),
+                "block_recall": round(r.block_recall, 4),
+                "label_recall": round(r.label_recall, 4),
                 "new_techniques": r.new_techniques,
             }
             for r in results

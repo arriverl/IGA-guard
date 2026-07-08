@@ -1,0 +1,40 @@
+{
+  "dataset": "/root/autodl-tmp/IGA-Guard/IGA-guard/topics/topic02_web_waf/data/master/test_obfuscated.csv",
+  "eval_samples": 4000,
+  "overall_multiclass": {
+    "accuracy": 0.844,
+    "recall_malicious_exact_class": 0.8126,
+    "samples": 4000
+  },
+  "overall_binary": {
+    "detection_recall": 0.8948,
+    "detection_precision": 0.9859,
+    "f1": 0.9381,
+    "false_positive_rate": 0.0458,
+    "tp": 2798,
+    "fp": 40,
+    "fn": 329,
+    "tn": 833,
+    "samples": 4000
+  },
+  "obfuscated_attack_binary": {
+    "detection_recall": 0.9981,
+    "detection_precision": 1.0,
+    "f1": 0.9991,
+    "false_positive_rate": 0,
+    "tp": 2107,
+    "fp": 0,
+    "fn": 4,
+    "tn": 0,
+    "samples": 2111
+  },
+  "normal_binary": {
+    "false_positive_rate": 0.0458,
+    "fp": 40,
+    "tn": 833,
+    "samples": 873
+  },
+  "target_obfuscated_recall": 0.995,
+  "pass_binary_obfuscated": true,
+  "note": "混淆子集仅含带混淆标记的攻击样本；normal_binary 单独报告误报率"
+}

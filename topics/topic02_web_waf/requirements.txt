@@ -7,10 +7,11 @@ scikit-learn>=1.3.0
 xgboost>=2.0.0
 joblib>=1.3.0
 requests>=2.31.0
+gunicorn>=21.2.0
 
 # optional: deep semantic branch & explainability (required for full pipeline)
 transformers>=4.36.0
 torch>=2.1.0
-# optional: continual cache encoder (falls back to hash if missing)
-# sentence-transformers>=2.2.0
+# optional: continual cache + RAG encoder (falls back to hash if missing)
+sentence-transformers>=2.2.0
 # shap>=0.44.0

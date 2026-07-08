@@ -1,4 +1,4 @@
-"""GPT-powered natural language explanation (template + optional LLM)."""
+"""Natural language explanation (template + Ollama local_llm + API)."""
 
 from __future__ import annotations
 
@@ -12,9 +12,18 @@ def generate_nl_explanation(
     detection: DetectionResult,
     explanation: ExplanationResult | None,
     provider: str = "template",
+    *,
+    model: str = "qwen2.5:3b",
+    api_base: str = "http://127.0.0.1:11434",
+    max_tokens: int = 128,
+    num_ctx: int = 2048,
 ) -> str:
     if provider == "api" or provider == "local_llm":
-        llm = _llm_explain(payload, detection, explanation)
+        llm = _llm_explain(
+            payload, detection, explanation,
+            provider=provider, model=model, api_base=api_base,
+            max_tokens=max_tokens, num_ctx=num_ctx,
+        )
         if llm:
             return llm
     return _template_explain(payload, detection, explanation)
@@ -56,24 +65,48 @@ def _llm_explain(
     payload: NormalizedPayload,
     detection: DetectionResult,
     explanation: ExplanationResult | None,
+    *,
+    provider: str,
+    model: str,
+    api_base: str,
+    max_tokens: int = 128,
+    num_ctx: int = 2048,
 ) -> str | None:
-    api_key = os.environ.get("IGA_LLM_API_KEY", "")
-    api_base = os.environ.get("IGA_LLM_API_BASE", "")
-    if not api_key or not api_base:
-        return None
+    prompt = (
+        "用一句中文向安全运维人员解释以下 Web 攻击判定原因：\n"
+        f"类型={detection.label}, 字段={payload.field_name}, "
+        f"片段={explanation.malicious_span if explanation else ''}, "
+        f"解码链={payload.decode_chain}"
+    )
     try:
         import requests
 
-        prompt = (
-            "用一句中文向安全运维人员解释以下 Web 攻击判定原因：\n"
-            f"类型={detection.label}, 字段={payload.field_name}, "
-            f"片段={explanation.malicious_span if explanation else ''}, "
-            f"解码链={payload.decode_chain}"
-        )
+        if provider == "local_llm":
+            base = api_base or os.environ.get("IGA_LLM_API_BASE", "http://127.0.0.1:11434")
+            resp = requests.post(
+                f"{base.rstrip('/')}/api/chat",
+                json={
+                    "model": model or os.environ.get("IGA_LLM_MODEL", "qwen2.5:3b"),
+                    "messages": [{"role": "user", "content": prompt}],
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.3,
+                        "num_predict": max_tokens,
+                        "num_ctx": num_ctx,
+                    },
+                },
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json().get("message", {}).get("content", "").strip() or None
+
+        api_key = os.environ.get("IGA_LLM_API_KEY", "")
+        if not api_key or not api_base:
+            return None
         resp = requests.post(
             f"{api_base.rstrip('/')}/chat/completions",
             headers={"Authorization": f"Bearer {api_key}"},
-            json={"model": "qwen-plus", "messages": [{"role": "user", "content": prompt}]},
+            json={"model": model or "qwen-plus", "messages": [{"role": "user", "content": prompt}]},
             timeout=15,
         )
         resp.raise_for_status()

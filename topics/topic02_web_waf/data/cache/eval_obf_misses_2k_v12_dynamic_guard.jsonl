@@ -1,0 +1,9 @@
+{"payload": "\\u0043F2237\\u00463743B\\u0041\\u0043975\\u0046\\u0041A2\\u0041\\u0044F2352E37\\u0041", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}
+{"payload": "modo%3Dregistro%26login%3Dhatti%26password%3DviTUpeRAdOr%26nombre%3D%3F%26apellidos%3DC%EF%BF%BDmara%2BDovale%26email%3Dtiensuwan%40zarasalud.py%26dni%3D84598781C%26direccion%3DCalle%2BSor%2BMercedes%2BS%2FN%2B12-D%26ciudad%3DLloar%2C%2BEl%26cp%3D24170%26provincia%3DValladolid%26ntc%3D4582509168680893%26B1%3DRegistrar", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "B4\\u00446\\u0046\\u00432\\u0046\\u0042D40480\\u0046E\\u0046E99C946\\u004234017D", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}
+{"payload": "FE76\\u00438\\u0045D\\u0046201F2854AC613612302300\\u0041", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}
+{"payload": "4B978B\\u00445420DBC\\u00446135\\u00464CE8D\\u00455913\\u0044\\u0045", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}
+{"payload": "3D\\u004586230672DAEBCA4C0D7952986\\u004618F", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}
+{"payload": "herdegen-vehil%40cortinas-de-aire.ar", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "F8E98FEB0AEC1E6391F91E08313ED15E", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}
+{"payload": "\\u0042CA4\\u0042\\u00425B\\u0042A\\u004421\\u004104\\u0046D427905\\u0042\\u0043A699AE", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}

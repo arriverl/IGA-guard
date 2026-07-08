@@ -1,0 +1,40 @@
+{
+  "dataset": "data/master/test_obfuscated.csv",
+  "eval_samples": 2000,
+  "overall_multiclass": {
+    "accuracy": 0.6865,
+    "recall_malicious_exact_class": 0.6222,
+    "samples": 2000
+  },
+  "overall_binary": {
+    "detection_recall": 0.8926,
+    "detection_precision": 0.9792,
+    "f1": 0.9339,
+    "false_positive_rate": 0.0719,
+    "tp": 1413,
+    "fp": 30,
+    "fn": 170,
+    "tn": 387,
+    "samples": 2000
+  },
+  "obfuscated_attack_binary": {
+    "detection_recall": 0.9981,
+    "detection_precision": 1.0,
+    "f1": 0.9991,
+    "false_positive_rate": 0,
+    "tp": 1062,
+    "fp": 0,
+    "fn": 2,
+    "tn": 0,
+    "samples": 1064
+  },
+  "normal_binary": {
+    "false_positive_rate": 0.0719,
+    "fp": 30,
+    "tn": 387,
+    "samples": 417
+  },
+  "target_obfuscated_recall": 0.995,
+  "pass_binary_obfuscated": true,
+  "note": "混淆子集仅含带混淆标记的攻击样本；normal_binary 单独报告误报率"
+}
