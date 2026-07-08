@@ -15,3 +15,7 @@ tests/__pycache__/
 # 日志与临时
 *.log
 logs/
+deploy/logs/
+deploy/pids/
+topics/topic02_web_waf/configs/proxy.runtime.yaml
+topics/topic02_web_waf/data/cache/auto_verify_logs/
