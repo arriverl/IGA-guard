@@ -1,0 +1,29 @@
+{
+  "processed": 77,
+  "clusters": 3,
+  "registered": [
+    {
+      "cluster": "SQLi:high_pct_blob",
+      "pattern": "(?:^|[?&=])[^&]{0,200}(?:%[0-9a-f]{2}){6,}",
+      "label": "SQLi",
+      "fp_rate": 0.0
+    },
+    {
+      "cluster": "XSS:other",
+      "pattern": "<xml/\\*\\*/src/\\*\\*/=/\\*\\*/\"http:/xss\\.rocks/xsstest\\.xml\"/\\*\\*/id/\\*\\*/=/\\*\\*/i></xml>",
+      "label": "XSS",
+      "fp_rate": 0.0
+    }
+  ],
+  "rejected": [
+    {
+      "cluster": "SQLi:other",
+      "reason": "no_pattern"
+    }
+  ],
+  "store": {
+    "path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\discovered_rescue_rules.json",
+    "total": 4,
+    "enabled": 4
+  }
+}

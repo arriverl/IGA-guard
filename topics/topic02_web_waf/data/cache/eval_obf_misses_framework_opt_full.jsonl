@@ -1,0 +1,6 @@
+{"payload": "Calle%2BZubia%2B7%2B", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Calle%2BRejas%2C%2B23%2C%2B4%3FB", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Vino+Rioja%2B", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}
+{"payload": "Calle%2BAlfred%2BNobel%2C%2B142%2B12G", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Calle%2BVirgen%2BDe%2BLa%2BEstrella%2C%2B150%2C%2B", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Calle%2BSol%2B188%2B9-H", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}

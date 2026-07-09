@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from iga_guard import IgaGuardEngine
 from iga_guard.adversarial.ast_mutator import ast_obfuscate, ast_obfuscate_batch
 from iga_guard.adversarial.mutator import mutate_batch, mutate_sqli, mutate_xss
+from iga_guard.eval_transport import build_eval_request
 from iga_guard.pipeline import load_config
 
 # 默认种子池上限：避免全量 test.csv（7k+）导致百万级变体 + GPU OOM/进程被杀
@@ -110,8 +111,8 @@ def evaluate_round(
     misses: list[dict[str, str]] = []
     total = len(variants)
     for i, (payload, label, source) in enumerate(variants, 1):
-        url = f"http://adv.local/test?p={payload}"
-        report = engine.analyze_url("GET", url)
+        method, url, body = build_eval_request(payload, base_url="http://adv.local/test")
+        report = engine.analyze_url(method, url, body=body)
         pred = report.detection.label
         # WAF 实战指标：恶意检出（类别可错）或精确类别匹配
         hit = report.detection.is_malicious or pred == label
@@ -159,6 +160,16 @@ def main() -> None:
         help="Cap variants per round",
     )
     parser.add_argument("--progress-every", type=int, default=200)
+    parser.add_argument(
+        "--stability-mix",
+        action="store_true",
+        help="每轮用 base_pool+failure_pool 混合生成，避免仅硬样本导致假漂移",
+    )
+    parser.add_argument(
+        "--learn-misses",
+        action="store_true",
+        help="将漏检写入 continual_cache（稳态压测时的在线学习）",
+    )
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -177,7 +188,16 @@ def main() -> None:
         failures_log.unlink()
 
     for rnd in range(1, args.rounds + 1):
-        pool = failure_pool if rnd > 1 and failure_pool else base_pool
+        if args.stability_mix and rnd > 1:
+            # 混合：保留基线压力 + 聚焦漏检，防止样本集坍缩造成假性漂移
+            seen: set[str] = set()
+            pool: list[tuple[str, str]] = []
+            for item in list(failure_pool) + list(base_pool):
+                if item[0] not in seen:
+                    seen.add(item[0])
+                    pool.append(item)
+        else:
+            pool = failure_pool if rnd > 1 and failure_pool else base_pool
         variants = generate_variants(
             pool,
             round_num=rnd,
@@ -193,6 +213,13 @@ def main() -> None:
         missed = len(misses)
         recall = round(detected / total, 4) if total else 0.0
         dist = dict(Counter(m["label"] for m in misses))
+
+        if args.learn_misses and misses and hasattr(engine.detector, "cache") and engine.detector.cache:
+            for m in misses[:80]:
+                try:
+                    engine.detector.cache.update_from_feedback(m["payload"], m["label"])
+                except Exception:
+                    pass
 
         summary_rows.append(
             {

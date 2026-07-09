@@ -61,6 +61,15 @@ evolution:
   failure_augment: 2
   online_rl_enabled: true
   learning_rate: 0.05
+  online_adaptive:
+    enabled: true
+    state_path: "data/cache/online_adaptive_state.json"
+    canary_pct: 10
+    promote_min_episodes: 40
+    promote_min_avg_reward: 0.15
+    rollback_avg_reward: -0.25
+    rollback_window: 30
+    max_threshold_delta: 0.08
   miss_rule_pipeline:
     enabled: true
     rules_path: "data/cache/discovered_rescue_rules.json"

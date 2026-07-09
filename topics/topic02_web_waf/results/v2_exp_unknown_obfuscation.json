@@ -1,0 +1,173 @@
+{
+  "experiment": "unknown_obfuscation_generalization",
+  "held_out_techniques": [
+    "char_function",
+    "chunked_whitespace",
+    "hpp_duplicate_param",
+    "html_entity_full",
+    "img_onerror_wrap",
+    "json_nested_escape",
+    "keyword_concat_split",
+    "logic_or_tautology",
+    "multipart_boundary_sim",
+    "mysql_version_comment",
+    "nested_comment",
+    "paren_overload",
+    "svg_event_wrap",
+    "tab_newline",
+    "unicode_normalization"
+  ],
+  "n_techniques": 15,
+  "n_seeds": 30,
+  "variants_per_tech": 2,
+  "total_variants": 30,
+  "detected": 30,
+  "missed": 0,
+  "detection_recall": 1.0,
+  "exact_class_recall": 0.8,
+  "per_technique": {
+    "char_function": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "chunked_whitespace": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "hpp_duplicate_param": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "html_entity_full": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "img_onerror_wrap": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 1,
+      "detection_recall": 1.0,
+      "exact_recall": 0.5
+    },
+    "json_nested_escape": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 0,
+      "detection_recall": 1.0,
+      "exact_recall": 0.0
+    },
+    "keyword_concat_split": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "logic_or_tautology": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "multipart_boundary_sim": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 1,
+      "detection_recall": 1.0,
+      "exact_recall": 0.5
+    },
+    "mysql_version_comment": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "nested_comment": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 1,
+      "detection_recall": 1.0,
+      "exact_recall": 0.5
+    },
+    "paren_overload": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "svg_event_wrap": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 1,
+      "detection_recall": 1.0,
+      "exact_recall": 0.5
+    },
+    "tab_newline": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "unicode_normalization": {
+      "total": 2,
+      "detected": 2,
+      "exact_class": 2,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    }
+  },
+  "weakest_techniques": [
+    {
+      "technique": "char_function",
+      "recall": 1.0
+    },
+    {
+      "technique": "chunked_whitespace",
+      "recall": 1.0
+    },
+    {
+      "technique": "hpp_duplicate_param",
+      "recall": 1.0
+    },
+    {
+      "technique": "html_entity_full",
+      "recall": 1.0
+    },
+    {
+      "technique": "img_onerror_wrap",
+      "recall": 1.0
+    },
+    {
+      "technique": "json_nested_escape",
+      "recall": 1.0
+    },
+    {
+      "technique": "keyword_concat_split",
+      "recall": 1.0
+    },
+    {
+      "technique": "logic_or_tautology",
+      "recall": 1.0
+    }
+  ],
+  "miss_samples": [],
+  "target_min_recall": 0.85,
+  "pass": true,
+  "note": "held-out 手法未计入常见/可见集合；指标为恶意检出召回（类别可错）"
+}

@@ -43,7 +43,12 @@ def _pattern_for_cluster(cluster: str, samples: list[str]) -> tuple[str, str, fl
         if cluster.endswith(name):
             return pat, label, conf
     if cluster.endswith("high_pct_blob"):
-        return r"(?:^|[?&=])[^&]{0,200}(?:%[0-9a-f]{2}){6,}", cluster.split(":")[0], 0.62
+        # 过泛 SQLi 百分号 blob 规则会吞掉 CMD 等类别（导致多分类塌缩）。
+        # 仅允许用于非 SQLi 聚类；SQLi 交给更具体签名/规则处理。
+        label = cluster.split(":")[0]
+        if label == "SQLi":
+            return None
+        return r"(?:^|[?&=])[^&]{0,200}(?:%[0-9a-f]{2}){6,}", label, 0.62
     # 从样本提取最长公共子串（≥8）
     if not samples:
         return None

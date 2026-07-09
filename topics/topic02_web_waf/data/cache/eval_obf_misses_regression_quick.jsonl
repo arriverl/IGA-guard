@@ -1,0 +1,2 @@
+{"payload": "C/+Las+Americas+8%00+", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}
+{"payload": "C/+Juan+De+Lara%00+115,+9?A", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}

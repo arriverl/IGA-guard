@@ -1,0 +1,28 @@
+{
+  "profile": "quick",
+  "steps": [
+    {
+      "name": "pre_eval_regression",
+      "exit_code": 0
+    },
+    {
+      "name": "miss_to_rule",
+      "exit_code": 0,
+      "report": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\results\\miss_rule_report_cycle_quick.json"
+    },
+    {
+      "name": "expand_cache",
+      "exit_code": 0
+    },
+    {
+      "name": "evolve_from_misses",
+      "exit_code": 0
+    },
+    {
+      "name": "post_eval_regression",
+      "exit_code": 0
+    }
+  ],
+  "miss_file": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\eval_obf_misses_regression_quick_nocache.jsonl",
+  "pass": true
+}

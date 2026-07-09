@@ -1,0 +1,2 @@
+{"payload": "C/+Bascu�ana+52,+5-E", "label": "Normal", "pred": "SQLi", "confidence": 0.4338, "source": "csic_gsi:cisc_normalTraffic_train.txt"}
+{"payload": "C/+Almansa,+91,+6D", "label": "Normal", "pred": "SQLi", "confidence": 0.39, "source": "csic_gsi:cisc_normalTraffic_train.txt"}

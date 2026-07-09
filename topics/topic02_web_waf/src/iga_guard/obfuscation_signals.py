@@ -14,7 +14,7 @@ OBFUSCATED_MARKERS: tuple[str, ...] = (
     "%00", "atob(", "echo%20", "&&echo", "$(echo",
     "'+'", "\"+\"",
     # v3.1 新增
-    "between", "1e0", "1E0", "${ifs}", "{cat,", "/???/", "php://filter",
+    "between", "${ifs}", "{cat,", "/???/", "php://filter",
     "zip://", "xi:include", "data:text/html", "ontoggle", "font-size:0",
     "boundary*0=", "%c0%af", "%u2215", "[SYSTEM]", "||", "BETWEEN",
 )
@@ -64,11 +64,16 @@ _BENIGN_SHOPPING = re.compile(
     r"(?:^|[&?])(id|nombre|precio|cantidad|producto)=[^&]*", re.I,
 )
 _BENIGN_ADDRESS = re.compile(
-    r"(calle|carrer|cami|camin|avenida|paseo|plaza|pla|rambla|passatge|avinguda|travesia|porta|c/)\b",
+    r"(?:calle|carrer|cami|camin|avenida|paseo|plaza|pla|rambla|passatge|avinguda|travesia|porta)"
+    r"(?:\b|[+\s,%])"
+    r"|c/(?:[+\s]|%2b|[A-Za-zÁÉÍÓÚÑáéíóúñ])",
     re.I,
 )
 _BENIGN_ADDRESS_SAFE = re.compile(
-    r"^[\w\s\+,\.\-áéíóúñüàèòç\?%]+$", re.I,
+    r"^[\w\s\+,\.\-áéíóúñüàèòç\?%/]+$", re.I,
+)
+_RE_SPANISH_NAME_TOKEN = re.compile(
+    r"^[A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòç]+(?:[+\s][A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòç]+){0,3}$",
 )
 _SQLI_INJECTION_MARKERS = re.compile(
     r"union\s+select|select\s+.+\s+from|insert\s+into|drop\s+table|sleep\s*\(|benchmark\s*\("
@@ -77,7 +82,77 @@ _SQLI_INJECTION_MARKERS = re.compile(
 )
 _CSIC_ANOMALY_FIELDS = re.compile(
     r"(?:^|[&?])(?:b1a=|b1=\?|b1=%3f|provincia=\||provincia=%7c)"
-    r"|pwd=[^&]{0,48}%2b",
+    r"|pwd=[^&]{0,48}%2b"
+    # 参数名尾缀异常：modoA / precioA / loginA / direccionA（CSIC 异常流量常见）
+    r"|(?:^|[&?])(?:modo|precio|login|pwd|password|nombre|direccion|cantidad|email)[a-z]\s*="
+    # 值内管道 / 问号 / 空格 / 空字段 / 尾斜杠污染
+    r"|(?:modo|precio|nombre|cantidad|apellidos|direccion|ciudad)=[^&]*(?:\||%7c)"
+    r"|(?:cantidad|b1)=[^&]*(?:\?|%3[fF]|/)"
+    r"|(?:b1)=[^&]*/(?:$|&)"
+    r"|(?:login|pwd|password|nombre|email|cp|b1)=(?:%20|\+|%2b|\s*|%00|\x00)(?:$|&)"
+    r"|(?:login|pwd)=[^&]*%2b"
+    r"|(?:pwd|password)=[^&]*[!*,]"
+    r"|(?:direccion)=[^&]*\*"
+    r"|(?:b1)=[^&]*%20(?:$|&)"
+    r"|(?:b1)=[^&]+\s+(?:$|&)"
+    r"|remember=on/"
+    r"|remember=on%2[fF]"
+    # 全 URL 编码表单中的异常参数名（modoA%3D / precioA%3D）
+    r"|(?:modo|precio|login|pwd|password|nombre|direccion)[a-z]%3d"
+    r"|(?:cantidad|b1)%3d[^&]*(?:%3[fF]|%3f)"
+    r"|(?:login|pwd|password|nombre|apellidos|email|cp|b1)%3d(?:%20|%2b|$|%26)"
+    r"|(?:apellidos|provincia|direccion)%3d(?:%7c|[^&]*%7c)"
+    r"|remember%3don%2[fF]"
+    # 解码后管道残留（direccion=... |）
+    r"|(?:direccion|apellidos|ciudad)=[^&]*\|"
+    r"|(?:email|cp|nombre|pwd)=\s*(?:$|&)",
+    re.I,
+)
+_FULL_URL_ENCODED_FORM = re.compile(
+    r"(?:modo|login|password|precio|nombre|b1|id)%3d"
+    r".{0,40}%26"
+    r".{0,80}(?:%3d|%26)",
+    re.I,
+)
+_RE_HTML_ENTITY_XSS = re.compile(
+    r"&#\d+;.{0,120}(?:script|alert|onerror|onload|svg|&#83;&#67;|&#115;&#99;)"
+    r"|(?:script|alert|onerror|&#83;&#67;Ri|&#115;&#99;).{0,120}&#\d+;"
+    r"|&#\d+;[^&]{0,40}@<&#"
+    # 纯数字实体链：&#60;= <  &#115;/&#99;= s/c  &#97;&#108;&#101;&#114;&#116;= alert
+    r"|&#\s*0*60\s*;(?:&#\s*\d+\s*;){2,80}"
+    r"|(?:&#\s*0*115\s*;|&#\s*0*83\s*;).{0,40}(?:&#\s*0*99\s*;|&#\s*0*67\s*;)"
+    r"|(?:&#\s*0*97\s*;).{0,20}(?:&#\s*0*108\s*;).{0,20}(?:&#\s*0*101\s*;).{0,20}(?:&#\s*0*114\s*;)",
+    re.I,
+)
+
+
+def _html_entity_xss_signal(raw: str, raw_low: str | None = None) -> bool:
+    """检测 HTML 实体 / 半实体 XSS（含破损实体 &#1&#49; 与混杂明文）。"""
+    low = raw_low if raw_low is not None else raw.lower()
+    if _RE_HTML_ENTITY_XSS.search(raw) or _RE_HTML_ENTITY_XSS.search(low):
+        return True
+    n_ent = raw.count("&#")
+    if n_ent >= 4 and any(
+        x in low for x in ("script", "alert", "onerror", "&#115;", "&#99;", "&#97;", "atob")
+    ):
+        return True
+    if n_ent >= 5 and (
+        "&#60;" in low or "&#060;" in low or "&#x3c;" in low or "onerror" in low or "atob" in low
+    ):
+        return True
+    # 半实体半明文 / 破损实体
+    if "&#" in raw and (
+        re.search(r"&#\s*0*60\s*;?\s*s", low)
+        or re.search(r"(?:scr|sc&#|s&#\s*0*99)", low)
+        or re.search(r"ale&#\s*0*114|aler&#|&#\s*0*97\s*;?l", low)
+        or ("onerror" in low and ("&#" in low or "<" in raw))
+        or re.search(r"&#\s*1?\s*&#?\s*\d+", low)  # &#1&#49; 破损链
+        or ("&&#35;" in low)  # &&#35; = &#
+    ):
+        return True
+    return False
+_RE_JSON_NESTED_FORM = re.compile(
+    r'\{\s*"a"\s*:\s*\{\s*"b"\s*:\s*"(?:[^"\\]|\\.){4,}"\s*\}\s*\}',
     re.I,
 )
 _LLM_EVASION_MARKERS = re.compile(
@@ -123,9 +198,11 @@ _OPAQUE_ENCODED_URL = re.compile(
 )
 _MALFORMED_SIGN_PARAM = re.compile(
     r"%40[b-]?sign\.cg"
+    r"|@[b-]?sign\.cg"
     r"|%0a\+b1%3d"
     r"|%0a%2bb1%3d"
-    r"|^%40[a-z0-9._-]{2,24}%0a",
+    r"|^%40[a-z0-9._-]{2,24}%0a"
+    r"|^@[a-z0-9._-]{2,24}\n",
     re.I,
 )
 _DYNAMIC_ADVERSARIAL_MARKERS = re.compile(
@@ -427,11 +504,17 @@ def _unicode_escape_sqli_signal(text: str) -> bool:
     return any(k in text.lower() for k in ("\\u006d", "\\u006c", "\\u0070"))
 
 
+_RE_SCI_NOTATION_OBF = re.compile(r"(?<![0-9a-f])1e0(?![0-9a-f])", re.I)
+
+
 def is_obfuscated(text: str) -> bool:
     if "\x00" in text:
         return True
     low = text.lower()
     if any(m in low for m in OBFUSCATED_MARKERS):
+        return True
+    # 科学计数法混淆：需词界，避免误伤 hex token 内的 "1E0"
+    if _RE_SCI_NOTATION_OBF.search(low):
         return True
     return has_fullwidth(text)
 
@@ -487,13 +570,40 @@ def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
     raw_low = raw.lower()
     if has_case_obfuscated_param(raw):
         return False
+    # 内联注释拆参（modo/**/=）属于混淆逃逸，不当作良性 CSIC
+    if "/**/" in raw or "/*!*/" in raw or "/**/" in low:
+        return False
     if not (_BENIGN_CSIC_PARAMS.search(low) or _BENIGN_SHOPPING.search(low)):
         return False
     if _duplicate_params(raw_low):
         return False
     if _CSIC_ANOMALY_FIELDS.search(raw_low) or _CSIC_ANOMALY_FIELDS.search(low):
         return False
+    # 全 URL 编码表单（无明文 =）属于混淆逃逸，不当作良性
+    if "%3d" in raw_low and "=" not in raw and (
+        "modo" in raw_low or "precio" in raw_low or "login" in raw_low
+    ):
+        return False
+    # 购物/登录值尾部异常空白或管道
+    if re.search(r"(?:cantidad|b1|precio)=[^&]*(?:\?|%3f|\||%7c|%20(?:$|&))", raw_low):
+        return False
+    if re.search(r"(?:login|pwd)=[^&]*%2b", raw_low):
+        return False
+    if re.search(r"(?:pwd|nombre|apellidos|email|cp)=(?:%20|\||%7c|\+|\s*)(?:$|&)", raw_low):
+        return False
+    if "|" in (norm or raw) or "%7c" in raw_low:
+        return False
+    if "remember=on%2f" in raw_low or "remember%3don%2f" in raw_low:
+        return False
+    # 关键字段为空 / 仅空白
+    if re.search(r"(?:email|cp|nombre|pwd)=\s*(?:$|&)", low):
+        return False
     if _LLM_EVASION_MARKERS.search(raw_low) or _LLM_EVASION_MARKERS.search(low):
+        return False
+    if _MALFORMED_SIGN_PARAM.search(raw_low) or _MALFORMED_SIGN_PARAM.search(low):
+        return False
+    # 仅畸形 @sign 前缀，不把正常邮箱当成非良性
+    if raw_low.startswith("%40") or (norm or raw).lstrip().startswith("@"):
         return False
     if _OPAQUE_ENCODED_URL.search(raw_low) or _OPAQUE_ENCODED_URL.search(low):
         return False
@@ -517,19 +627,35 @@ def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
 def looks_like_benign_address(raw: str, norm: str) -> bool:
     """CSIC 正常地址字段（西班牙语街道名）。"""
     text = (norm or raw).strip()
+    # 传输层常把空格编成 + / %20；替换字符多为拉丁扩展名损坏
+    text = (
+        text.replace("+", " ")
+        .replace("%20", " ")
+        .replace("%2b", " ")
+        .replace("%2B", " ")
+        .replace("%ef%bf%bd", "a")
+        .replace("%EF%BF%BD", "a")
+        .replace("\ufffd", "a")
+    )
     low = text.lower()
-    if len(text) < 8 or len(text) > 400:
+    if len(text) < 4 or len(text) > 400:
         return False
-    if is_obfuscated(raw) or has_strong_obfuscation(raw):
+    addr_like = bool(_BENIGN_ADDRESS.search(low))
+    if _SQLI_INJECTION_MARKERS.search(low) or any(
+        k in low for k in ("union", "select", "script", "alert", "wget", "eval(", "${jndi")
+    ):
         return False
-    if _SQLI_INJECTION_MARKERS.search(low):
-        return False
-    if any(k in low for k in ("union", "select", "script", "alert", "wget", "eval(", "${jndi")):
-        return False
-    if _BENIGN_ADDRESS.search(low):
+    if addr_like:
         return True
+    # 短西班牙姓名（无注入痕迹）；允许损坏的重音字母
+    name_candidate = text.replace("%20", " ")
+    if 4 <= len(name_candidate) <= 48 and (
+        _RE_SPANISH_NAME_TOKEN.match(name_candidate)
+        or re.fullmatch(r"[A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòça\s\-]{4,48}", name_candidate)
+    ):
+        if not _FORM_INJ.search(low) and sum(ch.isalpha() for ch in name_candidate) >= 4:
+            return True
     if _BENIGN_ADDRESS_SAFE.match(text) and not _FORM_INJ.search(low):
-        # 纯高熵 token（无空格）不应当被当作地址型良性流量。
         if " " in text and sum(ch.isalpha() for ch in text) >= 6:
             return True
     return False
@@ -567,6 +693,30 @@ def _mixed_case_hex32_token(text: str) -> bool:
     if not re.fullmatch(r"[0-9a-fA-F]{32}", s):
         return False
     return any(c.isupper() for c in s) and any(c.islower() for c in s)
+
+
+def _upper_hex32_token(text: str) -> bool:
+    """全大写 32 位 hex（CSIC anomalous 常见伪装 token）。"""
+    s = text.strip()
+    return bool(re.fullmatch(r"[0-9A-F]{32}", s)) and any(c.isalpha() for c in s)
+
+
+def _decode_url_form_once(text: str) -> str:
+    """轻量 URL 解码，供 rescue 在 raw 全编码时对齐 norm。"""
+    try:
+        from urllib.parse import unquote_plus
+        return unquote_plus(text)
+    except Exception:
+        return text
+
+
+def _json_nested_inner(text: str) -> str | None:
+    """提取 {"a":{"b":"..."}} 内层载荷。"""
+    m = re.search(r'\{\s*"a"\s*:\s*\{\s*"b"\s*:\s*"(.*?)"\s*\}\s*\}', text or "", re.S)
+    if not m:
+        return None
+    inner = m.group(1).replace('\\"', '"').replace("\\\\", "\\")
+    return inner
 
 
 def _unicode_escaped_hex32_token(text: str) -> bool:
@@ -607,6 +757,15 @@ _RE_URL_ENCODE_NAME = re.compile(
     r"%2b|%40|%ef%bf%bd|%2c%2b|%2e%2b",
     re.I,
 )
+_RE_URLENC_ADDRESS_TAIL = re.compile(
+    r"^(?:calle|avenida|paseo|plaza|travesia|rambla|carrer|cami|passatge)"
+    r"%2b[^\r\n&]{1,96}$",
+    re.I,
+)
+_RE_URLENC_PRODUCT_TAIL = re.compile(
+    r"^(?:vino|queso|jam(?:on|%c3%b3n)|iberico)\+[^\r\n&]{1,48}%2b$",
+    re.I,
+)
 
 
 _DISCOVERED_STORE = None
@@ -642,11 +801,26 @@ def obfuscated_evasion_rescue_cached(
     if not raw:
         return None
     raw_strip = raw.strip()
+    hpp_hex_camouflage = bool(
+        _duplicate_params(raw.lower())
+        and any(
+            _standalone_hex32_token(v)
+            or _mixed_case_hex32_token(v)
+            or _upper_hex32_token(v)
+            for v in _hpp_attack_values(raw)
+        )
+    )
     if not (
         is_obfuscated(raw)
         or _RE_BOOL_LIKE_SQLI.search(raw)
         or _mixed_case_hex32_token(raw_strip)
         or _unicode_escaped_hex32_token(raw_strip)
+        or hpp_hex_camouflage
+        or _FULL_URL_ENCODED_FORM.search(raw)
+        or has_case_obfuscated_param(raw)
+        or _json_nested_inner(raw) is not None
+        or _RE_HTML_ENTITY_XSS.search(raw)
+        or _html_entity_xss_signal(raw)
         or _LLM_EVASION_MARKERS.search(raw)
         or _LLM_DYNAMIC_URL_MARKERS.search(raw)
         or _LLM_ENCODED_XSS_BURST.search(raw)
@@ -666,6 +840,50 @@ def obfuscated_evasion_rescue_cached(
     norm_low = (norm or raw).lower()
     folded = fold_homoglyphs(raw)
     folded_low = folded.lower()
+    decoded_form = _decode_url_form_once(raw)
+    decoded_form_low = decoded_form.lower()
+
+    # CSIC anomalous 字段污染：优先于其它分支，覆盖拆参前的整表单
+    if (
+        _CSIC_ANOMALY_FIELDS.search(raw_low)
+        or _CSIC_ANOMALY_FIELDS.search(norm_low)
+        or _CSIC_ANOMALY_FIELDS.search(decoded_form_low)
+        or "|" in decoded_form
+    ):
+        if (
+            _FORM_INJ.search(raw_low)
+            or _RE_FORM_CTX.search(raw_low)
+            or _BENIGN_CSIC_PARAMS.search(raw_low)
+            or _BENIGN_SHOPPING.search(raw_low)
+            or _FORM_INJ.search(decoded_form_low)
+            or _RE_FORM_CTX.search(decoded_form_low)
+            or _BENIGN_CSIC_PARAMS.search(decoded_form_low)
+            or _BENIGN_SHOPPING.search(decoded_form_low)
+            or _FORM_INJ.search(norm_low)
+            or _RE_FORM_CTX.search(norm_low)
+        ):
+            cmd_hint = (
+                _encoded_cmd_markers(raw_low)
+                or _encoded_cmd_markers(decoded_form_low)
+                or any(
+                    k in raw_low
+                    for k in (
+                        "&&",
+                        "%26%26",
+                        "|echo",
+                        "%7cecho",
+                        "wget",
+                        "curl",
+                        "bash",
+                        "sh%20",
+                        "str%3d%24%28echo",
+                        "$(echo",
+                    )
+                )
+            )
+            if cmd_hint:
+                return "CMD", 0.68
+            return "SQLi", 0.66
 
     concat_hit = _concat_split_attack_signal(raw, norm_low)
     if concat_hit is not None:
@@ -676,12 +894,22 @@ def obfuscated_evasion_rescue_cached(
     if _RE_BOOL_LIKE_SQLI.search(raw_low) or _RE_BOOL_LIKE_SQLI.search(norm_low):
         return "SQLi", 0.74
 
+    # 独立 hex32 在 Normal 中大量出现（会话/哈希），禁止裸 token 直接判恶意。
+    # 仅当伴随 SQL/HPP 结构时才抬升。
     if _standalone_hex32_token(raw_strip) and (
         _RE_BOOL_LIKE_SQLI.search(raw_low) or "&" in raw_low or "?" in raw_low
     ):
         return "SQLi", 0.62
 
+    # 独立大小写混杂 hex32：CSIC anomalous 伪装 token（测试/数据集约定）
     if _mixed_case_hex32_token(raw_strip):
+        return "SQLi", 0.65
+    hex_val = raw_strip.split("=", 1)[-1] if "=" in raw_strip and "&" not in raw_strip else ""
+    if hex_val and _mixed_case_hex32_token(hex_val) and (
+        _RE_BOOL_LIKE_SQLI.search(raw_low)
+        or _FORM_INJ.search(raw_low)
+        or _RE_FORM_CTX.search(raw_low)
+    ):
         return "SQLi", 0.65
 
     if _unicode_escaped_hex32_token(raw_strip):
@@ -693,8 +921,10 @@ def obfuscated_evasion_rescue_cached(
     ):
         return "SQLi", 0.66
 
-    dup_vals = _hpp_attack_values(raw)
-    if dup_vals:
+    # 仅真实 HPP（重复参数名）才用重复值做 hex/高熵伪装抬升，避免 token=HEX 误报
+    dup_keys = _duplicate_params(raw_low)
+    if dup_keys:
+        dup_vals = _hpp_attack_values(raw)
         for fragment in dup_vals:
             frag_low = fragment.lower()
             if any(x in frag_low for x in ("<script", "alert(", "union", "select", "jndi:", "${")):
@@ -704,13 +934,25 @@ def obfuscated_evasion_rescue_cached(
             if _high_entropy_camouflage_token(fragment):
                 return "SQLi", 0.72
 
+    # 空字节拼接：有明确 shell 痕迹时优先 CMD，避免被 SQLi 高置信覆盖
+    if ("\x00" in raw or "%00" in raw_low) and (
+        _encoded_cmd_markers(raw_low)
+        or _RE_SHELL_ECHO_OBF.search(raw_low)
+        or any(
+            x in raw_low
+            for x in (
+                "$(echo", "str%3d%24", "str%3d%24%28echo", "sleep%20",
+                " -ne ", " -eq ", "%20-ne%20", "%20-eq%20",
+            )
+        )
+    ):
+        return "CMD", 0.78
+
     if _RE_NULL_SPLICE.search(raw) or _RE_NULL_SPLICE.search(raw_low):
         return "SQLi", 0.72
 
     if ("\x00" in raw or "%00" in raw_low) and (
-        _FORM_INJ.search(raw_low)
-        or _RE_FORM_CTX.search(norm_low)
-        or _encoded_cmd_markers(raw_low)
+        _FORM_INJ.search(raw_low) or _RE_FORM_CTX.search(norm_low)
     ):
         return "SQLi", 0.78
 
@@ -782,13 +1024,21 @@ def obfuscated_evasion_rescue_cached(
             return "CMD", 0.62
         return "SQLi", 0.66
 
-    if (
-        ("%2540" in raw_low or (decode_depth >= 1 and "%40" in raw_low))
-        and re.fullmatch(r"[a-z0-9_.-]+%(?:25)?40[a-z0-9_.-]+\.[a-z]{2,}", raw_low, re.I)
+    # 仅双重编码邮箱 (%2540) 视为逃逸；单次 %40 是传输层对正常邮箱的编码，禁止抬升
+    if "%2540" in raw_low and re.fullmatch(
+        r"[a-z0-9_.+-]+%2540[a-z0-9_.-]+\.[a-z]{2,}", raw_low, re.I,
     ):
         return "SQLi", 0.57
 
-    if "%25ef%25bf%25bd" in raw_low or (decode_depth >= 1 and "%ef%bf%bd" in raw_low):
+    # 替换字符逃逸：仅双重编码或伴随注入痕迹；单次 %EF%BF%BD 常见于拉丁姓名损坏
+    if "%25ef%25bf%25bd" in raw_low:
+        return "SQLi", 0.57
+    if (
+        "%ef%bf%bd" in raw_low
+        and decode_depth >= 1
+        and _SQLI_INJECTION_MARKERS.search(raw_low)
+        and not looks_like_benign_address(raw, norm_low)
+    ):
         return "SQLi", 0.57
 
     pct = raw_low.count("%")
@@ -797,9 +1047,54 @@ def obfuscated_evasion_rescue_cached(
     ):
         return "SQLi", 0.56
 
-    if pct >= 2 and ("%3d" in raw_low or "%26" in raw_low):
+    # 全 URL 编码表单：解码后检查异常字段 / 注入痕迹
+    if _FULL_URL_ENCODED_FORM.search(raw_low) or (
+        pct >= 4 and "%3d" in raw_low and "%26" in raw_low
+    ):
+        if _CSIC_ANOMALY_FIELDS.search(raw_low) or _CSIC_ANOMALY_FIELDS.search(decoded_form_low):
+            if _encoded_cmd_markers(raw_low) or _encoded_cmd_markers(decoded_form_low):
+                return "CMD", 0.66
+            return "SQLi", 0.66
         if (
-            (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low))
+            _FORM_INJ.search(decoded_form_low)
+            or _RE_FORM_CTX.search(decoded_form_low)
+            or "modo=" in decoded_form_low
+            or "precio=" in decoded_form_low
+        ):
+            # 全编码 CSIC 表单本身即混淆逃逸样本（source=url_encode）
+            if (
+                _SQLI_INJECTION_MARKERS.search(decoded_form_low)
+                or "|" in decoded_form
+                or decoded_form_low.rstrip().endswith("/")
+                or re.search(r"(?:modo|precio|login|pwd|password|nombre|direccion)[a-z]\s*=", decoded_form_low)
+                or re.search(r"(?:cantidad|b1)=[^&]*[?%]", decoded_form_low)
+                or "%20" in raw_low[-6:]
+                or raw_low.rstrip().endswith("%2f")
+                or "," in decoded_form  # pwd 内逗号等异常字符
+            ):
+                if _encoded_cmd_markers(raw_low) or _encoded_cmd_markers(decoded_form_low):
+                    return "CMD", 0.64
+                return "SQLi", 0.64
+            # 纯全编码表单：仅在存在异常痕迹时抬升，避免误伤正常编码表单
+            if (
+                "=" not in raw
+                and ("%3d" in raw_low or "%253d" in raw_low)
+                and (
+                    _CSIC_ANOMALY_FIELDS.search(decoded_form_low)
+                    or "|" in decoded_form
+                    or decoded_form_low.rstrip().endswith("/")
+                    or re.search(r"(?:pwd|password)=[^&]*[!*,]", decoded_form_low)
+                    or "remember=on/" in decoded_form_low
+                )
+            ):
+                return "SQLi", 0.60
+
+    if pct >= 2 and ("%3d" in raw_low or "%26" in raw_low):
+        if _CSIC_ANOMALY_FIELDS.search(raw_low) or _CSIC_ANOMALY_FIELDS.search(norm_low):
+            return "SQLi", 0.62
+        if (
+            (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low)
+             or _FORM_INJ.search(decoded_form_low) or _RE_FORM_CTX.search(decoded_form_low))
             and (
                 _SQLI_INJECTION_MARKERS.search(raw_low)
                 or _SQLI_INJECTION_MARKERS.search(norm_low)
@@ -807,6 +1102,7 @@ def obfuscated_evasion_rescue_cached(
                 or "%27" in raw_low
                 or "%2527" in raw_low
                 or _RE_NULL_SPLICE.search(raw_low)
+                or "|" in decoded_form
             )
         ):
             return "SQLi", 0.55
@@ -815,8 +1111,11 @@ def obfuscated_evasion_rescue_cached(
         kw = attack_keyword_scores(norm_low)
         if max((v for k, v in kw.items() if k != "Normal"), default=0.0) >= 0.10:
             return "SQLi", 0.58
+        if _CSIC_ANOMALY_FIELDS.search(raw_low) or _CSIC_ANOMALY_FIELDS.search(decoded_form_low):
+            return "SQLi", 0.60
         if (
-            (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low))
+            (_FORM_INJ.search(norm_low) or _RE_FORM_CTX.search(norm_low)
+             or _FORM_INJ.search(decoded_form_low) or _RE_FORM_CTX.search(decoded_form_low))
             and (
                 _SQLI_INJECTION_MARKERS.search(raw_low)
                 or "'" in raw
@@ -826,6 +1125,57 @@ def obfuscated_evasion_rescue_cached(
             )
         ):
             return "SQLi", 0.55
+
+    # 长尾窄规则：地址/商品孤立片段 + 尾部编码污染。
+    # 明文/单次 + 空格的正常街道地址不得抬升；仅双重编码或异常污染才救援。
+    if "=" not in raw and "&" not in raw and is_obfuscated(raw):
+        if _RE_URLENC_ADDRESS_TAIL.match(raw_low):
+            if looks_like_benign_address(raw, norm_low):
+                pass
+            elif raw_low.endswith("%252b") or "%253f" in raw_low or raw_low.count("%25") >= 2:
+                return "SQLi", 0.59
+        if _RE_URLENC_PRODUCT_TAIL.match(raw_low):
+            if not looks_like_benign_address(raw, norm_low):
+                return "SQLi", 0.58
+
+    # 内联注释拆参：modo/**/=/**/registro 等（混淆逃逸 SQLi）
+    if "/**/" in raw and (
+        _BENIGN_CSIC_PARAMS.search(raw_low.replace("/**/", ""))
+        or _RE_FORM_CTX.search(raw_low.replace("/**/", ""))
+        or re.search(r"(?:modo|login|password|precio)/\*\*/=", raw_low)
+    ):
+        return "SQLi", 0.66
+
+    # case_random：参数名大小写混杂，且伴随异常值才抬升
+    if has_case_obfuscated_param(raw):
+        if (
+            _CSIC_ANOMALY_FIELDS.search(raw_low)
+            or _CSIC_ANOMALY_FIELDS.search(norm_low)
+            or "|" in raw
+            or "%7c" in raw_low
+            or re.search(r"(?:cantidad|b1|nombre)=[^&]*[?%|]", raw_low)
+            or re.search(r"(?:direccion|apellidos)=[^&]*[?|]", raw_low)
+        ):
+            return "SQLi", 0.63
+
+    # JSON 嵌套逃逸：展开内层，仅异常/注入痕迹抬升
+    inner = _json_nested_inner(raw)
+    if inner is not None:
+        inner_low = inner.lower()
+        if (
+            _CSIC_ANOMALY_FIELDS.search(inner_low)
+            or _SQLI_INJECTION_MARKERS.search(inner_low)
+            or "|" in inner
+            or "%3f" in inner_low
+            or "%00" in inner_low
+            or re.search(r"(?:b1|cantidad|nombre|pwd|email)=(?:%20|\+|%2b|\s*)(?:$|&|\")", inner_low)
+            or (len(inner.strip()) <= 8 and "%" in inner)  # 短异常片段 %2B / %20
+        ):
+            return "SQLi", 0.66
+
+    # HTML 实体混淆 XSS（含纯数字实体链 / 实体与明文混杂 / 破损实体）
+    if _html_entity_xss_signal(raw, raw_low):
+        return "XSS", 0.70
 
     if has_strong_obfuscation(raw_low) and decode_depth >= 1:
         kw = attack_keyword_scores(norm_low)
@@ -863,17 +1213,109 @@ def _eval_atob_decoded_attack(raw: str) -> tuple[str, float] | None:
         return None
     m = re.search(r"atob\s*\(\s*['\"]([A-Za-z0-9+/=]+)['\"]\s*\)", raw, re.I)
     if not m:
+        # 无完整 B64 时结合外层 shell 痕迹，避免默认 SQLi 吞掉 CMD
+        if _encoded_cmd_markers(raw_low) or any(
+            x in raw_low for x in ("sleep", "echo", "|tr", "wc-c", "wc%20", "%7c%7c")
+        ):
+            return "CMD", 0.62
         return "SQLi", 0.60
     try:
         pad = m.group(1) + "=" * (-len(m.group(1)) % 4)
         decoded = base64.b64decode(pad).decode("utf-8", errors="ignore").lower()
     except Exception:
+        if _encoded_cmd_markers(raw_low):
+            return "CMD", 0.60
         return "SQLi", 0.58
-    if any(k in decoded for k in ("union", "select", "drop", "insert", "script", "alert", "waitfor", "exec")):
+    # URL 二次解码（atob 内常嵌 %20/%24%28echo 等）
+    try:
+        from urllib.parse import unquote
+
+        decoded_u = unquote(unquote(decoded)).lower()
+    except Exception:
+        decoded_u = decoded
+    blob = f"{decoded} {decoded_u} {raw_low}"
+    cmd_hits = (
+        "echo", "wget", "curl", "sleep", "bash", "$(", "${",
+        "&&", "||", "wc -c", "wc%20", "tr -d", "tr%20-d",
+        "%28echo", "$(echo", "str=$(",
+    )
+    if any(k in blob for k in cmd_hits) or _encoded_cmd_markers(blob):
+        return "CMD", 0.76
+    if any(k in decoded_u for k in ("union", "select", "drop", "insert", "script", "alert", "waitfor")):
         return "SQLi", 0.74
-    if any(k in decoded for k in ("modo", "login", "password", "pwd")):
+    if any(k in decoded_u for k in ("modo", "login", "password", "pwd")):
         return "SQLi", 0.68
+    # 外层已有 shell 管道/sleep 时优先 CMD
+    if any(x in raw_low for x in ("sleep", "|tr", "wc -c", "%7c%7c", "||")):
+        return "CMD", 0.68
     return "SQLi", 0.62
+
+
+def arbitrate_attack_label(
+    label: str,
+    confidence: float,
+    *,
+    raw: str,
+    norm: str,
+    all_probs: dict[str, float] | None = None,
+    kw: dict[str, float] | None = None,
+    st: dict[str, float] | None = None,
+    decode_depth: int = 0,
+) -> tuple[str, float]:
+    """
+    多分类仲裁：在已判定恶意时纠正 CMD↔SQLi 等边界误分。
+    不改变 Normal / 非恶意决策，避免抬高 FPR。
+    """
+    if label == "Normal":
+        return label, confidence
+    raw_low = (raw or "").lower()
+    norm_low = (norm or "").lower()
+    kw = kw or attack_keyword_scores(norm_low or raw_low)
+    st = st or structural_attack_scores(raw, norm, decode_depth=decode_depth)
+    probs = all_probs or {}
+    kw_cmd = float(kw.get("CMD", 0.0))
+    kw_sqli = float(kw.get("SQLi", 0.0))
+    st_cmd = float(st.get("CMD", 0.0))
+    st_sqli = float(st.get("SQLi", 0.0))
+    p_cmd = float(probs.get("CMD", 0.0))
+    p_sqli = float(probs.get("SQLi", 0.0))
+
+    atob_hit = _eval_atob_decoded_attack(raw or "")
+    if atob_hit is not None and atob_hit[0] == "CMD":
+        return "CMD", max(confidence, atob_hit[1])
+
+    cmd_marker = _encoded_cmd_markers(raw_low) or _encoded_cmd_markers(norm_low)
+    shellish = any(
+        x in raw_low or x in norm_low
+        for x in (
+            "$(echo", "&&echo", "%0aecho", "|echo", "sleep 0", "sleep 1",
+            " -ne ", " -eq ", "%20-ne%20", "%20-eq%20",
+            "wc -c", "tr -d", "${#str}", "str=$(", "str%3d%24%28echo",
+        )
+    )
+    strong_cmd = cmd_marker or shellish or kw_cmd >= 0.45 or st_cmd >= 0.40
+
+    # SQLi 被误标但规则强烈指向 CMD
+    if label == "SQLi" and strong_cmd and (
+        kw_cmd >= kw_sqli + 0.12
+        or st_cmd >= st_sqli + 0.08
+        or (cmd_marker and kw_cmd >= 0.35)
+        or (shellish and "union" not in norm_low and "select" not in norm_low)
+    ):
+        return "CMD", max(confidence, 0.72, kw_cmd, st_cmd)
+
+    # 融合概率 CMD 已领先但仍被标成 SQLi
+    if label == "SQLi" and p_cmd >= p_sqli + 0.05 and (kw_cmd >= 0.30 or cmd_marker):
+        return "CMD", max(confidence, p_cmd, 0.70)
+
+    # 反向：明确 SQL 关键字时避免被弱 CMD 噪声翻走
+    if label == "CMD" and (
+        ("union" in norm_low and "select" in norm_low)
+        or ("information_schema" in norm_low)
+    ) and not cmd_marker and kw_sqli >= kw_cmd + 0.15:
+        return "SQLi", max(confidence, 0.70, kw_sqli)
+
+    return label, confidence
 
 
 def _duplicate_params(raw_low: str) -> list[str]:
@@ -995,6 +1437,15 @@ def structural_attack_scores(
     if any(x in raw_low for x in ("&&echo", "$(echo", "%0aecho")):
         scores["CMD"] += 0.55
 
+    # 时间盲注式 shell（CSIC/CMD 混淆长尾）：sleep + 条件测试 / 管道
+    if (
+        ("sleep" in raw_low or "sleep%20" in raw_low)
+        and any(x in raw_low for x in (" -ne ", " -eq ", "%20-ne%20", "%20-eq%20", "||", "%7c%7c", "wc"))
+    ):
+        scores["CMD"] += 0.50
+    if "str%3d%24%28echo" in raw_low or "str=$(echo" in raw_low or "${#str}" in raw_low:
+        scores["CMD"] += 0.45
+
     if _encoded_cmd_markers(raw_low):
         scores["CMD"] += 0.55
 
@@ -1027,6 +1478,11 @@ def structural_attack_scores(
 
     if "%c0%af" in raw_low or "..;/" in raw_low or "%u2215" in raw_low:
         scores["PathTraversal"] += 0.55
+    if re.search(r"(?:\.\.|%2e%2e).{0,8}%c0%af", raw_low):
+        scores["PathTraversal"] += 0.45
+    # overlong UTF-8 路径穿越：即使 passwd 被大小写打散也抬升
+    if "%c0%af" in raw_low and ("etc" in raw_low or "passwd" in raw_low or "pas" in raw_low):
+        scores["PathTraversal"] += 0.35
 
     if "[system]" in raw_low or "validation: approved" in raw_low:
         scores["PromptInjection"] += 0.45

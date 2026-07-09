@@ -1,0 +1,40 @@
+{
+  "dataset": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\master\\test_obfuscated.csv",
+  "eval_samples": 19411,
+  "overall_multiclass": {
+    "accuracy": 0.7883,
+    "recall_malicious_exact_class": 0.7347,
+    "samples": 19411
+  },
+  "overall_binary": {
+    "detection_recall": 0.8864,
+    "detection_precision": 0.997,
+    "f1": 0.9384,
+    "false_positive_rate": 0.0101,
+    "tp": 13600,
+    "fp": 41,
+    "fn": 1743,
+    "tn": 4027,
+    "samples": 19411
+  },
+  "obfuscated_attack_binary": {
+    "detection_recall": 0.9994,
+    "detection_precision": 1.0,
+    "f1": 0.9997,
+    "false_positive_rate": 0,
+    "tp": 10325,
+    "fp": 0,
+    "fn": 6,
+    "tn": 0,
+    "samples": 10331
+  },
+  "normal_binary": {
+    "false_positive_rate": 0.0101,
+    "fp": 41,
+    "tn": 4027,
+    "samples": 4068
+  },
+  "target_obfuscated_recall": 0.995,
+  "pass_binary_obfuscated": true,
+  "note": "混淆子集仅含带混淆标记的攻击样本；normal_binary 单独报告误报率"
+}

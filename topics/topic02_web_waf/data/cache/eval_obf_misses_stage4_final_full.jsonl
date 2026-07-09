@@ -1,0 +1,2 @@
+{"payload": "Calle%2BAlfred%2BNobel%2C%2B142%2B12G", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Calle%2BSol%2B188%2B9-H", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}

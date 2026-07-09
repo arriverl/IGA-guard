@@ -1,0 +1,47 @@
+{
+  "title": "对抗稳态与指标漂移报告",
+  "e3": {
+    "file": "results\\v2_exp3_stability.json",
+    "drift": {
+      "n": 2,
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0,
+      "range": 0.0,
+      "last": 1.0,
+      "first": 1.0,
+      "delta_last_first": 0.0
+    },
+    "converged": true,
+    "probe": {
+      "seed": 1729,
+      "total": 46,
+      "detected": 46,
+      "missed": 0,
+      "recall": 1.0,
+      "miss_distribution": {},
+      "pass": true
+    },
+    "recovery": {
+      "total": 0,
+      "recovered": 0,
+      "remaining_missed": 0,
+      "recovery_rate": 0.0,
+      "miss_distribution": {},
+      "pass": true
+    },
+    "convergence_proof": {
+      "probe_stable": true,
+      "adaptive_recovery": true,
+      "adversarial_drift_bounded": true,
+      "overall_converged": true
+    },
+    "per_round_recall": [
+      1.0,
+      1.0
+    ]
+  },
+  "e9": null,
+  "pass": true
+}

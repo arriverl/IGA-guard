@@ -23,6 +23,16 @@
 
 ## 架构概览
 
+### DynaMorph-Guard 动态防御混淆方案
+
+本项目现已将“针对混淆逃逸的 Web 攻击载荷动态检测与对抗方案”落为 **DynaMorph-Guard**：
+
+- **语义同形检测**：`semantic_homograph.py` 同时构建 raw、URL 深解码、HTML 实体、Base64、JSON、参数结构多视图，把语法变异还原为攻击语义分数。
+- **移动目标防御**：`OnlineAdaptiveController` 在 `/api/detect` 热路径应用 stable/canary/shadow 分层策略，并返回 `policy_id` / `traffic_tier` / `snapshot_id`。
+- **红蓝共演化评测**：`run_adversarial_stability.py` 输出 probe / recovery / drift 三层稳态证明，区分固定探针稳定性与对抗硬样本恢复率。
+- **未知混淆泛化**：`eval_unknown_obfuscation.py` 支持 cache/no-cache 双轨、per-technique、per-family、per-attack-type 指标。
+- **安全发布**：新规则、缓存、阈值先进入 canary/shadow，经过 quick/full regression 与 FPR 门禁后再晋升 stable。
+
 ```
                     ┌─────────────────────────────────────────────────────────┐
                     │                    IgaGuardEngine                        │
@@ -87,21 +97,23 @@
 
 ---
 
-## 诚实口径指标（Dynamic Guard 终稿，2026-07-08）
+## 诚实口径指标（Stage4 终稿，2026-07-09）
 
 权威结果文件见 `results/canonical_metrics.json` 与 `results/iga_dynamic_guard_final_report.md`。
 
-| 指标 | 赛题目标 | 当前（auto_verify / 2k 抽样） |
+| 指标 | 赛题目标 | 当前（全量 + quick门禁） |
 |------|----------|--------------------------------|
-| 混淆子集 Recall（2k） | > 99.5% | **99.91%** |
-| 混淆子集 Recall（4k） | > 99.5% | **99.81%** |
-| Normal FPR（2k） | 低误报 | **4.32%** |
+| 混淆子集 Recall（全量 19,411） | > 99.5% | **100.00%** (FN=0) |
+| Normal FPR（全量） | 低误报 | **1.16%** (FP=47) |
+| 混淆子集 Recall（2k quick cache/no-cache） | > 99.5% | cache 最新复验 **99.81%**（FPR=0）；no-cache 最近记录 **99.81%** |
+| 多分类恶意精确召回（2k quick） | 精细处置 | **83.13%** |
 | 延迟 P50 / P99 | < 5 ms / 实用 | **0.068 ms / 13.3 ms** ✓ |
 | WebSpotter span hit | — | **100%**（IoU Δ +37.9%）✓ |
 | E9 LLM 红队（80 variants） | 高 recall | pooled **98.96%** ✓ |
 | 单元测试 | — | **89 passed** |
 
-全量历史口径（n=19,411）：`results/v2_exp1_overall_dynamic_guard_final.json`
+全量权威口径（n=19,411）：`results/v2_exp1_opt_latest_full.json`（最新优化；混淆 Precision=100%）  
+评审与改动说明：`docs/FRAMEWORK_REVIEW_V3_DYNAMIC.md`
 
 ---
 
@@ -117,6 +129,8 @@ python scripts/iga_system.py train --epochs 5
 python scripts/iga_system.py build-cache --per-class 30
 python scripts/iga_system.py expand-cache --max-rows 500
 python scripts/iga_system.py evaluate
+python scripts/iga_system.py eval-regression --profile quick --strict
+python scripts/iga_system.py feedback-cycle --profile quick --strict
 python scripts/iga_system.py experiments --experiments all
 python scripts/iga_system.py serve
 # 大屏: http://127.0.0.1:5000/static/dashboard.html

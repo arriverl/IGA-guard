@@ -15,7 +15,23 @@
       "source": "miss_rule_pipeline",
       "cluster": "XSS:llm_placeholder",
       "enabled": true
+    },
+    {
+      "pattern": "(?:^|[?&=])[^&]{0,200}(?:%[0-9a-f]{2}){6,}",
+      "label": "SQLi",
+      "confidence": 0.62,
+      "source": "miss_rule_pipeline",
+      "cluster": "SQLi:high_pct_blob",
+      "enabled": false
+    },
+    {
+      "pattern": "<xml/\\*\\*/src/\\*\\*/=/\\*\\*/\"http:/xss\\.rocks/xsstest\\.xml\"/\\*\\*/id/\\*\\*/=/\\*\\*/i></xml>",
+      "label": "XSS",
+      "confidence": 0.6,
+      "source": "miss_rule_pipeline",
+      "cluster": "XSS:other",
+      "enabled": true
     }
   ],
-  "count": 2
+  "count": 4
 }

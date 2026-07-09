@@ -34,14 +34,32 @@ sys.path.insert(0, str(ROOT / "src"))
 from iga_guard import IgaGuardEngine, __version__
 from iga_guard.collector.http_parser import parse_http_request
 from iga_guard.evolution import incremental_retrain, log_failure
+from iga_guard.evolution.online_adaptive import OnlineAdaptiveController
 from iga_guard.evolution.online_rl import OnlineRLController
 from iga_guard.pipeline import load_config
 
 app = Flask(__name__, static_folder=str(ROOT / "frontend" / "static"))
 CORS(app)
 
-engine = IgaGuardEngine(load_config(ROOT / "configs" / "default.yaml"))
+_CFG = load_config(ROOT / "configs" / "default.yaml")
+engine = IgaGuardEngine(_CFG)
 rl_controller = OnlineRLController(str(ROOT / "data" / "cache" / "rl_state.json"))
+_oa = (_CFG.get("evolution") or {}).get("online_adaptive") or {}
+adaptive_controller = OnlineAdaptiveController(
+    str(ROOT / _oa.get("state_path", "data/cache/online_adaptive_state.json")),
+    canary_pct=int(_oa.get("canary_pct", 10)),
+    promote_min_episodes=int(_oa.get("promote_min_episodes", 40)),
+    promote_min_avg_reward=float(_oa.get("promote_min_avg_reward", 0.15)),
+    rollback_avg_reward=float(_oa.get("rollback_avg_reward", -0.25)),
+    rollback_window=int(_oa.get("rollback_window", 30)),
+    max_threshold_delta=float(_oa.get("max_threshold_delta", 0.08)),
+)
+_ADAPTIVE_ENABLED = bool(_oa.get("enabled", True))
+if _ADAPTIVE_ENABLED:
+    try:
+        adaptive_controller.apply_tier(engine.detector, "stable")
+    except Exception:
+        pass
 recent_alerts: list[dict] = []
 latency_samples: list[float] = []
 
@@ -59,6 +77,17 @@ def health():
 @app.post("/api/detect")
 def detect():
     data = request.get_json(force=True, silent=True) or {}
+    traffic_key = (
+        data.get("traffic_key")
+        or data.get("source_id")
+        or data.get("url")
+        or request.headers.get("X-Forwarded-For")
+        or request.remote_addr
+        or "default"
+    )
+    policy_meta = {}
+    if _ADAPTIVE_ENABLED:
+        policy_meta = adaptive_controller.policy_for_request(engine.detector, str(traffic_key))
     req = parse_http_request(
         method=data.get("method", "GET"),
         url=data.get("url", ""),
@@ -67,6 +96,7 @@ def detect():
     )
     report = engine.analyze_request(req)
     payload = report.to_dict()
+    payload["policy"] = policy_meta
     latency_samples.append(report.detection.latency_ms)
     if len(latency_samples) > 1000:
         del latency_samples[:500]
@@ -194,11 +224,13 @@ def rules_match():
 def feedback():
     data = request.get_json(force=True, silent=True) or {}
     true_label = data.get("true_label", "SQLi")
+    traffic_key = data.get("traffic_key") or data.get("url") or data.get("payload") or ""
     report = engine.analyze_url(data.get("method", "GET"), data.get("url", ""))
     cache = ROOT / "data" / "cache" / "failures.jsonl"
     log_failure(str(cache), report, true_label)
 
     rl_result = {}
+    adaptive_result = {}
     cache_result = {}
     if hasattr(engine.detector, "cache") and engine.detector.cache is not None:
         payload_text = data.get("payload") or (
@@ -216,13 +248,54 @@ def feedback():
                 from iga_guard.features import extract_features
                 fv = extract_features(report.normalized[0])
                 top_feats = fv.names[:5]
-            rl_result = rl_controller.feedback(
-                engine.detector,
-                report.detection.label,
-                true_label,
-                top_features=top_feats,
-            )
-    return jsonify({"logged": True, "rl": rl_result, "cache": cache_result})
+            if _ADAPTIVE_ENABLED:
+                # 分层灰度：canary 学习 + 自动晋升/回滚；stable 仅观察
+                adaptive_controller.apply_tier(
+                    engine.detector, adaptive_controller.traffic_tier(str(traffic_key)),
+                )
+                adaptive_result = adaptive_controller.feedback(
+                    engine.detector,
+                    report.detection.label,
+                    true_label,
+                    traffic_key=str(traffic_key),
+                    top_features=top_feats,
+                    lr=float((_CFG.get("evolution") or {}).get("learning_rate", 0.05)),
+                    rl_controller=rl_controller,
+                )
+                rl_result = adaptive_result.get("rl") or {}
+            else:
+                rl_result = rl_controller.feedback(
+                    engine.detector,
+                    report.detection.label,
+                    true_label,
+                    top_features=top_feats,
+                )
+    return jsonify({
+        "logged": True,
+        "rl": rl_result,
+        "adaptive": adaptive_result,
+        "cache": cache_result,
+    })
+
+
+@app.get("/api/adaptive/status")
+def adaptive_status():
+    return jsonify({
+        "enabled": _ADAPTIVE_ENABLED,
+        **adaptive_controller.status(),
+    })
+
+
+@app.post("/api/adaptive/freeze")
+def adaptive_freeze():
+    adaptive_controller.freeze()
+    return jsonify({"ok": True, **adaptive_controller.status()})
+
+
+@app.post("/api/adaptive/unfreeze")
+def adaptive_unfreeze():
+    adaptive_controller.unfreeze()
+    return jsonify({"ok": True, **adaptive_controller.status()})
 
 
 @app.post("/api/evolve")

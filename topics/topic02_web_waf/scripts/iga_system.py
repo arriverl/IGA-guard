@@ -8,7 +8,11 @@ IGA-Guard 3.0 统一系统入口
   python scripts/iga_system.py status          # 系统状态
   python scripts/iga_system.py train           # 训练 RF + TinyBERT
   python scripts/iga_system.py evaluate        # 评估
+  python scripts/iga_system.py eval-regression --profile quick
+  python scripts/iga_system.py feedback-cycle --profile quick
   python scripts/iga_system.py adversarial     # 对抗演化
+  python scripts/iga_system.py adv-stability   # E3/E9 稳态+漂移报告
+  python scripts/iga_system.py eval-unknown    # 未知混淆泛化评测
   python scripts/iga_system.py serve           # 启动 Web
   python scripts/iga_system.py obfuscate -p "1 union select 1" -t SQLi -n 10
   python scripts/iga_system.py pipeline        # 全流程（训练+评估+对抗）
@@ -85,6 +89,50 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     return _run(cmd, "检测评估")
 
 
+def cmd_eval_regression(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py,
+        "scripts/eval_regression.py",
+        "--profile",
+        args.profile,
+        "--min-obf-recall",
+        str(args.min_obf_recall),
+        "--max-fpr",
+        str(args.max_fpr),
+    ]
+    if args.skip_cache:
+        cmd.append("--skip-cache")
+    if args.skip_nocache:
+        cmd.append("--skip-nocache")
+    if args.strict:
+        cmd.append("--strict")
+    return _run(cmd, "固定回归评测（cache/no-cache）")
+
+
+def cmd_feedback_cycle(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py,
+        "scripts/run_feedback_cycle.py",
+        "--profile",
+        args.profile,
+        "--tail",
+        str(args.tail),
+        "--max-fp-rate",
+        str(args.max_fp_rate),
+        "--max-rows",
+        str(args.max_rows),
+        "--min-samples",
+        str(args.min_samples),
+    ]
+    if args.nightly_full:
+        cmd.append("--nightly-full")
+    if args.strict:
+        cmd.append("--strict")
+    return _run(cmd, "自动反馈闭环")
+
+
 def cmd_adversarial(args: argparse.Namespace) -> int:
     py = sys.executable
     data = args.data or str(ROOT / "data" / "master" / "test.csv")
@@ -95,6 +143,49 @@ def cmd_adversarial(args: argparse.Namespace) -> int:
         "--max-variants", str(args.max_variants),
     ]
     return _run(cmd, f"对抗演化 {args.rounds} 轮")
+
+
+def cmd_adv_stability(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py, "scripts/run_adversarial_stability.py",
+        "--e3-rounds", str(args.e3_rounds),
+        "--e3-max-seeds", str(args.e3_max_seeds),
+        "--e3-max-variants", str(args.e3_max_variants),
+        "--e9-rounds", str(args.e9_rounds),
+        "--e9-max-variants", str(args.e9_max_variants),
+        "--min-last-recall", str(args.min_last_recall),
+        "--min-mean-recall", str(args.min_mean_recall),
+        "--max-std", str(args.max_std),
+        "--max-range", str(args.max_range),
+        "--probe-max-seeds", str(args.probe_max_seeds),
+        "--probe-max-variants", str(args.probe_max_variants),
+        "--min-probe-recall", str(args.min_probe_recall),
+        "--min-recovery-rate", str(args.min_recovery_rate),
+    ]
+    if args.skip_e9:
+        cmd.append("--skip-e9")
+    if args.data:
+        cmd += ["--data", args.data]
+    return _run(cmd, "E3/E9 对抗稳态与漂移报告")
+
+
+def cmd_eval_unknown(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py, "scripts/eval_unknown_obfuscation.py",
+        "--max-seeds", str(args.max_seeds),
+        "--variants-per-tech", str(args.variants_per_tech),
+        "--min-recall", str(args.min_recall),
+        "--output", str(args.output),
+    ]
+    if args.data:
+        cmd += ["--data", args.data]
+    if args.held_out:
+        cmd += ["--held-out", *args.held_out]
+    if not args.include_nocache:
+        cmd.append("--no-include-nocache")
+    return _run(cmd, "未知混淆泛化评测")
 
 
 def cmd_auto_evolve(args: argparse.Namespace) -> int:
@@ -279,12 +370,62 @@ def main() -> int:
     p_eval.add_argument("--max-samples", type=int, default=0, help="0=全量")
     p_eval.set_defaults(func=cmd_evaluate)
 
+    p_regr = sub.add_parser("eval-regression", help="固定回归评测（cache + no-cache）")
+    p_regr.add_argument("--profile", choices=["quick", "full"], default="quick")
+    p_regr.add_argument("--skip-cache", action="store_true")
+    p_regr.add_argument("--skip-nocache", action="store_true")
+    p_regr.add_argument("--min-obf-recall", type=float, default=0.995)
+    p_regr.add_argument("--max-fpr", type=float, default=0.013)
+    p_regr.add_argument("--strict", action="store_true")
+    p_regr.set_defaults(func=cmd_eval_regression)
+
+    p_cycle = sub.add_parser("feedback-cycle", help="自动闭环：评测→miss/rule/cache/evolve→复评")
+    p_cycle.add_argument("--profile", choices=["quick", "full"], default="quick")
+    p_cycle.add_argument("--tail", type=int, default=200)
+    p_cycle.add_argument("--max-fp-rate", type=float, default=0.02)
+    p_cycle.add_argument("--max-rows", type=int, default=200)
+    p_cycle.add_argument("--min-samples", type=int, default=20)
+    p_cycle.add_argument("--nightly-full", action="store_true")
+    p_cycle.add_argument("--strict", action="store_true")
+    p_cycle.set_defaults(func=cmd_feedback_cycle)
+
     p_adv = sub.add_parser("adversarial", help="对抗演化")
     p_adv.add_argument("--data", default=None)
     p_adv.add_argument("--rounds", type=int, default=3)
     p_adv.add_argument("--max-seeds", type=int, default=150)
     p_adv.add_argument("--max-variants", type=int, default=3000)
     p_adv.set_defaults(func=cmd_adversarial)
+
+    p_stab = sub.add_parser("adv-stability", help="E3/E9 对抗稳态压测与漂移报告")
+    p_stab.add_argument("--data", default=None)
+    p_stab.add_argument("--e3-rounds", type=int, default=5)
+    p_stab.add_argument("--e3-max-seeds", type=int, default=80)
+    p_stab.add_argument("--e3-max-variants", type=int, default=800)
+    p_stab.add_argument("--e9-rounds", type=int, default=3)
+    p_stab.add_argument("--e9-max-variants", type=int, default=60)
+    p_stab.add_argument("--skip-e9", action="store_true")
+    p_stab.add_argument("--min-last-recall", type=float, default=0.90)
+    p_stab.add_argument("--min-mean-recall", type=float, default=0.90)
+    p_stab.add_argument("--max-std", type=float, default=0.10)
+    p_stab.add_argument("--max-range", type=float, default=0.20)
+    p_stab.add_argument("--probe-max-seeds", type=int, default=30)
+    p_stab.add_argument("--probe-max-variants", type=int, default=300)
+    p_stab.add_argument("--min-probe-recall", type=float, default=0.95)
+    p_stab.add_argument("--min-recovery-rate", type=float, default=0.80)
+    p_stab.set_defaults(func=cmd_adv_stability)
+
+    p_unk = sub.add_parser("eval-unknown", help="未知混淆泛化评测")
+    p_unk.add_argument("--data", default=None)
+    p_unk.add_argument("--max-seeds", type=int, default=40)
+    p_unk.add_argument("--variants-per-tech", type=int, default=3)
+    p_unk.add_argument("--min-recall", type=float, default=0.90)
+    p_unk.add_argument("--held-out", nargs="*", default=None)
+    p_unk.add_argument("--include-nocache", action=argparse.BooleanOptionalAction, default=True)
+    p_unk.add_argument(
+        "--output",
+        default=str(ROOT / "results" / "v2_exp_unknown_obfuscation.json"),
+    )
+    p_unk.set_defaults(func=cmd_eval_unknown)
 
     p_ae = sub.add_parser("auto-evolve", help="自我迭代：发现新手法+更新检测器")
     p_ae.add_argument("--rounds", type=int, default=2)

@@ -1,5 +1,6 @@
 IGA-Guard 3.0 快速演示说明
 ============================
+更新: 2026-07-09 (Dynamic Guard 终稿)
 
 一、环境准备
   cd topics\topic02_web_waf
@@ -8,29 +9,55 @@ IGA-Guard 3.0 快速演示说明
   $env:PYTHONPATH="src"      (PowerShell)
 
 二、启动服务
-  python scripts/iga_system.py serve
+  python run.py
   浏览器打开: http://127.0.0.1:5000/
 
-三、功能演示（3分钟）
-  1. 首页 hub → 点击「P1 实时监控」
-  2. 输入恶意 URL: http://test/login?id=1+union+select+1,2--
-     → 查看告警流出现 SQLi 告警
-  3. 点击「P2 检测详情」→ 查看红色高亮定位
-  4. 打开 dashboard.html → 查看攻击分布与延迟指标
-  5. 命令行检测:
-     python scripts/detect.py --url "http://x/?p=<script>alert(1)</script>" --json
+三、功能演示（5分钟答辩推荐）
 
-四、核心指标（全量评测 n=19,411）
-  混淆 Recall: 99.95%  |  Precision: 100%
-  Normal FPR:  5.63%   |  P50 延迟: 2.92ms
-  定位 IoU 提升: +37.9%
+  【1】P1 实时监控
+      hub → P1 → 输入恶意 URL 观察告警流
+
+  【2】双重 URL 编码 SQLi（命令行）
+      python scripts/detect.py --url "http://x/?q=1%2527%20union%20select" --json
+      → 查看 decode_chain、highlight_html
+
+  【3】P2 攻击详情 — XXE 上传（重点）
+      方法: POST
+      URL:  http://target.com/upload
+      Body: 粘贴 multipart 样本（见 运行说明.md 或 Burp 导出）
+      → 预期: XXE · high · decode_chain 含 upload_magic_strip / xml_entity_expand
+      Windows 快速测: python scripts/test_multipart_xxe_api.py
+
+  【4】P3 定位高亮
+      查看恶意片段与字段贡献
+
+  【5】P5 演化闭环 / P6 规则导出
+      Miss→Rule、ModSecurity 规则生成
+
+四、核心指标（权威: results/canonical_metrics.json）
+
+  auto_verify 门禁 (2026-07-08, 全部 PASS):
+    混淆 Recall (2k):  99.91%    Normal FPR (2k): 4.32%
+    延迟 P50/P99:      0.068ms / 13.3ms
+    定位 span hit:     100%      IoU 提升: +37.9%
+    单元测试:          89 passed  E9-80 pooled: 98.96%~100%
 
 五、测试验证
-  python -m pytest tests/ -v     → 预期 32 passed
-  python scripts/iga_system.py evaluate  → 重跑全量评测
 
-六、文档位置
+  python scripts/run_auto_verify.py     → 全部门禁 PASS
+  python -m pytest tests/ -q            → 89 passed
+  python scripts/test_multipart_xxe_api.py  → Multipart XXE 上传
+
+六、VPS 上线（可选）
+
+  bash deploy/start_vps.sh --upstream http://YOUR_BACKEND:3000
+  流量入口 :8080  管理 API :5000
+
+七、文档位置
+
   作品报告: submission/作品报告.md
   测试报告: submission/测试报告.md
   运行说明: submission/运行说明.md
   交付清单: submission/交付物清单.md
+  指标汇总: results/canonical_metrics.json
+  产物策略: docs/ARTIFACTS.md

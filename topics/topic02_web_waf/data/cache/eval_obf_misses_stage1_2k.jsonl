@@ -1,0 +1,10 @@
+{"payload": "id/**/=/**/1&nombre/**/=/**/Jam�n+Ib�rico&precio/**/=/**/100&cantidad/**/=/**/40&B1A/**/=/**/A�adir+al+carrito", "label": "SQLi", "source": "obfuscation:inline_comment", "pred": "Normal"}
+{"payload": "Pl.%2BMerced%2C%2B147%2B", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "BD29f96e42B921E01cDfB7ee7fD79B36", "label": "SQLi", "source": "obfuscation:case_random", "pred": "Normal"}
+{"payload": "ｉd=2|", "label": "SQLi", "source": "obfuscation:unicode_normalization", "pred": "Normal"}
+{"payload": "1%20/*--*/", "label": "SQLi", "source": "obfuscation:nested_comment", "pred": "Normal"}
+{"payload": "id/**/=/**/2&nombre/**/=/**/Ques+o+Manchego&precio/**/=/**/100&cantidad/**/=/**/21&B1/**/=/**/A�adir+al+carrito", "label": "SQLi", "source": "obfuscation:inline_comment", "pred": "Normal"}
+{"payload": "modo/**/=/**/entrar&login/**/=/**/wing-man7&pwd/**/=/**/edific9r&remember/**/=/**/off/&B1/**/=/**/Entrar", "label": "SQLi", "source": "obfuscation:inline_comment", "pred": "Normal"}
+{"payload": "id/**/=/**/2&nombreA/**/=/**/Jam�n+Ib�rico&precio/**/=/**/85&cantidad/**/=/**/23&B1/**/=/**/A�adir+al+carrito", "label": "SQLi", "source": "obfuscation:inline_comment", "pred": "Normal"}
+{"payload": "F8E98FEB0AEC1E6391F91E08313ED15E", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}
+{"payload": "Carrer%2BN%EF%BF%BD%2B%2B224%2BS%2FN%2C%2B3C", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}

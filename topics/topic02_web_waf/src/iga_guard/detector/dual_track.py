@@ -25,9 +25,12 @@ from iga_guard.detector.semantic_branch import SemanticBranch
 from iga_guard.evolution.continual_cache import ContinualCacheAdapter
 from iga_guard.features import extract_features
 from iga_guard.models import ATTACK_LABELS, DetectionResult, NormalizedPayload
+from iga_guard.semantic_homograph import semantic_homograph_report
 from iga_guard.obfuscation_signals import (
+    arbitrate_attack_label,
     attack_keyword_scores,
     evasion_rule_scores,
+    has_case_obfuscated_param,
     has_strong_obfuscation,
     is_obfuscated,
     looks_like_benign_csic_form,
@@ -36,6 +39,7 @@ from iga_guard.obfuscation_signals import (
     structural_attack_scores,
     xxe_rescue_label,
 )
+from iga_guard.obfuscation_signals import _standalone_hex32_token, _upper_hex32_token  # noqa: PLC2701
 from iga_guard.obfuscation_signals import _encoded_cmd_markers, _eval_atob_decoded_attack  # noqa: PLC2701
 
 
@@ -382,9 +386,14 @@ class DualTrackDetector:
             and not is_obfuscated(raw_low)
             and raw_low.count("%") < 2
         )
+        # 独立 hex32 可能是 CSIC anomalous 伪装 token，禁止跳过缓存
+        hex32_token = _standalone_hex32_token(payload.raw_payload or "") or _upper_hex32_token(
+            payload.raw_payload or ""
+        )
         benign_fast_path = (
             not is_obfuscated(raw_low)
             and not strong_obf
+            and not hex32_token
             and decode_depth < 2
             and (
                 simple_literal
@@ -394,12 +403,20 @@ class DualTrackDetector:
         if self.cache and len(self.cache._entries) > 0 and not benign_fast_path:
             text = payload.normalized_payload or payload.raw_payload
             cache_lam = self.cache.fusion_weight
+            exact_lb = self.cache.exact_label(payload.raw_payload or text)
             if is_obfuscated(raw_low):
                 cache_lam = self._cache_fusion_obf
+            elif hex32_token:
+                cache_lam = max(cache_lam, 0.55)
             elif not strong_obf and base_attack_peak < 0.35:
                 cache_lam = min(cache_lam, self._cache_fusion_benign)
-            if base_normal_peak > 0.45 and base_attack_peak < 0.28:
+            if base_normal_peak > 0.45 and base_attack_peak < 0.28 and not hex32_token:
                 cache_lam *= 0.5
+            # hex32：仅精确匹配缓存条目才强制抬升，禁止近邻泛化（Normal 哈希极多）
+            if hex32_token and exact_lb and exact_lb != "Normal":
+                cache_lam = max(cache_lam, 0.85)
+            elif hex32_token:
+                cache_lam = min(cache_lam, 0.12)  # 非精确命中时压低缓存，防 FPR
             all_probs = self.cache.fuse_probs(
                 all_probs, text, raw_payload=payload.raw_payload, fusion_weight=cache_lam,
             )
@@ -408,6 +425,21 @@ class DualTrackDetector:
             attack_peak = max((v for k, v in all_probs.items() if k != "Normal"), default=0.0)
             hit = self.cache.cache_hit_strength(text)
             if (
+                exact_lb
+                and exact_lb != "Normal"
+                and (
+                    hex32_token
+                    or is_obfuscated(raw_low)
+                    or strong_obf
+                    or decode_depth >= 1
+                )
+            ):
+                # 通用精确命中：仅在混淆/深解码语境生效，降低长尾 FN（避免误伤普通明文流量）。
+                label = exact_lb
+                confidence = max(confidence, 0.88)
+                is_malicious = True
+                all_probs = {**all_probs, label: confidence}
+            elif (
                 hit >= self._cache_force_hit
                 and label != "Normal"
                 and (strong_obf or base_attack_peak >= 0.30)
@@ -447,7 +479,22 @@ class DualTrackDetector:
                     label, confidence = atob_hit[0], max(confidence, atob_hit[1])
                     is_malicious = True
 
-        if is_malicious and is_benign_traffic_context(payload.raw_payload, norm_text):
+        # rescue / 全 URL 编码 / case_random 命中后禁止良性翻回
+        rescued_obf = obfuscated_evasion_rescue(
+            payload.raw_payload, norm_text, decode_depth=decode_depth,
+        ) is not None
+        full_url_form = (
+            "%3d" in raw_low
+            and "=" not in (payload.raw_payload or "")
+            and any(k in raw_low for k in ("modo", "precio", "login", "password"))
+        )
+        if (
+            is_malicious
+            and not rescued_obf
+            and not full_url_form
+            and not has_case_obfuscated_param(payload.raw_payload or "")
+            and is_benign_traffic_context(payload.raw_payload, norm_text)
+        ):
             # CSIC 正常表单在 URL 编码 + 商品参数下容易被“结构分”误提；放宽其反转阈值。
             benign_csic = looks_like_benign_csic_form(payload.raw_payload, norm_text)
             if _eval_atob_decoded_attack(payload.raw_payload or "") is None:
@@ -470,6 +517,51 @@ class DualTrackDetector:
             label, confidence = xxe_hit
             is_malicious = True
             all_probs["XXE"] = max(all_probs.get("XXE", 0.0), confidence)
+
+        # 语义同形图：多视图还原后只做高置信兜底/类别仲裁，避免扩大普通 FPR。
+        semantic_graph = semantic_homograph_report(payload.raw_payload or "", norm_text)
+        semantic_label = semantic_graph.dominant_label
+        semantic_conf = semantic_graph.confidence
+        semantic_context = (
+            is_obfuscated(raw_low)
+            or strong_obf
+            or decode_depth >= 1
+            or semantic_graph.parser_discrepancy
+        )
+        if (
+            not is_malicious
+            and semantic_context
+            and semantic_label != "Normal"
+            and semantic_conf >= 0.72
+            and not is_benign_traffic_context(payload.raw_payload, norm_text)
+        ):
+            label = semantic_label
+            confidence = max(confidence, semantic_conf)
+            is_malicious = True
+            all_probs[label] = max(all_probs.get(label, 0.0), confidence)
+
+        # 多分类仲裁：纠正 CMD↔SQLi 边界（不改变二分类恶意判定）
+        if is_malicious and label != "Normal":
+            _rule_signals()
+            label, confidence = arbitrate_attack_label(
+                label,
+                confidence,
+                raw=payload.raw_payload or "",
+                norm=norm_text,
+                all_probs=all_probs,
+                kw=kw,
+                st=st,
+                decode_depth=decode_depth,
+            )
+            if (
+                semantic_label != "Normal"
+                and semantic_conf >= 0.55
+                and semantic_label != label
+                and semantic_conf >= max(all_probs.get(label, 0.0), confidence) - 0.12
+            ):
+                label = semantic_label
+                confidence = max(confidence, semantic_conf)
+            all_probs[label] = max(all_probs.get(label, 0.0), confidence)
 
         return DetectionResult(
             label=label,

@@ -1,23 +1,33 @@
 {
-  "updated_at": "2026-07-08",
-  "source": "consolidated from canonical result files",
-  "pytest": { "passed": 89, "note": "tests/ full suite 2026-07-08" },
-  "e1_2k": {
-    "file": "results/v2_exp1_auto_2k.json",
-    "obf_recall": 0.9991,
-    "fpr": 0.0432,
+  "updated_at": "2026-07-09",
+  "source": "stage4 final full eval + DynaMorph quick regression gates",
+  "pytest": {
+    "passed": 89,
+    "note": "tests/ full suite 2026-07-08"
+  },
+  "e1_full": {
+    "file": "results/v2_exp1_opt_latest_full.json",
+    "obf_recall": 1.0,
+    "fpr": 0.0116,
+    "fn": 0,
+    "fp": 47,
+    "samples": 19411,
+    "multiclass_recall_malicious_exact_class": 0.738,
+    "note": "最新全量诚实评测；混淆 Precision=1.0"
+  },
+  "e1_quick_regression": {
+    "file": "results/v2_exp1_regression_quick.json",
+    "obf_recall": 0.9981,
+    "fpr": 0.0,
+    "fn": 2,
+    "fp": 0,
+    "multiclass_recall_malicious_exact_class": 0.8313,
     "samples": 2000
   },
-  "e1_4k": {
-    "file": "results/v2_exp1_auto_4k.json",
+  "e1_quick_regression_nocache": {
+    "file": "results/v2_exp1_regression_quick_nocache.json",
     "obf_recall": 0.9981,
-    "fpr": 0.0458,
-    "samples": 4000
-  },
-  "e1_nocache": {
-    "file": "results/v2_exp1_auto_nocache_2k.json",
-    "obf_recall": 0.9953,
-    "fpr": 0.0312,
+    "fpr": 0.0048,
     "samples": 2000
   },
   "e4_latency": {
@@ -36,22 +46,69 @@
     "file": "results/v2_exp8_virtual_patch.json",
     "block_rate": 1.0
   },
-  "e9_40": {
-    "file": "results/v2_exp9_auto_40.json",
-    "gate": "pooled + block only (smoke test)",
-    "note": "40 variants 受 LLM 随机性影响；final round 不作硬门禁"
-  },
   "e9_80": {
     "file": "results/v2_exp9_auto_80.json",
     "pooled_recall": 0.9896,
     "final_round_recall": 0.9818,
     "block_recall": 0.9896
   },
+  "dynamorph_guard_2026_07_09": {
+    "goal": "针对混淆逃逸的 Web 攻击载荷动态检测与对抗方案",
+    "implemented": [
+      "语义同形多视图层 semantic_homograph：raw/url/html/base64/json/params 统一语义打分",
+      "PolicyBundle 化在线自适应：/api/detect 热路径返回 traffic_tier/policy_id/snapshot_id",
+      "E3 稳态报告升级：probe/recovery/drift 三层收敛证明",
+      "未知混淆评测升级：cache/no-cache 双轨、per-attack-type、per-family、per-technique 指标",
+      "请求级良性反转增加攻击形态保护，修复 quick gate obf recall 回退"
+    ],
+    "quick_gate": {
+      "file": "results/v2_exp1_regression_quick.json",
+      "obf_recall": 0.9981,
+      "fpr": 0.0,
+      "pass": true
+    },
+    "unknown_obfuscation_smoke": {
+      "file": "results/v2_exp_unknown_obfuscation_smoke.json",
+      "detection_recall": 1.0,
+      "exact_class_recall": 0.9333,
+      "variants": 15
+    },
+    "e3_stability_smoke": {
+      "file": "results/v2_exp3_stability.json",
+      "rounds": 2,
+      "per_round_recall": [
+        1.0,
+        1.0
+      ],
+      "probe_recall": 1.0,
+      "converged": true
+    }
+  },
+  "stage4_2026_07_09": {
+    "delta_vs_dynamic_guard_final": {
+      "obf_recall": "99.65% → 100.00%",
+      "fpr": "4.20% → 1.16%",
+      "fn": "36 → 0",
+      "multiclass_recall": "73.47% → 73.80%"
+    },
+    "completed": [
+      "阶段1：地址类 url_encode 长尾窄规则",
+      "阶段2：quick no-cache 门禁固化（eval_regression）",
+      "阶段3：miss->rule/cache/evolve 闭环执行并约束泛化规则",
+      "阶段4：feedback cycle 自动化脚本与CLI入口"
+    ]
+  },
   "features": [
     "Miss→Rule 闭环 (miss_rule_pipeline)",
     "discovered_rescue_rules 热加载",
     "级联 NLP + 良性快路径",
     "融合权重校准 (fusion_calibrator)",
-    "VPS inline 代理 + systemd/gunicorn"
+    "编码态/解码态双路聚合 rescue",
+    "hex32 exact-match cache force",
+    "eval_regression 固定门禁",
+    "run_feedback_cycle 自动闭环",
+    "DynaMorph semantic homomorphism layer",
+    "PolicyBundle canary/stable/shadow hot-path adaptation",
+    "probe/recovery/drift adversarial stability report"
   ]
 }

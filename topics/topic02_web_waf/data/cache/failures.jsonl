@@ -1,5 +1,0 @@
-{"url": "http://evolve.local/?p=F8E98FEB0AEC1E6391F91E08313ED15E", "true_label": "SQLi", "predicted": "Normal", "payload": "F8E98FEB0AEC1E6391F91E08313ED15E", "source": "csic_gsi:cisc_anomalousTraffic_test.txt"}
-{"url": "http://evolve.local/?p=98E0BAFC783231E0CCBFC492576CAB22", "true_label": "SQLi", "predicted": "Normal", "payload": "98E0BAFC783231E0CCBFC492576CAB22", "source": "csic_gsi:cisc_anomalousTraffic_test.txt"}
-{"url": "http://evolve.local/?p=1E049D04B69927D1FD233F47EDC91E83", "true_label": "SQLi", "predicted": "Normal", "payload": "1E049D04B69927D1FD233F47EDC91E83", "source": "csic_gsi:cisc_anomalousTraffic_test.txt"}
-{"url": "http://evolve.local/?p=8E626A2F42D53E7A6EEA81081E0A2497", "true_label": "SQLi", "predicted": "Normal", "payload": "8E626A2F42D53E7A6EEA81081E0A2497", "source": "csic_gsi:cisc_anomalousTraffic_test.txt"}
-{"url": "http://evolve.local/?p=EF42B851118B9D1E01925B26AD250DCE", "true_label": "SQLi", "predicted": "Normal", "payload": "EF42B851118B9D1E01925B26AD250DCE", "source": "csic_gsi:cisc_anomalousTraffic_test.txt"}

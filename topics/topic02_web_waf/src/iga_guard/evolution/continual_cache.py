@@ -251,6 +251,16 @@ class ContinualCacheAdapter:
             return 0.0
         return float(np.max(keys @ q))
 
+    def exact_label(self, text: str) -> str | None:
+        """精确文本匹配（用于 hex32 等不可泛化 token，避免近邻误伤 Normal）。"""
+        needle = (text or "").strip()
+        if not needle:
+            return None
+        for entry in self._entries:
+            if (entry.payload_snippet or "").strip() == needle:
+                return entry.label
+        return None
+
     # ------------------------------------------------------------------
     # 动态更新（持续学习）
     # ------------------------------------------------------------------

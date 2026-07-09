@@ -1,0 +1,65 @@
+{
+  "experiment": "E3_adversarial_stability",
+  "rounds": 2,
+  "max_seeds": 20,
+  "max_variants": 180,
+  "per_round": [
+    {
+      "round": 1,
+      "total": 85,
+      "detected": 85,
+      "missed": 0,
+      "recall": 1.0
+    },
+    {
+      "round": 2,
+      "total": 85,
+      "detected": 85,
+      "missed": 0,
+      "recall": 1.0
+    }
+  ],
+  "drift": {
+    "n": 2,
+    "mean": 1.0,
+    "std": 0.0,
+    "min": 1.0,
+    "max": 1.0,
+    "range": 0.0,
+    "last": 1.0,
+    "first": 1.0,
+    "delta_last_first": 0.0
+  },
+  "probe": {
+    "seed": 1729,
+    "total": 46,
+    "detected": 46,
+    "missed": 0,
+    "recall": 1.0,
+    "miss_distribution": {},
+    "pass": true
+  },
+  "recovery": {
+    "total": 0,
+    "recovered": 0,
+    "remaining_missed": 0,
+    "recovery_rate": 0.0,
+    "miss_distribution": {},
+    "pass": true
+  },
+  "convergence_proof": {
+    "probe_stable": true,
+    "adaptive_recovery": true,
+    "adversarial_drift_bounded": true,
+    "overall_converged": true
+  },
+  "converged": true,
+  "gates": {
+    "min_last_recall": 0.8,
+    "min_mean_recall": 0.8,
+    "min_probe_recall": 0.8,
+    "min_recovery_rate": 0.5,
+    "max_std": 0.2,
+    "max_range": 0.35
+  }
+}
