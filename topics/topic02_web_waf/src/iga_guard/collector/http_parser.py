@@ -40,6 +40,13 @@ def _parse_cookies(cookie_header: str) -> dict[str, str]:
     return cookies
 
 
+def _content_type(req: HttpRequest) -> str:
+    for hk, hv in req.headers.items():
+        if hk.lower() == "content-type":
+            return hv
+    return ""
+
+
 def iter_payload_parts(req: HttpRequest) -> list[tuple[str, str, str]]:
     """Yield (location, field_name, raw_value) from request."""
     parts: list[tuple[str, str, str]] = []
@@ -56,34 +63,42 @@ def iter_payload_parts(req: HttpRequest) -> list[tuple[str, str, str]]:
                 parts.append(("path", "segment", unquote_plus(segment)))
 
     for key, val in req.headers.items():
-        if key.lower() not in ("host", "user-agent", "accept", "connection"):
+        if key.lower() not in ("host", "user-agent", "accept", "connection", "content-type"):
             parts.append(("header", key, val))
 
     for key, val in req.cookies.items():
         parts.append(("cookie", key, val))
 
-    if req.body:
-        parts.append(("body", "raw", req.body))
-        if req.body.strip().startswith("{"):
-            try:
-                obj = json.loads(req.body)
-                if isinstance(obj, dict):
-                    for k, v in obj.items():
-                        parts.append(("json", k, str(v)))
-            except json.JSONDecodeError:
-                pass
-        else:
-            for key, values in parse_qs(req.body, keep_blank_values=True).items():
-                for val in values:
-                    parts.append(("form", key, val))
+    proto_parts = iter_normalized_parts(req) if req.body else []
+    is_multipart = any(p[0] == "multipart" for p in proto_parts) or (
+        "multipart" in _content_type(req).lower()
+    )
 
-    # P1：WAFFLED 协议轨 — 深层 JSON / multipart / HPP 全值展开
-    seen = {(loc, fld, val) for loc, fld, val in parts}
-    for loc, fld, val in iter_normalized_parts(req):
-        key = (loc, fld, val)
-        if key not in seen:
-            parts.append(key)
-            seen.add(key)
+    if req.body:
+        if is_multipart:
+            for loc, fld, val in proto_parts:
+                if loc == "multipart":
+                    parts.append((loc, fld, val))
+        else:
+            parts.append(("body", "raw", req.body))
+            if req.body.strip().startswith("{"):
+                try:
+                    obj = json.loads(req.body)
+                    if isinstance(obj, dict):
+                        for k, v in obj.items():
+                            parts.append(("json", k, str(v)))
+                except json.JSONDecodeError:
+                    pass
+            else:
+                for key, values in parse_qs(req.body, keep_blank_values=True).items():
+                    for val in values:
+                        parts.append(("form", key, val))
+            seen = {(loc, fld, val) for loc, fld, val in parts}
+            for loc, fld, val in proto_parts:
+                key = (loc, fld, val)
+                if key not in seen:
+                    parts.append(key)
+                    seen.add(key)
 
     return parts
 

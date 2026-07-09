@@ -86,6 +86,19 @@ def _locate_span(text: str, attack_type: str) -> tuple[str, list[int]]:
         if m:
             candidates.append((m.group(0), m.start(), m.end(), 5.0))
 
+    if attack_type == "XXE":
+        for pat, pri in (
+            (r"<!ENTITY\s+%[^>]+file:///", 6.5),
+            (r"<!ENTITY\s+&#x25;[^>]+SYSTEM", 6.4),
+            (r"&#x66;&#x69;&#x6c;&#x65;&#x3a;&#x2f;&#x2f;&#x2f;[^\s\"'>]+", 6.3),
+            (r"<!DOCTYPE[^>]*\[", 6.0),
+            (r"file:///[^\s\"'>]+", 5.8),
+            (r"<!ENTITY[^>]+>", 5.0),
+        ):
+            m = re.search(pat, text, re.IGNORECASE | re.DOTALL)
+            if m:
+                candidates.append((m.group(0), m.start(), m.end(), pri))
+
     for pat in patterns:
         for m in re.finditer(pat, text, re.IGNORECASE):
             span = m.group(0)

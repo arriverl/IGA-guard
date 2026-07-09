@@ -12,7 +12,7 @@ PATTERNS = {
     "CMD": [r"[;&|]`", r"\$\(", r"wget\s+", r"curl\s+", r"\$\{jndi:"],
     "PathTraversal": [r"\.\./", r"\.\.\\", r"/etc/passwd"],
     "FileInclusion": [r"php://", r"file://", r"include\s*\("],
-    "XXE": [r"<!entity", r"system\s+[\"']file:", r"&\w+;"],
+    "XXE": [r"<!entity[^>]+file://", r"<!doctype[^>]*\[", r"file:///[^\s\"'>]+", r"<!entity\s+%"],
     "PromptInjection": [r"ignore\s+previous", r"system\s+prompt", r"jailbreak"],
 }
 

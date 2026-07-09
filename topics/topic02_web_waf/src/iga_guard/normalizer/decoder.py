@@ -33,7 +33,87 @@ def decode_payload(raw: str, max_rounds: int = 5) -> tuple[str, list[str]]:
             chain.append(step)
         if current == prev:
             break
+
+    cleaned, null_step = strip_null_interleave(current)
+    if null_step:
+        current = cleaned
+        chain.append(null_step)
+
+    stripped, magic_step = strip_upload_magic_prefix(current)
+    if magic_step:
+        current = stripped
+        chain.append(magic_step)
+
+    expanded, entity_steps = expand_xml_entities_for_scan(current)
+    if entity_steps:
+        current = expanded
+        chain.extend(entity_steps)
+
     return current, chain
+
+
+_UPLOAD_MAGIC = (
+    b"\xff\xd8\xff\xdb",
+    b"\xff\xd8\xff\xe0",
+    b"\xff\xd8\xff\xee",
+    b"\x89PNG\r\n\x1a\n",
+    b"GIF89a",
+)
+
+
+def strip_upload_magic_prefix(text: str) -> tuple[str, str | None]:
+    """剥离上传伪装 Magic Bytes（JPEG/PNG/GIF）或二进制前缀后的 XML。"""
+    if not text:
+        return text, None
+    try:
+        blob = text.encode("latin-1")
+    except Exception:
+        blob = text.encode("utf-8", errors="ignore")
+    for magic in _UPLOAD_MAGIC:
+        if blob.startswith(magic):
+            rest = blob[len(magic) :].decode("utf-8", errors="replace").lstrip("\x00\r\n\t ")
+            return rest, "upload_magic_strip"
+    m = re.search(r"<\?xml", text, re.I)
+    if m and 0 < m.start() <= 64:
+        return text[m.start() :], "binary_prefix_strip"
+    return text, None
+
+
+def expand_xml_entities_for_scan(text: str, max_rounds: int = 4) -> tuple[str, list[str]]:
+    """展开 XML 数值/十六进制实体（&#x53; → S），用于动态揭示 XXE 混淆。"""
+    chain: list[str] = []
+    current = text
+    for _ in range(max_rounds):
+        prev = current
+        current = re.sub(
+            r"&#x([0-9a-fA-F]+);",
+            lambda m: chr(int(m.group(1), 16))
+            if int(m.group(1), 16) < 0x110000
+            else m.group(0),
+            current,
+        )
+        current = re.sub(
+            r"&#(\d+);",
+            lambda m: chr(int(m.group(1))) if int(m.group(1), 10) < 0x110000 else m.group(0),
+            current,
+        )
+        if current != prev:
+            chain.append("xml_entity_expand")
+        else:
+            break
+    return current, chain
+
+
+def strip_null_interleave(text: str) -> tuple[str, str | None]:
+    """剥离字符间插入的 null byte（%00%3c%00%3f… 解码后的形态）。"""
+    if not text:
+        return text, None
+    literal_nulls = text.count("\x00")
+    if literal_nulls >= 3 and literal_nulls / max(len(text), 1) >= 0.08:
+        cleaned = text.replace("\x00", "")
+        if cleaned != text:
+            return cleaned, "null_interleave_strip"
+    return text, None
 
 
 def _decode_once(text: str) -> tuple[str, str | None]:

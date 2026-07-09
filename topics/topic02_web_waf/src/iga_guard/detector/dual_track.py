@@ -34,6 +34,7 @@ from iga_guard.obfuscation_signals import (
     is_benign_traffic_context,
     obfuscated_evasion_rescue,
     structural_attack_scores,
+    xxe_rescue_label,
 )
 from iga_guard.obfuscation_signals import _encoded_cmd_markers, _eval_atob_decoded_attack  # noqa: PLC2701
 
@@ -463,6 +464,12 @@ class DualTrackDetector:
                     label, confidence, is_malicious = "Normal", max(
                         all_probs.get("Normal", 0.0), 0.60,
                     ), False
+
+        xxe_hit = xxe_rescue_label(payload.raw_payload or "", norm_text)
+        if xxe_hit is not None:
+            label, confidence = xxe_hit
+            is_malicious = True
+            all_probs["XXE"] = max(all_probs.get("XXE", 0.0), confidence)
 
         return DetectionResult(
             label=label,

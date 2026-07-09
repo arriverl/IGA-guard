@@ -39,7 +39,11 @@ from iga_guard.explainer.webspotter import webspotter_explain
 from iga_guard.models import DetectionResult, GuardReport, HttpRequest, NormalizedPayload, build_highlight_html
 from iga_guard.normalizer import normalize_payload
 from iga_guard.rules import generate_rule
-from iga_guard.obfuscation_signals import is_benign_traffic_context, obfuscated_evasion_rescue
+from iga_guard.obfuscation_signals import (
+    is_benign_traffic_context,
+    obfuscated_evasion_rescue,
+    xxe_rescue_label,
+)
 from iga_guard.rules.virtual_patch import export_virtual_patch_rule, match_virtual_patch
 
 # 置信度超过此阈值且判定为恶意时，跳过后续 payload 字段检测（降低延迟）
@@ -222,12 +226,10 @@ class IgaGuardEngine:
         )
         aggregate_rescue_applied = False
         if aggregate:
-            aggregate_rescue = obfuscated_evasion_rescue(
-                aggregate, aggregate.lower(), decode_depth=1,
-            )
-            if aggregate_rescue is not None:
+            xxe_agg = xxe_rescue_label(aggregate, aggregate.lower())
+            if xxe_agg is not None:
                 aggregate_rescue_applied = True
-                rescue_label, rescue_conf = aggregate_rescue
+                rescue_label, rescue_conf = xxe_agg
                 best_detection = DetectionResult(
                     label=rescue_label,
                     confidence=max(best_detection.confidence, rescue_conf),
@@ -235,6 +237,20 @@ class IgaGuardEngine:
                     is_malicious=True,
                     all_probs={**best_detection.all_probs, rescue_label: rescue_conf},
                 )
+            else:
+                aggregate_rescue = obfuscated_evasion_rescue(
+                    aggregate, aggregate.lower(), decode_depth=1,
+                )
+                if aggregate_rescue is not None:
+                    aggregate_rescue_applied = True
+                    rescue_label, rescue_conf = aggregate_rescue
+                    best_detection = DetectionResult(
+                        label=rescue_label,
+                        confidence=max(best_detection.confidence, rescue_conf),
+                        risk_level="high" if rescue_conf >= 0.85 else "medium",
+                        is_malicious=True,
+                        all_probs={**best_detection.all_probs, rescue_label: rescue_conf},
+                    )
 
         if aggregate_is_upper_hex_token and not aggregate_is_benign:
             best_detection = DetectionResult(
@@ -293,6 +309,21 @@ class IgaGuardEngine:
                     risk_level="high",
                     is_malicious=True,
                     all_probs={**best_detection.all_probs, atk: boosted},
+                )
+
+        if best_payload:
+            xxe_final = xxe_rescue_label(
+                best_payload.raw_payload,
+                best_payload.normalized_payload or best_payload.raw_payload,
+            )
+            if xxe_final is not None:
+                xxe_label, xxe_conf = xxe_final
+                best_detection = DetectionResult(
+                    label=xxe_label,
+                    confidence=max(best_detection.confidence, xxe_conf),
+                    risk_level="high" if xxe_conf >= 0.85 else best_detection.risk_level,
+                    is_malicious=True,
+                    all_probs={**best_detection.all_probs, xxe_label: xxe_conf},
                 )
 
         best_detection.latency_ms = (time.perf_counter() - t0) * 1000

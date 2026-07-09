@@ -46,14 +46,21 @@ def flatten_json(obj: Any, prefix: str = "") -> list[tuple[str, str]]:
 
 def parse_multipart(body: str, content_type: str = "") -> list[tuple[str, str]]:
     """模拟 multipart 边界解析，提取各 part 字段。"""
+    boundary = ""
     m = re.search(r"boundary=([^\s;]+)", content_type, re.I)
-    if not m:
+    if m:
+        boundary = m.group(1).strip('"')
+    if not boundary:
         m = re.search(r"(-{2,}WebKitFormBoundary[\w-]+)", body)
-    if not m:
+        if m:
+            boundary = m.group(1).lstrip("-")
+    if not boundary:
         return []
-    boundary = m.group(1).strip('"')
+    # RFC：part 分隔符为 -- + boundary（header 中的 boundary 值本身可含前导 -）
+    core = boundary.lstrip("-")
+    delim = f"--{core}"
     parts: list[tuple[str, str]] = []
-    for chunk in body.split(boundary):
+    for chunk in body.split(delim):
         chunk = chunk.strip("\r\n-")
         if not chunk or chunk in ("--", ""):
             continue

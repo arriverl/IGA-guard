@@ -34,7 +34,10 @@ _ATTACK_PATTERNS: dict[str, tuple[str, ...]] = {
     ),
     "PathTraversal": ("../", "..\\", "/etc/passwd", "%2e%2e"),
     "FileInclusion": ("php://", "file://", "expect://", "data://"),
-    "XXE": ("<!entity", "&xxe;", "system ", "file:///"),
+    "XXE": (
+        "<!entity", "<!doctype", "<?xml", "&xxe;", "file:///",
+        "<!entity %", "system", "public",
+    ),
     "PromptInjection": (
         "ignore previous", "jailbreak", "system prompt", "disregard",
         "[system]", "validation: approved", "忽略", "ignore\u200b",
@@ -227,6 +230,131 @@ _RE_BOOL_LIKE_SQLI = re.compile(
     re.I,
 )
 _RE_HI_ENTROPY_TOKEN = re.compile(r"^[A-Za-z0-9]{20,40}$")
+_RE_XXE_XML_DECL = re.compile(r"<\?xml\b", re.I)
+_RE_XXE_DOCTYPE = re.compile(r"<!doctype\b", re.I)
+_RE_XXE_ENTITY = re.compile(r"<!entity\b", re.I)
+_RE_XXE_PARAM_ENTITY = re.compile(r"<!entity\s+%", re.I)
+_RE_XXE_PE_CHAIN = re.compile(r"%\w+\s*;\s*%\w+", re.I)
+_RE_XXE_FILE_URI = re.compile(r"file:///", re.I)
+_RE_XXE_SYS_SPLIT = re.compile(
+    r'<!entity\s+%[^>]+"sys"[^>]*>.*?<!entity[^>]+"tem"',
+    re.I | re.S,
+)
+_RE_XXE_ENTITY_REF = re.compile(r"&\w+\s*;", re.I)
+_RE_XXE_HEX_SYSTEM = re.compile(r"&#x53;&#x59;&#x53;&#x54;&#x45;&#x4d", re.I)
+_RE_XXE_HEX_FILE = re.compile(r"&#x66;&#x69;&#x6c;&#x65;&#x3a;&#x2f;&#x2f;&#x2f;", re.I)
+_RE_XXE_HEX_PERCENT_ENTITY = re.compile(r"<!ENTITY\s+&#x25;\s*\w+", re.I)
+_RE_XXE_LOCAL_DTD = re.compile(r"\.dtd['\"]", re.I)
+_RE_XXE_SVG = re.compile(r"<svg\b", re.I)
+
+
+def _xxe_canonical_text(raw: str, norm: str = "") -> str:
+    """XXE 规则匹配前去除 null 间隔等干扰。"""
+    merged = f"{raw} {norm}".strip()
+    merged = merged.replace("\x00", "")
+    merged = re.sub(r"(?i)(?:%00)+", "", merged)
+    return merged
+
+
+def _xxe_deep_view(raw: str, norm: str = "") -> str:
+    """上传伪装 + XML 实体展开后的深度视图（动态揭示 hex 混淆 SYSTEM/file:///）。"""
+    from iga_guard.normalizer.decoder import (
+        expand_xml_entities_for_scan,
+        strip_upload_magic_prefix,
+    )
+
+    base = _xxe_canonical_text(raw, norm)
+    stripped, _ = strip_upload_magic_prefix(base)
+    expanded, _ = expand_xml_entities_for_scan(stripped)
+    return expanded
+
+
+def xxe_structure_score(raw: str, norm: str = "") -> float:
+    """XML/XXE 结构分：参数实体、DOCTYPE、拆分 SYSTEM、file:///、hex 实体、本地 DTD 等。"""
+    merged = _xxe_canonical_text(raw, norm)
+    deep = _xxe_deep_view(raw, norm)
+    if not merged and not deep:
+        return 0.0
+    low = deep.lower()
+    score = 0.0
+    for text in {merged, deep}:
+        if _RE_XXE_XML_DECL.search(text):
+            score += 0.22
+            break
+    for text in {merged, deep}:
+        if _RE_XXE_DOCTYPE.search(text):
+            score += 0.28
+            break
+    for text in {merged, deep}:
+        if _RE_XXE_ENTITY.search(text):
+            score += 0.24
+            break
+    for text in {merged, deep}:
+        if _RE_XXE_PARAM_ENTITY.search(text):
+            score += 0.32
+            break
+    if _RE_XXE_PE_CHAIN.search(merged) or _RE_XXE_PE_CHAIN.search(deep):
+        score += 0.22
+    if _RE_XXE_FILE_URI.search(merged) or _RE_XXE_FILE_URI.search(deep):
+        score += 0.38
+    if _RE_XXE_SYS_SPLIT.search(merged) or _RE_XXE_SYS_SPLIT.search(deep):
+        score += 0.42
+    if _RE_XXE_ENTITY_REF.search(deep) and _RE_XXE_ENTITY.search(deep):
+        score += 0.18
+    if "utf-16" in low and _RE_XXE_DOCTYPE.search(deep):
+        score += 0.12
+    if _RE_XXE_HEX_SYSTEM.search(merged) or (
+        "system" in low and _RE_XXE_PARAM_ENTITY.search(deep)
+    ):
+        score += 0.36
+    if _RE_XXE_HEX_FILE.search(merged) or "file:///" in deep:
+        score += 0.40
+    if _RE_XXE_HEX_PERCENT_ENTITY.search(merged):
+        score += 0.34
+    if _RE_XXE_LOCAL_DTD.search(merged) or _RE_XXE_LOCAL_DTD.search(deep):
+        score += 0.32
+    if _RE_XXE_SVG.search(deep) and _RE_XXE_DOCTYPE.search(deep):
+        score += 0.26
+    if re.search(r"%\w+\s*;", deep) and _RE_XXE_ENTITY.search(deep):
+        score += 0.20
+    if "fonts.dtd" in low or "fontconfig" in low:
+        score += 0.18
+    return min(1.0, score)
+
+
+def xxe_rescue_label(raw: str, norm: str = "") -> tuple[str, float] | None:
+    """明确 XXE 签名时覆盖误分类（如 SQLi / PathTraversal）。"""
+    score = xxe_structure_score(raw, norm)
+    merged = _xxe_canonical_text(raw, norm).lower()
+    deep = _xxe_deep_view(raw, norm)
+    deep_low = deep.lower()
+    if score >= 0.55:
+        return "XXE", max(0.78, score)
+    if (
+        "<!doctype" in deep_low
+        and "<!entity" in deep_low
+        and (
+            "file:///" in deep_low
+            or _RE_XXE_HEX_FILE.search(merged)
+            or _RE_XXE_LOCAL_DTD.search(deep)
+        )
+    ):
+        return "XXE", 0.90
+    if _RE_XXE_PARAM_ENTITY.search(raw + norm) and (
+        _RE_XXE_FILE_URI.search(raw + norm)
+        or _RE_XXE_FILE_URI.search(deep)
+        or _RE_XXE_HEX_FILE.search(merged)
+    ):
+        return "XXE", 0.86
+    if _RE_XXE_HEX_PERCENT_ENTITY.search(merged) and _RE_XXE_DOCTYPE.search(deep):
+        return "XXE", 0.84
+    if (
+        "<!doctype" in merged
+        and "<!entity" in merged
+        and "file://" in merged
+    ):
+        return "XXE", 0.88
+    return None
 
 
 def evasion_rule_scores(
@@ -265,6 +393,12 @@ def evasion_rule_scores(
     if "webkitformboundary" in raw_low:
         if any(k in low for k in ("drop table", "union select", "insert into")):
             merged["SQLi"] = max(merged["SQLi"], 0.72)
+        if (
+            _RE_XXE_DOCTYPE.search(raw)
+            or _RE_XXE_HEX_SYSTEM.search(raw)
+            or _RE_XXE_HEX_PERCENT_ENTITY.search(raw)
+        ):
+            merged["XXE"] = max(merged["XXE"], 0.75)
 
     if _unicode_escape_sqli_signal(raw) or _unicode_escape_sqli_signal(norm):
         merged["SQLi"] = max(merged["SQLi"], 0.55)
@@ -520,8 +654,13 @@ def obfuscated_evasion_rescue_cached(
         or _OPAQUE_ENCODED_URL.search(raw)
         or _MALFORMED_SIGN_PARAM.search(raw)
         or _DYNAMIC_ADVERSARIAL_MARKERS.search(raw)
+        or xxe_structure_score(raw, norm or raw) >= 0.45
     ):
         return None
+
+    xxe_hit = xxe_rescue_label(raw, norm or raw)
+    if xxe_hit is not None:
+        return xxe_hit
 
     raw_low = raw.lower()
     norm_low = (norm or raw).lower()
@@ -635,6 +774,9 @@ def obfuscated_evasion_rescue_cached(
 
     if _DYNAMIC_ADVERSARIAL_MARKERS.search(raw_low) or _DYNAMIC_ADVERSARIAL_MARKERS.search(norm_low):
         if "/etc/passwd" in raw_low or "%252e" in raw_low or "/etc/passwd" in norm_low:
+            xxe_pt = xxe_rescue_label(raw, norm_low)
+            if xxe_pt is not None:
+                return xxe_pt
             return "PathTraversal", 0.70
         if "passw%68" in raw_low or "logina=" in raw_low:
             return "CMD", 0.62
@@ -785,6 +927,11 @@ def attack_keyword_scores(text: str) -> dict[str, float]:
         scores["CMD"] += 0.35
     if _NULL_IN_VALUE.search(low):
         scores["SQLi"] += 0.35
+    xxe_s = xxe_structure_score(text, text)
+    if xxe_s >= 0.40:
+        scores["XXE"] += 0.45 + xxe_s * 0.4
+        scores["PathTraversal"] *= 0.4
+        scores["SQLi"] *= 0.7
     total = sum(scores.values()) or 1.0
     return {k: v / total for k, v in scores.items()}
 
@@ -865,6 +1012,12 @@ def structural_attack_scores(
 
     if any(m in raw_low for m in ("php://filter", "zip://", "xi:include")):
         scores["FileInclusion"] += 0.65
+
+    xxe_s = xxe_structure_score(raw, norm)
+    if xxe_s >= 0.45:
+        scores["XXE"] += 0.55 + xxe_s * 0.35
+        scores["PathTraversal"] *= 0.35
+        scores["SQLi"] *= 0.65
 
     if "data:text/html" in raw_low or "ontoggle=" in raw_low:
         scores["XSS"] += 0.55
