@@ -70,7 +70,7 @@ _BENIGN_ADDRESS = re.compile(
     re.I,
 )
 _BENIGN_ADDRESS_SAFE = re.compile(
-    r"^[\w\s\+,\.\-áéíóúñüàèòç\?%/]+$", re.I,
+    r"^[\w\s\+,\.\-'áéíóúñüàèòç\?%/]+$", re.I,
 )
 _RE_SPANISH_NAME_TOKEN = re.compile(
     r"^[A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòç]+(?:[+\s][A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòç]+){0,3}$",
@@ -92,6 +92,7 @@ _CSIC_ANOMALY_FIELDS = re.compile(
     r"|(?:login|pwd|password|nombre|email|cp|b1)=(?:%20|\+|%2b|\s*|%00|\x00)(?:$|&)"
     r"|(?:login|pwd)=[^&]*%2b"
     r"|(?:pwd|password)=[^&]*[!*,]"
+    r"|(?:pwd|password)=[^&]*%3f"
     r"|(?:direccion)=[^&]*\*"
     r"|(?:b1)=[^&]*%20(?:$|&)"
     r"|(?:b1)=[^&]+\s+(?:$|&)"
@@ -589,7 +590,12 @@ def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
         return False
     if re.search(r"(?:login|pwd)=[^&]*%2b", raw_low):
         return False
+    if re.search(r"(?:pwd|password)=[^&]*%3f", raw_low):
+        return False
     if re.search(r"(?:pwd|nombre|apellidos|email|cp)=(?:%20|\||%7c|\+|\s*)(?:$|&)", raw_low):
+        return False
+    # 任意字段值尾部编码空白污染（...%20 / ...%2520），含 JSON 引号收尾
+    if re.search(r"=[^&=]*%(?:20|2520)(?:$|&|\")", raw_low):
         return False
     if "|" in (norm or raw) or "%7c" in raw_low:
         return False
@@ -626,6 +632,39 @@ def looks_like_benign_csic_form(raw: str, norm: str) -> bool:
 
 def looks_like_benign_address(raw: str, norm: str) -> bool:
     """CSIC 正常地址字段（西班牙语街道名）。"""
+    raw_low = (raw or "").lower()
+    norm_low = (norm or "").lower()
+    # Null-byte / fullwidth / unicode-escape / 管道污染 属混淆逃逸，不得按良性地址放行。
+    # 注意：门牌号常用 10?A；加泰罗尼亚地名含 d'… / %27 —— 不得当作注入。
+    if "%00" in raw_low or "\x00" in (raw or "") or "%00" in norm_low or "\x00" in (norm or ""):
+        return False
+    if has_fullwidth(raw) or has_fullwidth(norm or ""):
+        return False
+    # URL 传输后的全角 UTF-8（%ef%bc / %ef%bd）同样视为混淆
+    if "%ef%bc" in raw_low or "%ef%bd" in raw_low or "%ef%bc" in norm_low or "%ef%bd" in norm_low:
+        return False
+    if len(_UNICODE_ESCAPE.findall(raw or "")) >= 1 or len(_UNICODE_ESCAPE.findall(norm or "")) >= 1:
+        return False
+    if "|" in (raw or "") or "|" in (norm or "") or "%7c" in raw_low or "%7c" in norm_low:
+        return False
+    if re.search(r"(?:%0d%0a|%0a|%0d|\r\n|\n)", raw_low) or "set-cookie" in raw_low:
+        return False
+    # JS/SQL 字符串拼接拆词（Mo'+'rell）属 keyword_concat_split，不当作姓名/地址
+    if (
+        _RE_CONCAT_SPLIT.search(raw or "")
+        or _RE_CONCAT_SPLIT.search(norm or "")
+        or "%27%2b%27" in raw_low
+        or "%27%2b%27" in norm_low
+        or "'+'" in (raw or "")
+        or "'+'" in (norm or "")
+    ):
+        return False
+    # 街道词用 %2B/%252B 拼接、或尾部 %2B 污染：数据集 url_encode/double_url 混淆，非正常地址
+    if _pct_plus_address_obfuscation(raw_low, norm_low):
+        return False
+    # 商品字段尾部 %2B 污染（Vino+Rioja%2B）
+    if _RE_URLENC_PRODUCT_TAIL.match(raw_low.strip()):
+        return False
     text = (norm or raw).strip()
     # 传输层常把空格编成 + / %20；替换字符多为拉丁扩展名损坏
     text = (
@@ -637,24 +676,50 @@ def looks_like_benign_address(raw: str, norm: str) -> bool:
         .replace("%EF%BF%BD", "a")
         .replace("\ufffd", "a")
     )
+    # 折叠后再判一次：若折叠前后差异大，说明存在同形字伪装
+    folded = fold_homoglyphs(text)
+    if folded != text and has_fullwidth(raw or norm or ""):
+        return False
     low = text.lower()
     if len(text) < 4 or len(text) > 400:
         return False
     addr_like = bool(_BENIGN_ADDRESS.search(low))
-    if _SQLI_INJECTION_MARKERS.search(low) or any(
+    # 强 SQL 注入痕迹才否决；单独的 ' / %27 常见于加泰罗尼亚地名
+    if re.search(
+        r"union\s+select|select\s+.+\s+from|insert\s+into|drop\s+table|"
+        r"sleep\s*\(|benchmark\s*\(|or\s+1\s*=\s*1|--|%2527|%2d%2d|0x[0-9a-f]{4,}",
+        low,
+        re.I,
+    ) or any(
         k in low for k in ("union", "select", "script", "alert", "wget", "eval(", "${jndi")
     ):
         return False
     if addr_like:
         return True
-    # 短西班牙姓名（无注入痕迹）；允许损坏的重音字母
-    name_candidate = text.replace("%20", " ")
+    # 短西班牙姓名（无注入痕迹）；允许损坏的重音字母与 Catalan 撇号
+    name_candidate = (
+        text.replace("%20", " ").replace("%27", "'").replace("&#39;", "'")
+    )
     if 4 <= len(name_candidate) <= 48 and (
-        _RE_SPANISH_NAME_TOKEN.match(name_candidate)
-        or re.fullmatch(r"[A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòça\s\-]{4,48}", name_candidate)
+        _RE_SPANISH_NAME_TOKEN.match(name_candidate.replace("'", ""))
+        or re.fullmatch(
+            r"[A-Za-zÁÉÍÓÚÑÜáéíóúñüàèòça'\s\-]{4,48}",
+            name_candidate,
+        )
     ):
         if not _FORM_INJ.search(low) and sum(ch.isalpha() for ch in name_candidate) >= 4:
             return True
+    # SAFE：允许门牌 ? 与 URL 编码残留（%2C/%27 等）
+    safe_text = text.replace("%27", "'").replace("%2c", ",").replace("%2C", ",")
+    if _BENIGN_ADDRESS_SAFE.match(safe_text) or _BENIGN_ADDRESS_SAFE.match(
+        re.sub(r"%[0-9a-fA-F]{2}", " ", text)
+    ):
+        if not _FORM_INJ.search(low):
+            alpha_n = sum(ch.isalpha() for ch in text)
+            if (" " in text or "+" in (raw or "") or "%2b" in raw_low) and alpha_n >= 6:
+                return True
+            if addr_like and alpha_n >= 4:
+                return True
     if _BENIGN_ADDRESS_SAFE.match(text) and not _FORM_INJ.search(low):
         if " " in text and sum(ch.isalpha() for ch in text) >= 6:
             return True
@@ -664,6 +729,26 @@ def looks_like_benign_address(raw: str, norm: str) -> bool:
 def is_benign_traffic_context(raw: str, norm: str | None = None) -> bool:
     """聚合良性流量判定：CSIC 表单 / 购物 / 地址。"""
     n = norm if norm is not None else raw
+    raw_low = (raw or "").lower()
+    # 关键混淆形态：禁止走良性快路径
+    if has_fullwidth(raw) or has_fullwidth(n or ""):
+        return False
+    if len(_UNICODE_ESCAPE.findall(raw or "")) >= 2:
+        return False
+    if "%00" in raw_low or "\x00" in (raw or ""):
+        return False
+    if "|" in (raw or "") or "%7c" in raw_low or _CSIC_ANOMALY_FIELDS.search(raw_low):
+        return False
+    if (
+        _RE_CONCAT_SPLIT.search(raw or "")
+        or "%27%2b%27" in raw_low
+        or "'+'" in (raw or "")
+    ):
+        return False
+    if re.search(r"(?:%0d%0a|%0a|%0d|\r\n|\n).{0,8}set-cookie", raw_low, re.I):
+        return False
+    if re.search(r"set-cookie\s*%3a", raw_low, re.I):
+        return False
     return (
         looks_like_benign_csic_form(raw, n)
         or looks_like_benign_address(raw, n)
@@ -758,14 +843,66 @@ _RE_URL_ENCODE_NAME = re.compile(
     re.I,
 )
 _RE_URLENC_ADDRESS_TAIL = re.compile(
-    r"^(?:calle|avenida|paseo|plaza|travesia|rambla|carrer|cami|passatge)"
-    r"%2b[^\r\n&]{1,96}$",
+    r"^(?:calle|avenida|paseo|plaza|travesia|rambla|carrer|cami|passatge|avinguda)"
+    r"(?:%252b|%2b)[^\r\n&]{1,120}$",
     re.I,
 )
 _RE_URLENC_PRODUCT_TAIL = re.compile(
-    r"^(?:vino|queso|jam(?:on|%c3%b3n)|iberico)\+[^\r\n&]{1,48}%2b$",
+    r"^(?:vino|queso|jam(?:on|%c3%b3n)|iberico)(?:\+|%2b|%252b)[^\r\n&]{0,48}(?:%2b|%252b)$",
     re.I,
 )
+_RE_PCT_STREET_JOIN = re.compile(
+    r"(?:calle|avenida|paseo|plaza|travesia|rambla|carrer|cami|passatge|avinguda|c/%2f)"
+    r"(?:%252b|%2b)",
+    re.I,
+)
+
+
+def _pct_plus_address_obfuscation(raw_low: str, norm_low: str = "") -> bool:
+    """url_encode / double_url_encode 地址：用 %2B 拼词或尾部 %2B。
+
+    若 norm 已是「纯 + 分隔」地址（无 %），则 raw 中的 %2B 视为传输层 quote，不抬升。
+    """
+    s = (raw_low or "").strip()
+    if not s or "=" in s or "&" in s:
+        return False
+    n = (norm_low or "").strip()
+    # 解码态已是正常 + 地址：跳过（避免 Ballena,+91 / Calle+Cubas 被 quote 后误报）
+    if n and "%" not in n and ("+" in n or " " in n):
+        decoded_addr = bool(_BENIGN_ADDRESS.search(n.replace("+", " ").lower()))
+        plain_safe = bool(
+            _BENIGN_ADDRESS_SAFE.match(n.replace("+", " "))
+            or _BENIGN_ADDRESS_SAFE.match(n)
+        )
+        if decoded_addr or plain_safe:
+            # 仅保留双编码痕迹（%252），单层传输编码不抬升
+            if "%252" not in s:
+                return False
+    decoded = (
+        s.replace("%252b", " ")
+        .replace("%2b", " ")
+        .replace("%252c", ",")
+        .replace("%2c", ",")
+        .replace("+", " ")
+        .replace("%252f", "/")
+        .replace("%2f", "/")
+    )
+    streetish = bool(
+        _RE_PCT_STREET_JOIN.search(s)
+        or _RE_URLENC_ADDRESS_TAIL.match(s)
+        or _BENIGN_ADDRESS.search(decoded)
+    )
+    if not streetish:
+        return False
+    if re.search(r"(?:%252b|%2b)$", s):
+        return True
+    if s.count("%252b") >= 2 or ("%252c" in s and "%252b" in s):
+        return True
+    if "%253f" in s:
+        return True
+    if (s.count("%2b") + s.count("%252b")) >= 2:
+        return True
+    return False
 
 
 _DISCOVERED_STORE = None
@@ -888,11 +1025,19 @@ def obfuscated_evasion_rescue_cached(
     concat_hit = _concat_split_attack_signal(raw, norm_low)
     if concat_hit is not None:
         return concat_hit
-    if _RE_CONCAT_SPLIT.search(raw):
+    if _RE_CONCAT_SPLIT.search(raw) or "%27%2b%27" in raw_low or "%27%2B%27" in raw:
         return "SQLi", 0.58
 
     if _RE_BOOL_LIKE_SQLI.search(raw_low) or _RE_BOOL_LIKE_SQLI.search(norm_low):
         return "SQLi", 0.74
+
+    # CRLF / 响应头注入（CSIC anomalous + case_random）：%0aSet-Cookie / Set-cookie%3A+Tamper
+    if re.search(
+        r"(?:%0d%0a|%0a|%0d|\r\n|\n).{0,8}set-cookie",
+        raw_low,
+        re.I,
+    ) or re.search(r"set-cookie\s*%3a\s*\+?tamper", raw_low, re.I):
+        return "SQLi", 0.72
 
     # 独立 hex32 在 Normal 中大量出现（会话/哈希），禁止裸 token 直接判恶意。
     # 仅当伴随 SQL/HPP 结构时才抬升。
@@ -1127,16 +1272,81 @@ def obfuscated_evasion_rescue_cached(
             return "SQLi", 0.55
 
     # 长尾窄规则：地址/商品孤立片段 + 尾部编码污染。
-    # 明文/单次 + 空格的正常街道地址不得抬升；仅双重编码或异常污染才救援。
+    # 街道 %2B 拼接 / 尾 %2B / 双编码 即使「看起来像地址」也抬升（控 FPR：不含普通 + 分隔门牌）。
     if "=" not in raw and "&" not in raw and is_obfuscated(raw):
-        if _RE_URLENC_ADDRESS_TAIL.match(raw_low):
-            if looks_like_benign_address(raw, norm_low):
-                pass
-            elif raw_low.endswith("%252b") or "%253f" in raw_low or raw_low.count("%25") >= 2:
-                return "SQLi", 0.59
-        if _RE_URLENC_PRODUCT_TAIL.match(raw_low):
-            if not looks_like_benign_address(raw, norm_low):
-                return "SQLi", 0.58
+        if _pct_plus_address_obfuscation(raw_low, norm_low):
+            return "SQLi", 0.74
+        # 商品尾部 %2B：要求 norm/raw 仍带编码尾，避免纯 + 商品被 quote 误报
+        if _RE_URLENC_PRODUCT_TAIL.match(raw_low) and (
+            "%2b" in (norm_low or "")
+            or "%252b" in raw_low
+            or re.search(r"(?:vino|queso|jam).{0,40}%2b$", (norm_low or raw_low), re.I)
+        ):
+            return "SQLi", 0.74
+        enc_hits = (
+            raw_low.count("%2b")
+            + raw_low.count("%252b")
+            + raw_low.count("%20")
+            + raw_low.count("%2520")
+        )
+        # null-byte splice in isolated field
+        if "%00" in raw_low or "\x00" in raw:
+            return "SQLi", 0.74
+        # double-url / multi-encoding pollution（norm 已是纯 + 良性文本则跳过，防传输 quote 误报）
+        norm_plain = (norm_low or "")
+        transport_only = bool(
+            norm_plain
+            and "%" not in norm_plain
+            and looks_like_benign_address(norm_plain, norm_plain)
+        )
+        if (
+            (enc_hits >= 2 or "%252" in raw_low or raw_low.count("%25") >= 2)
+            and not looks_like_benign_address(raw, norm_low)
+            and not transport_only
+        ):
+            return "SQLi", 0.74
+        # single encoding only when NOT address-like (avoid Normal street FP)
+        if (
+            enc_hits >= 1
+            and 4 <= len(raw_strip) <= 96
+            and not looks_like_benign_address(raw, norm_low)
+            and not transport_only
+        ):
+            return "SQLi", 0.73
+
+    # unicode_escape：独立于「孤立字段」门控（\\u0069d=| 等本身含 '='）
+    # ≥2 即救援；单条则解码后查异常结构 / 注入痕迹（控 FPR）
+    esc_n = len(_UNICODE_ESCAPE.findall(raw))
+    if esc_n >= 2 and not looks_like_benign_address(raw, norm_low):
+        return "SQLi", 0.73
+    if esc_n >= 1:
+        decoded_u = _UNICODE_ESCAPE.sub(lambda m: chr(int(m.group(1), 16)), raw)
+        decoded_u_low = decoded_u.lower()
+        if (
+            "|" in decoded_u
+            or "?" in decoded_u
+            or _CSIC_ANOMALY_FIELDS.search(decoded_u_low)
+            or _FORM_INJ.search(decoded_u_low)
+            or _SQLI_INJECTION_MARKERS.search(decoded_u_low)
+            or re.search(r"(?:^|[&?])id\s*=", decoded_u_low)
+        ):
+            return "SQLi", 0.74
+
+    # 全角同形字：CSIC unicode_normalization 关键逃逸，默认抬升（真正常地址极少含全角）
+    if has_fullwidth(raw):
+        folded_form = fold_homoglyphs(raw)
+        folded_form_low = folded_form.lower()
+        if (
+            "|" in folded_form
+            or "?" in folded_form
+            or _CSIC_ANOMALY_FIELDS.search(folded_form_low)
+            or _FORM_INJ.search(folded_form_low)
+            or re.search(r"(?:^|[&?])id\s*=", folded_form_low)
+            or _BENIGN_ADDRESS.search(folded_form_low)
+            or _RE_SPANISH_NAME_TOKEN.match(folded_form.replace("+", " ").strip()[:48] or "")
+            or (4 <= len(raw.strip()) <= 96 and "=" not in raw and "&" not in raw)
+        ):
+            return "SQLi", 0.74
 
     # 内联注释拆参：modo/**/=/**/registro 等（混淆逃逸 SQLi）
     if "/**/" in raw and (
@@ -1169,6 +1379,8 @@ def obfuscated_evasion_rescue_cached(
             or "%3f" in inner_low
             or "%00" in inner_low
             or re.search(r"(?:b1|cantidad|nombre|pwd|email)=(?:%20|\+|%2b|\s*)(?:$|&|\")", inner_low)
+            or re.search(r"=(?:[^&\"=]{0,80})%(?:20|2520)(?:$|&|\")", inner_low)
+            or re.search(r"(?:pwd|password)=[^&\"%]*%3f", inner_low)
             or (len(inner.strip()) <= 8 and "%" in inner)  # 短异常片段 %2B / %20
         ):
             return "SQLi", 0.66
@@ -1315,6 +1527,65 @@ def arbitrate_attack_label(
     ) and not cmd_marker and kw_sqli >= kw_cmd + 0.15:
         return "SQLi", max(confidence, 0.70, kw_sqli)
 
+    kw_xss = float(kw.get("XSS", 0.0))
+    st_xss = float(st.get("XSS", 0.0))
+    kw_path = float(kw.get("PathTraversal", 0.0))
+    st_path = float(st.get("PathTraversal", 0.0))
+    kw_fi = float(kw.get("FileInclusion", 0.0))
+    st_fi = float(st.get("FileInclusion", 0.0))
+    p_xss = float(probs.get("XSS", 0.0))
+
+    xss_markers = any(
+        x in raw_low or x in norm_low
+        for x in (
+            "<script", "</script", "onerror=", "onload=", "onmouseover=",
+            "javascript:", "svg/onload", "<svg", "<img", "fromcharcode",
+            "document.cookie", "&#60;script", "%3cscript",
+        )
+    )
+    path_markers = any(
+        x in raw_low or x in norm_low
+        for x in (
+            "../", "..\\", "%2e%2e%2f", "%2e%2e/", "....//", "etc/passwd",
+            "windows/system32", "boot.ini",
+        )
+    )
+    fi_markers = any(
+        x in raw_low or x in norm_low
+        for x in (
+            "php://", "file://", "expect://", "zip://", "phar://",
+            "input://", "data://text", "filter/convert",
+        )
+    )
+
+    # XSS mislabeled as SQLi / CMD
+    if label in ("SQLi", "CMD") and (xss_markers or kw_xss >= 0.45 or st_xss >= 0.40) and (
+        kw_xss >= kw_sqli + 0.08
+        or st_xss >= st_sqli + 0.08
+        or (xss_markers and "union" not in norm_low and "select" not in norm_low)
+        or p_xss >= float(probs.get(label, 0.0)) + 0.05
+    ):
+        return "XSS", max(confidence, 0.72, kw_xss, st_xss, p_xss)
+
+    # PathTraversal vs FileInclusion
+    if label == "FileInclusion" and path_markers and not fi_markers and (
+        kw_path + st_path >= kw_fi + st_fi + 0.05
+    ):
+        return "PathTraversal", max(confidence, 0.70, kw_path, st_path)
+    if label == "PathTraversal" and fi_markers and (
+        kw_fi + st_fi >= kw_path + st_path
+        or "php://" in norm_low
+        or "expect://" in norm_low
+    ):
+        return "FileInclusion", max(confidence, 0.72, kw_fi, st_fi)
+
+    # SQLi mislabeled as XSS when clear SQL shape dominates
+    if label == "XSS" and (
+        ("union" in norm_low and "select" in norm_low)
+        or "information_schema" in norm_low
+    ) and not xss_markers and kw_sqli >= kw_xss + 0.12:
+        return "SQLi", max(confidence, 0.70, kw_sqli)
+
     return label, confidence
 
 
@@ -1388,11 +1659,23 @@ def structural_attack_scores(
     结构级攻击信号（收紧版）：避免单独 hex token / 正常 CSIC 字段误报。
     """
     if is_benign_traffic_context(raw, norm):
-        return {k: (0.92 if k == "Normal" else 0.01) for k in _ATTACK_PATTERNS}
+        # 关键混淆形态即使被误标良性，也不要一票否决结构分
+        if not (
+            has_fullwidth(raw)
+            or has_fullwidth(norm or "")
+            or len(_UNICODE_ESCAPE.findall(raw or "")) >= 2
+            or "%00" in (raw or "").lower()
+        ):
+            return {k: (0.92 if k == "Normal" else 0.01) for k in _ATTACK_PATTERNS}
     scores = {k: 0.0 for k in _ATTACK_PATTERNS}
     scores["Normal"] = 0.05
     low = norm.lower()
     raw_low = raw.lower()
+    # 全角同形字：折叠后补充结构分
+    if has_fullwidth(raw) or has_fullwidth(norm or ""):
+        scores["SQLi"] += 0.45
+    if len(_UNICODE_ESCAPE.findall(raw or "")) >= 2:
+        scores["SQLi"] += 0.40
     kw = attack_keyword_scores(low)
     kw_attack = max((v for k, v in kw.items() if k != "Normal"), default=0.0)
 

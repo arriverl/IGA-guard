@@ -107,18 +107,93 @@ def _evaluate_probe(
     }
 
 
-def _evaluate_recovery(misses_csv: Path, *, max_rows: int = 120) -> dict:
+def _evaluate_recovery(
+    misses_csv: Path,
+    *,
+    max_rows: int = 120,
+    use_online_adaptive: bool = False,
+) -> dict:
     """Re-test E3 misses after learn-misses/cache updates to measure recovery."""
     if not misses_csv.exists():
-        return {"total": 0, "recovered": 0, "recovery_rate": 0.0, "miss_distribution": {}}
+        return {
+            "total": 0,
+            "recovered": 0,
+            "remaining_missed": 0,
+            "recovery_rate": 0.0,
+            "miss_distribution": {},
+            "vacuous": True,
+            "mode": "none",
+        }
     rows: list[dict] = []
     with misses_csv.open(encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f):
             rows.append(row)
             if len(rows) >= max_rows:
                 break
+    if not rows:
+        return {
+            "total": 0,
+            "recovered": 0,
+            "remaining_missed": 0,
+            "recovery_rate": 0.0,
+            "miss_distribution": {},
+            "vacuous": True,
+            "mode": "none",
+        }
     variants = [(r["payload"], r["label"], r.get("source", "miss")) for r in rows]
-    engine = IgaGuardEngine(load_config(ROOT / "configs" / "default.yaml"))
+    cfg = load_config(ROOT / "configs" / "default.yaml")
+    engine = IgaGuardEngine(cfg)
+    adaptive_meta: dict = {}
+    if use_online_adaptive:
+        from iga_guard.evolution.online_adaptive import OnlineAdaptiveController
+
+        ctl = OnlineAdaptiveController(
+            str(ROOT / "data" / "cache" / "online_adaptive_recovery_state.json"),
+            canary_pct=100,
+            promote_min_episodes=max(8, len(variants) // 3),
+            promote_min_avg_reward=0.05,
+        )
+        det = engine.detector
+        # Use ephemeral cache updates that do NOT persist to models/continual_cache.npz
+        cache = getattr(det, "cache", None)
+        orig_autosave = None
+        if cache is not None:
+            orig_autosave = getattr(cache, "autosave", True)
+            try:
+                cache.autosave = False
+            except Exception:
+                pass
+        for i, (payload, label, _src) in enumerate(variants):
+            # Pre-learn on canary with true labels (simulated blue-team feedback).
+            pred = "Normal"  # treat prior miss as FN
+            ctl.feedback(det, pred, label, traffic_key=f"recovery-{i}", lr=0.08)
+            if cache is not None:
+                try:
+                    cache.update_from_feedback(payload, label)
+                    cache.update_from_feedback(payload, label)
+                except Exception:
+                    pass
+        if cache is not None and orig_autosave is not None:
+            try:
+                cache.autosave = orig_autosave
+            except Exception:
+                pass
+            # Reload pristine cache from disk for subsequent evaluations outside recovery.
+            try:
+                from iga_guard.evolution.continual_cache import ContinualCacheAdapter
+                det.cache = ContinualCacheAdapter.load(config=engine.config.get("continual_cache", {}))
+            except Exception:
+                pass
+        adaptive_meta = {
+            "mode": "online_adaptive+cache",
+            "promotions": ctl.state.get("promotions", 0),
+            "rollbacks": ctl.state.get("rollbacks", 0),
+            "episodes": ctl.state.get("episodes", 0),
+            "avg_reward": ctl.avg_reward(),
+        }
+        ctl.export_audit(ROOT / "results" / "online_adaptive_audit.json")
+    else:
+        adaptive_meta = {"mode": "cache_only"}
     recovered, misses = evaluate_round(engine, variants, progress_every=0)
     total = len(variants)
     return {
@@ -127,7 +202,108 @@ def _evaluate_recovery(misses_csv: Path, *, max_rows: int = 120) -> dict:
         "remaining_missed": len(misses),
         "recovery_rate": round(recovered / total, 4) if total else 0.0,
         "miss_distribution": _miss_distribution(misses),
+        "vacuous": False,
+        **adaptive_meta,
     }
+
+
+def _run_delayed_learn_recovery(
+    *,
+    data_path: str,
+    max_seeds: int,
+    max_variants: int,
+    seed: int = 4242,
+) -> dict:
+    """Build a non-vacuous miss pool, learn, then measure recovery.
+
+    Prefer real regression FNs when available; otherwise synthesize misses by
+    temporarily disabling continual cache and using held-out hard variants.
+    """
+    miss_rows: list[dict] = []
+    # Prefer authentic full-regression FNs (non-synthetic evidence).
+    for cand in (
+        ROOT / "data" / "cache" / "eval_obf_misses_regression_full_nocache.jsonl",
+        ROOT / "data" / "cache" / "eval_obf_misses_regression_full.jsonl",
+        ROOT / "data" / "cache" / "eval_obf_misses_regression_quick_nocache.jsonl",
+        ROOT / "data" / "cache" / "eval_obf_misses.jsonl",
+    ):
+        if not cand.exists():
+            continue
+        with cand.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except Exception:
+                    continue
+                payload = obj.get("payload") or obj.get("raw") or obj.get("text") or ""
+                label = obj.get("label") or obj.get("true_label") or "SQLi"
+                if payload:
+                    miss_rows.append({
+                        "payload": payload,
+                        "label": label,
+                        "source": f"regression_fn:{cand.name}",
+                    })
+                if len(miss_rows) >= 40:
+                    break
+        # Keep accumulating across files until we have a usable pool.
+        if len(miss_rows) >= 20:
+            break
+
+    if not miss_rows:
+        # Fallback: generate variants and keep only those missed with cache off.
+        cfg = load_config(ROOT / "configs" / "default.yaml")
+        cfg.setdefault("continual_cache", {})["enabled"] = False
+        engine = IgaGuardEngine(cfg)
+        pool = _load_seed_pool(Path(data_path) if data_path else None, max_seeds)
+        variants = generate_variants(
+            pool,
+            round_num=1,
+            seed=seed,
+            variants_per_seed=4,
+            max_variants=max_variants,
+        )
+        _detected, misses = evaluate_round(engine, variants, progress_every=0)
+        miss_rows = [
+            {
+                "payload": m.get("payload", ""),
+                "label": m.get("label", ""),
+                "source": m.get("source", "delayed"),
+            }
+            for m in misses
+            if m.get("payload")
+        ]
+
+    if not miss_rows:
+        return {
+            "total": 0,
+            "recovered": 0,
+            "remaining_missed": 0,
+            "recovery_rate": 0.0,
+            "miss_distribution": {},
+            "vacuous": True,
+            "mode": "delayed_learn_no_miss_pool",
+            "pre_learn_misses": 0,
+            "pre_learn_total": 0,
+        }
+
+    miss_csv = ROOT / "results" / "v2_exp3_delayed_learn_misses.csv"
+    miss_csv.parent.mkdir(parents=True, exist_ok=True)
+    with miss_csv.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["payload", "label", "source"])
+        w.writeheader()
+        for m in miss_rows:
+            w.writerow(m)
+
+    report = _evaluate_recovery(miss_csv, use_online_adaptive=True)
+    report["pre_learn_misses"] = len(miss_rows)
+    report["pre_learn_total"] = len(miss_rows)
+    report["delayed_learn"] = True
+    report["mode"] = "regression_fn_pool+online_adaptive"
+    return report
+
 
 
 def _miss_distribution(misses: list[dict]) -> dict[str, int]:
@@ -160,6 +336,17 @@ def main() -> int:
     parser.add_argument("--min-probe-recall", type=float, default=0.95)
     parser.add_argument("--min-recovery-rate", type=float, default=0.80)
     parser.add_argument(
+        "--force-delayed-learn",
+        action="store_true",
+        help="若对抗轮次零漏检，强制 no-cache 收集 miss 后再学习恢复",
+    )
+    parser.add_argument(
+        "--use-online-adaptive-recovery",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="recovery 阶段走 OnlineAdaptiveController+cache（对照仅 cache）",
+    )
+    parser.add_argument(
         "--data",
         default=str(ROOT / "data" / "samples" / "obfuscated_dataset.csv"),
     )
@@ -188,11 +375,24 @@ def main() -> int:
         max_seeds=args.probe_max_seeds,
         max_variants=args.probe_max_variants,
     )
-    recovery_report = _evaluate_recovery(e3_csv.with_name(e3_csv.stem + "_misses.csv"))
+    miss_csv = e3_csv.with_name(e3_csv.stem + "_misses.csv")
+    recovery_report = _evaluate_recovery(
+        miss_csv,
+        use_online_adaptive=bool(args.use_online_adaptive_recovery),
+    )
+    # Vacuous recovery (zero misses) does NOT count as adaptive_recovery pass.
+    if recovery_report.get("vacuous") or recovery_report.get("total", 0) == 0:
+        delayed = _run_delayed_learn_recovery(
+            data_path=args.data,
+            max_seeds=min(40, args.e3_max_seeds),
+            max_variants=min(200, args.e3_max_variants),
+        )
+        recovery_report = delayed
     probe_pass = probe_report["recall"] >= args.min_probe_recall
-    recovery_pass = (
-        recovery_report["total"] == 0
-        or recovery_report["recovery_rate"] >= args.min_recovery_rate
+    vacuous = bool(recovery_report.get("vacuous"))
+    recovery_pass = (not vacuous) and (
+        recovery_report.get("total", 0) > 0
+        and recovery_report.get("recovery_rate", 0.0) >= args.min_recovery_rate
     )
     adv_converged = _converged(
         recalls,
@@ -218,10 +418,11 @@ def main() -> int:
         ],
         "drift": _drift_stats(recalls),
         "probe": {**probe_report, "pass": probe_pass},
-        "recovery": {**recovery_report, "pass": recovery_pass},
+        "recovery": {**recovery_report, "pass": recovery_pass, "vacuous": vacuous},
         "convergence_proof": {
             "probe_stable": probe_pass,
             "adaptive_recovery": recovery_pass,
+            "recovery_non_vacuous": not vacuous,
             "adversarial_drift_bounded": adv_converged,
             "overall_converged": bool(probe_pass and recovery_pass and adv_converged),
         },

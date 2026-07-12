@@ -31,7 +31,39 @@
       "source": "miss_rule_pipeline",
       "cluster": "XSS:other",
       "enabled": true
+    },
+    {
+      "pattern": "\\.\\.%c0%af\\.\\.%c0%af\\.\\.%c0%afetc/passwd",
+      "label": "PathTraversal",
+      "confidence": 0.6,
+      "source": "miss_rule_pipeline",
+      "cluster": "PathTraversal:other",
+      "enabled": true
+    },
+    {
+      "pattern": "\\.\\.%00%c0%af\\.\\.%c0%af\\.\\.%c0%afetc/passwd",
+      "label": "PathTraversal",
+      "confidence": 0.6,
+      "source": "miss_rule_pipeline",
+      "cluster": "PathTraversal:other",
+      "enabled": true
+    },
+    {
+      "pattern": "\\.\\./\\.\\./\\.\\./\\\\u0065tc/p\\\\u0061\\\\u0073\\\\u0073wd",
+      "label": "PathTraversal",
+      "confidence": 0.6,
+      "source": "miss_rule_pipeline",
+      "cluster": "PathTraversal:other",
+      "enabled": true
+    },
+    {
+      "pattern": "\\.\\./\\.\\./\\.\\./etc/pa\\\\u0073\\\\u0073\\\\u0077d",
+      "label": "PathTraversal",
+      "confidence": 0.6,
+      "source": "miss_rule_pipeline",
+      "cluster": "PathTraversal:other",
+      "enabled": true
     }
   ],
-  "count": 4
+  "count": 8
 }

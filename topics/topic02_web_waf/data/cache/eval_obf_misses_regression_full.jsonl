@@ -1,0 +1,7 @@
+{"payload": "C/+Las+Americas+8%00+", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}
+{"payload": "C/+Juan+De+Lara%00+115,+9?A", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}
+{"payload": "Passatge+Amerigo,+1%0064,+", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}
+{"payload": "C/+S%00an+Xoan+115+", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}
+{"payload": "C/+Guatemala,+S/%00N,+6G", "label": "SQLi", "source": "obfuscation:null_byte", "pred": "Normal"}
+{"payload": "C/+\\u0050\\u0065\\u0073\\u0063\\u0061do\\u0072\\u0065\\u0073+\\u0044\\u0065+\\u0054\\u0065\\u0072\\u0072an\\u006f\\u0076\\u0061,+108,+9-\\u0045", "label": "SQLi", "source": "obfuscation:unicode_escape", "pred": "Normal"}
+{"payload": "&#105;d=&#51;&n&#111;&#109;b&#114;e=&#86;in&#111;+Ri&#111;ja&pr&#101;&#99;&#105;&#111;=&#98;o&#98;@<&#83;&#67;Ri&#112;t>ale&#114;t(&#80;a&#114;os)</&#115;&#99;&#114;I&#80;T>.pa&#114;ospro&#120;&#121;.o&#114;&#103;&c&#97;&#110;&#116;&#105;&#100;ad=4&#49;&B1=A�&#97;d&#105;&#114;+&#97;&#108;+&#99;a&#114;rito", "label": "XSS", "source": "obfuscation:html_entity_partial", "pred": "Normal"}

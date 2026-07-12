@@ -1,0 +1,20 @@
+{
+  "processed": 203,
+  "clusters": 2,
+  "registered": [],
+  "rejected": [
+    {
+      "cluster": "SQLi:other",
+      "reason": "no_pattern"
+    },
+    {
+      "cluster": "SQLi:high_pct_blob",
+      "reason": "no_pattern"
+    }
+  ],
+  "store": {
+    "path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\discovered_rescue_rules.json",
+    "total": 7,
+    "enabled": 6
+  }
+}

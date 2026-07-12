@@ -240,11 +240,22 @@ class IgaGuardEngine:
             from iga_guard.obfuscation_signals import looks_like_benign_address
             import re as _re
 
+            enc_low = aggregate_encoded.lower()
+            encoded_attackish = bool(
+                "%00" in enc_low
+                or "%2500" in enc_low
+                or "\x00" in aggregate_encoded
+                or "%252" in enc_low
+                or "%25ef%25bf%25bd" in enc_low
+                or "/**/" in enc_low
+            )
             _email_plain = _re.fullmatch(
                 r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}",
                 (aggregate or "").strip(),
             )
-            if _email_plain or looks_like_benign_address(aggregate, aggregate):
+            if not encoded_attackish and (
+                _email_plain or looks_like_benign_address(aggregate, aggregate)
+            ):
                 aggregate_is_benign = True
         aggregate_is_upper_hex_token = bool(
             aggregate
@@ -275,8 +286,10 @@ class IgaGuardEngine:
                         all_probs={**best_detection.all_probs, rescue_label: rescue_conf},
                     )
                     break
+                # 编码态候选配对解码态 norm，避免传输层 quote 把正常地址抬成混淆
+                norm_for_rescue = (aggregate or cand).lower()
                 aggregate_rescue = obfuscated_evasion_rescue(
-                    cand, cand.lower(), decode_depth=1,
+                    cand, norm_for_rescue, decode_depth=1,
                 )
                 if aggregate_rescue is not None:
                     aggregate_rescue_applied = True
@@ -315,6 +328,7 @@ class IgaGuardEngine:
             "%3d" in aggregate_shape_low
             or "%26" in aggregate_shape_low
             or "%00" in aggregate_shape_low
+            or "%2500" in aggregate_shape_low
             or "%25ef%25bf%25bd" in aggregate_shape_low
             or "\x00" in aggregate_raw_for_shape
             or "/**/" in aggregate_shape_low
@@ -426,14 +440,38 @@ class IgaGuardEngine:
                 arb_norm = aggregate
                 arb_depth = 1
             if arb_raw or arb_norm:
+                from iga_guard.obfuscation_signals import (
+                    attack_keyword_scores,
+                    structural_attack_scores,
+                )
+                from iga_guard.semantic_homograph import semantic_homograph_report
+
+                arb_kw = attack_keyword_scores(arb_norm or arb_raw)
+                arb_st = structural_attack_scores(arb_raw, arb_norm, decode_depth=arb_depth)
                 new_label, new_conf = arbitrate_attack_label(
                     best_detection.label,
                     best_detection.confidence,
                     raw=arb_raw,
                     norm=arb_norm,
                     all_probs=best_detection.all_probs,
+                    kw=arb_kw,
+                    st=arb_st,
                     decode_depth=arb_depth,
                 )
+                # Optional semantic-homograph tie-break when already malicious.
+                try:
+                    sem = semantic_homograph_report(arb_raw, arb_norm)
+                    sem_label = str(getattr(sem, "dominant_label", None) or "Normal")
+                    sem_conf = float(getattr(sem, "confidence", 0.0) or 0.0)
+                    if (
+                        sem_label != "Normal"
+                        and sem_conf >= 0.55
+                        and sem_label != new_label
+                        and sem_conf >= max(best_detection.all_probs.get(new_label, 0.0), new_conf) - 0.12
+                    ):
+                        new_label, new_conf = sem_label, max(new_conf, sem_conf)
+                except Exception:
+                    pass
                 if new_label != best_detection.label:
                     best_detection = DetectionResult(
                         label=new_label,
@@ -449,6 +487,19 @@ class IgaGuardEngine:
         explanation = None
         if explain:
             explanation = webspotter_explain(best_payload, best_detection, normalized) if best_payload else None
+            # 高亮与 NL 解耦：只要 explain=True 且定位成功就生成可视化标注
+            if explanation and best_payload and len(explanation.token_range) >= 2:
+                text_for_hl = best_payload.normalized_payload or best_payload.raw_payload
+                # Prefer raw when webspotter chose raw-based span (malicious_span present in raw).
+                raw_text = best_payload.raw_payload or ""
+                if explanation.malicious_span and explanation.malicious_span in raw_text:
+                    text_for_hl = raw_text
+                explanation.highlight_html = build_highlight_html(
+                    text_for_hl,
+                    explanation.token_range[0],
+                    explanation.token_range[1],
+                )
+                explanation.method = (explanation.method or "webspotter_v2") + "+obf_annotate"
         nl_enabled = self.config.get("explanation", {}).get("nl_enabled", True)
         if explain and explanation and best_payload and nl_enabled:
             explanation.natural_language = generate_nl_explanation(
@@ -461,11 +512,6 @@ class IgaGuardEngine:
                 max_tokens=int(self.config.get("explanation", {}).get("nl_max_tokens", 128)),
                 num_ctx=int(self.config.get("explanation", {}).get("nl_num_ctx", 2048)),
             )
-            text = best_payload.normalized_payload or best_payload.raw_payload
-            if len(explanation.token_range) >= 2:
-                explanation.highlight_html = build_highlight_html(
-                    text, explanation.token_range[0], explanation.token_range[1],
-                )
 
         rule = generate_rule(best_detection, explanation)
         if self.virtual_patch and best_payload:

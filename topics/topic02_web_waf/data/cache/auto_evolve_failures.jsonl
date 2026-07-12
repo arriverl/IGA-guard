@@ -698,3 +698,13 @@
 {"url": "http://auto.local/test?p=inline_comment", "true_label": "XSS", "predicted": "Normal", "payload": "inline_comment"}
 {"url": "http://auto.local/test", "true_label": "CMD", "predicted": "Normal", "payload": "MOdO=rEGiStro&"}
 {"url": "http://auto.local/test?p=modo%253Dregistro%2526", "true_label": "CMD", "predicted": "Normal", "payload": "modo%3Dregistro%26"}
+{"url": "http://auto.local/test?p=..%25c0%25af..%25c0%25af..%25c0%25afetc%2Fpasswd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "..%c0%af..%c0%af..%c0%afetc/passwd"}
+{"url": "http://auto.local/test?p=..%2500%25c0%25af..%25c0%25af..%25c0%25afetc%2Fpasswd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "..%00%c0%af..%c0%af..%c0%afetc/passwd"}
+{"url": "http://auto.local/test?p=..%2F..%2F..%2F%5Cu0065tc%2Fp%5Cu0061%5Cu0073%5Cu0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "../../../\\u0065tc/p\\u0061\\u0073\\u0073wd"}
+{"url": "http://auto.local/test?p=..%3B%2F..%3B%2F..%3B%2F%5Cu0065tc%2Fp%5Cu0061%5Cu0073%5Cu0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "..;/..;/..;/\\u0065tc/p\\u0061\\u0073\\u0073wd"}
+{"url": "http://auto.local/test?p=...%2F.%2F...%2F.%2F...%2F.%2F%5Cu0065tc%2Fp%5Cu0061%5Cu0073%5Cu0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "..././..././..././\\u0065tc/p\\u0061\\u0073\\u0073wd"}
+{"url": "http://auto.local/test?p=...%3B%2F.%2F...%3B%2F.%2F...%3B%2F.%2F%5Cu0065tc%2Fp%5Cu0061%5Cu0073%5Cu0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "...;/./...;/./...;/./\\u0065tc/p\\u0061\\u0073\\u0073wd"}
+{"url": "http://auto.local/test?p=....%2F.%2F.%2F....%2F.%2F.%2F....%2F.%2F.%2F%5Cu0065tc%2Fp%5Cu0061%5Cu0073%5Cu0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "..../././..../././..../././\\u0065tc/p\\u0061\\u0073\\u0073wd"}
+{"url": "http://auto.local/test?p=..%3B%2F..%3B%2F..%3B%2F%5CU0065tC%2FP%5Cu0061%5CU0073%5CU0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "..;/..;/..;/\\U0065tC/P\\u0061\\U0073\\U0073wd"}
+{"url": "http://auto.local/test?p=...%25c0%25af.%2F...%25c0%25af.%2F...%25c0%25af.%2F%5Cu0065tc%2Fp%5Cu0061%5Cu0073%5Cu0073wd", "true_label": "PathTraversal", "predicted": "Normal", "payload": "...%c0%af./...%c0%af./...%c0%af./\\u0065tc/p\\u0061\\u0073\\u0073wd"}
+{"url": "http://auto.local/test?p=..%2F..%2F..%2Fetc%2Fpa%5Cu0073%5Cu0073%5Cu0077d", "true_label": "PathTraversal", "predicted": "Normal", "payload": "../../../etc/pa\\u0073\\u0073\\u0077d"}

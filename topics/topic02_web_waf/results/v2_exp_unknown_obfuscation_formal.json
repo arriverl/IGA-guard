@@ -1,0 +1,735 @@
+{
+  "experiment": "unknown_obfuscation_generalization",
+  "held_out_techniques": [
+    "multipart_boundary_sim",
+    "json_nested_escape",
+    "char_function",
+    "chunked_whitespace",
+    "hpp_duplicate_param",
+    "html_entity_full",
+    "img_onerror_wrap",
+    "keyword_concat_split",
+    "logic_or_tautology",
+    "mysql_version_comment",
+    "nested_comment",
+    "paren_overload",
+    "svg_event_wrap",
+    "tab_newline",
+    "unicode_normalization"
+  ],
+  "n_techniques": 15,
+  "n_seeds": 40,
+  "variants_per_tech": 14,
+  "total_variants": 210,
+  "cache": {
+    "cache_enabled": true,
+    "total_variants": 210,
+    "detected": 210,
+    "missed": 0,
+    "detection_recall": 1.0,
+    "exact_class_recall": 0.9571,
+    "per_technique": {
+      "multipart_boundary_sim": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 9,
+        "detection_recall": 1.0,
+        "exact_recall": 0.6429
+      },
+      "json_nested_escape": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "char_function": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "chunked_whitespace": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "hpp_duplicate_param": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "html_entity_full": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "img_onerror_wrap": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "keyword_concat_split": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "logic_or_tautology": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "mysql_version_comment": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "nested_comment": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "paren_overload": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "svg_event_wrap": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "tab_newline": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "unicode_normalization": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 10,
+        "detection_recall": 1.0,
+        "exact_recall": 0.7143
+      }
+    },
+    "per_attack_type": {
+      "CMD": {
+        "total": 7,
+        "detected": 7,
+        "exact_class": 3,
+        "detection_recall": 1.0,
+        "exact_recall": 0.4286
+      },
+      "PromptInjection": {
+        "total": 4,
+        "detected": 4,
+        "exact_class": 1,
+        "detection_recall": 1.0,
+        "exact_recall": 0.25
+      },
+      "XXE": {
+        "total": 3,
+        "detected": 3,
+        "exact_class": 3,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "PathTraversal": {
+        "total": 4,
+        "detected": 4,
+        "exact_class": 4,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "XSS": {
+        "total": 57,
+        "detected": 57,
+        "exact_class": 57,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "SQLi": {
+        "total": 130,
+        "detected": 130,
+        "exact_class": 130,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "FileInclusion": {
+        "total": 5,
+        "detected": 5,
+        "exact_class": 3,
+        "detection_recall": 1.0,
+        "exact_recall": 0.6
+      }
+    },
+    "per_family": {
+      "parser": {
+        "total": 28,
+        "detected": 28,
+        "exact_class": 23,
+        "detection_recall": 1.0,
+        "exact_recall": 0.8214
+      },
+      "semantic": {
+        "total": 42,
+        "detected": 42,
+        "exact_class": 42,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "structure": {
+        "total": 84,
+        "detected": 84,
+        "exact_class": 84,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "encoding": {
+        "total": 28,
+        "detected": 28,
+        "exact_class": 24,
+        "detection_recall": 1.0,
+        "exact_recall": 0.8571
+      },
+      "xss": {
+        "total": 28,
+        "detected": 28,
+        "exact_class": 28,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      }
+    },
+    "weakest_techniques": [
+      {
+        "technique": "multipart_boundary_sim",
+        "recall": 1.0
+      },
+      {
+        "technique": "json_nested_escape",
+        "recall": 1.0
+      },
+      {
+        "technique": "char_function",
+        "recall": 1.0
+      },
+      {
+        "technique": "chunked_whitespace",
+        "recall": 1.0
+      },
+      {
+        "technique": "hpp_duplicate_param",
+        "recall": 1.0
+      },
+      {
+        "technique": "html_entity_full",
+        "recall": 1.0
+      },
+      {
+        "technique": "img_onerror_wrap",
+        "recall": 1.0
+      },
+      {
+        "technique": "keyword_concat_split",
+        "recall": 1.0
+      }
+    ],
+    "miss_samples": []
+  },
+  "nocache": {
+    "cache_enabled": false,
+    "total_variants": 210,
+    "detected": 210,
+    "missed": 0,
+    "detection_recall": 1.0,
+    "exact_class_recall": 0.9571,
+    "per_technique": {
+      "multipart_boundary_sim": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 9,
+        "detection_recall": 1.0,
+        "exact_recall": 0.6429
+      },
+      "json_nested_escape": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "char_function": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "chunked_whitespace": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "hpp_duplicate_param": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "html_entity_full": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "img_onerror_wrap": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "keyword_concat_split": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "logic_or_tautology": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "mysql_version_comment": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "nested_comment": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "paren_overload": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "svg_event_wrap": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "tab_newline": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 14,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "unicode_normalization": {
+        "total": 14,
+        "detected": 14,
+        "exact_class": 10,
+        "detection_recall": 1.0,
+        "exact_recall": 0.7143
+      }
+    },
+    "per_attack_type": {
+      "CMD": {
+        "total": 7,
+        "detected": 7,
+        "exact_class": 3,
+        "detection_recall": 1.0,
+        "exact_recall": 0.4286
+      },
+      "PromptInjection": {
+        "total": 4,
+        "detected": 4,
+        "exact_class": 1,
+        "detection_recall": 1.0,
+        "exact_recall": 0.25
+      },
+      "XXE": {
+        "total": 3,
+        "detected": 3,
+        "exact_class": 3,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "PathTraversal": {
+        "total": 4,
+        "detected": 4,
+        "exact_class": 4,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "XSS": {
+        "total": 57,
+        "detected": 57,
+        "exact_class": 57,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "SQLi": {
+        "total": 130,
+        "detected": 130,
+        "exact_class": 130,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "FileInclusion": {
+        "total": 5,
+        "detected": 5,
+        "exact_class": 3,
+        "detection_recall": 1.0,
+        "exact_recall": 0.6
+      }
+    },
+    "per_family": {
+      "parser": {
+        "total": 28,
+        "detected": 28,
+        "exact_class": 23,
+        "detection_recall": 1.0,
+        "exact_recall": 0.8214
+      },
+      "semantic": {
+        "total": 42,
+        "detected": 42,
+        "exact_class": 42,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "structure": {
+        "total": 84,
+        "detected": 84,
+        "exact_class": 84,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      },
+      "encoding": {
+        "total": 28,
+        "detected": 28,
+        "exact_class": 24,
+        "detection_recall": 1.0,
+        "exact_recall": 0.8571
+      },
+      "xss": {
+        "total": 28,
+        "detected": 28,
+        "exact_class": 28,
+        "detection_recall": 1.0,
+        "exact_recall": 1.0
+      }
+    },
+    "weakest_techniques": [
+      {
+        "technique": "multipart_boundary_sim",
+        "recall": 1.0
+      },
+      {
+        "technique": "json_nested_escape",
+        "recall": 1.0
+      },
+      {
+        "technique": "char_function",
+        "recall": 1.0
+      },
+      {
+        "technique": "chunked_whitespace",
+        "recall": 1.0
+      },
+      {
+        "technique": "hpp_duplicate_param",
+        "recall": 1.0
+      },
+      {
+        "technique": "html_entity_full",
+        "recall": 1.0
+      },
+      {
+        "technique": "img_onerror_wrap",
+        "recall": 1.0
+      },
+      {
+        "technique": "keyword_concat_split",
+        "recall": 1.0
+      }
+    ],
+    "miss_samples": []
+  },
+  "detection_recall": 1.0,
+  "exact_class_recall": 0.9571,
+  "per_technique": {
+    "multipart_boundary_sim": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 9,
+      "detection_recall": 1.0,
+      "exact_recall": 0.6429
+    },
+    "json_nested_escape": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "char_function": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "chunked_whitespace": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "hpp_duplicate_param": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "html_entity_full": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "img_onerror_wrap": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "keyword_concat_split": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "logic_or_tautology": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "mysql_version_comment": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "nested_comment": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "paren_overload": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "svg_event_wrap": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "tab_newline": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 14,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "unicode_normalization": {
+      "total": 14,
+      "detected": 14,
+      "exact_class": 10,
+      "detection_recall": 1.0,
+      "exact_recall": 0.7143
+    }
+  },
+  "per_attack_type": {
+    "CMD": {
+      "total": 7,
+      "detected": 7,
+      "exact_class": 3,
+      "detection_recall": 1.0,
+      "exact_recall": 0.4286
+    },
+    "PromptInjection": {
+      "total": 4,
+      "detected": 4,
+      "exact_class": 1,
+      "detection_recall": 1.0,
+      "exact_recall": 0.25
+    },
+    "XXE": {
+      "total": 3,
+      "detected": 3,
+      "exact_class": 3,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "PathTraversal": {
+      "total": 4,
+      "detected": 4,
+      "exact_class": 4,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "XSS": {
+      "total": 57,
+      "detected": 57,
+      "exact_class": 57,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "SQLi": {
+      "total": 130,
+      "detected": 130,
+      "exact_class": 130,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "FileInclusion": {
+      "total": 5,
+      "detected": 5,
+      "exact_class": 3,
+      "detection_recall": 1.0,
+      "exact_recall": 0.6
+    }
+  },
+  "per_family": {
+    "parser": {
+      "total": 28,
+      "detected": 28,
+      "exact_class": 23,
+      "detection_recall": 1.0,
+      "exact_recall": 0.8214
+    },
+    "semantic": {
+      "total": 42,
+      "detected": 42,
+      "exact_class": 42,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "structure": {
+      "total": 84,
+      "detected": 84,
+      "exact_class": 84,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    },
+    "encoding": {
+      "total": 28,
+      "detected": 28,
+      "exact_class": 24,
+      "detection_recall": 1.0,
+      "exact_recall": 0.8571
+    },
+    "xss": {
+      "total": 28,
+      "detected": 28,
+      "exact_class": 28,
+      "detection_recall": 1.0,
+      "exact_recall": 1.0
+    }
+  },
+  "weakest_techniques": [
+    {
+      "technique": "multipart_boundary_sim",
+      "recall": 1.0
+    },
+    {
+      "technique": "json_nested_escape",
+      "recall": 1.0
+    },
+    {
+      "technique": "char_function",
+      "recall": 1.0
+    },
+    {
+      "technique": "chunked_whitespace",
+      "recall": 1.0
+    },
+    {
+      "technique": "hpp_duplicate_param",
+      "recall": 1.0
+    },
+    {
+      "technique": "html_entity_full",
+      "recall": 1.0
+    },
+    {
+      "technique": "img_onerror_wrap",
+      "recall": 1.0
+    },
+    {
+      "technique": "keyword_concat_split",
+      "recall": 1.0
+    }
+  ],
+  "miss_samples": [],
+  "target_min_recall": 0.9,
+  "pass": true,
+  "note": "held-out 手法未计入常见/可见集合；cache/nocache 双轨区分规则泛化与记忆能力"
+}

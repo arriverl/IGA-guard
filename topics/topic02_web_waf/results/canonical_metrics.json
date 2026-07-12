@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-07-09",
-  "source": "stage4 final full eval + DynaMorph quick regression gates",
+  "updated_at": "2026-07-12",
+  "source": "DynaMorph phased plan A/B evidence sync",
   "pytest": {
     "passed": 89,
     "note": "tests/ full suite 2026-07-08"
@@ -13,21 +13,22 @@
     "fp": 47,
     "samples": 19411,
     "multiclass_recall_malicious_exact_class": 0.738,
-    "note": "最新全量诚实评测；混淆 Precision=1.0"
+    "note": "权威全量口径；另见 e1_full_regression_* 门禁产物",
+    "multiclass_recall_malicious_exact_class_regression": 0.8421
   },
   "e1_quick_regression": {
     "file": "results/v2_exp1_regression_quick.json",
-    "obf_recall": 0.9981,
+    "obf_recall": 1.0,
     "fpr": 0.0,
-    "fn": 2,
+    "fn": 0,
     "fp": 0,
-    "multiclass_recall_malicious_exact_class": 0.8313,
+    "multiclass_recall_malicious_exact_class": 0.8408,
     "samples": 2000
   },
   "e1_quick_regression_nocache": {
     "file": "results/v2_exp1_regression_quick_nocache.json",
-    "obf_recall": 0.9981,
-    "fpr": 0.0048,
+    "obf_recall": 0.9962,
+    "fpr": 0.0,
     "samples": 2000
   },
   "e4_latency": {
@@ -47,10 +48,19 @@
     "block_rate": 1.0
   },
   "e9_80": {
-    "file": "results/v2_exp9_auto_80.json",
-    "pooled_recall": 0.9896,
-    "final_round_recall": 0.9818,
-    "block_recall": 0.9896
+    "file": "results/v2_exp9_repro_median.json",
+    "pooled_recall": 1.0,
+    "final_round_recall": 1.0,
+    "block_recall": 1.0,
+    "protocol": "fixed_seed_x3_median",
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "no_llm": true,
+    "pooled_recall_mean": 0.9979,
+    "pooled_recall_min": 0.9938
   },
   "dynamorph_guard_2026_07_09": {
     "goal": "针对混淆逃逸的 Web 攻击载荷动态检测与对抗方案",
@@ -109,6 +119,84 @@
     "run_feedback_cycle 自动闭环",
     "DynaMorph semantic homomorphism layer",
     "PolicyBundle canary/stable/shadow hot-path adaptation",
-    "probe/recovery/drift adversarial stability report"
-  ]
+    "probe/recovery/drift adversarial stability report",
+    "threshold_policy_bundle audit (not rules/cache/model)",
+    "E3 delayed-learn non-vacuous recovery",
+    "E9 fixed-seed median reproducibility",
+    "unknown obfuscation formal >=200 variants"
+  ],
+  "e1_full_regression": {
+    "file": "results/v2_exp1_regression_full.json",
+    "obf_recall": 0.9993,
+    "fpr": 0.0037,
+    "fn": 7,
+    "fp": 15,
+    "multiclass_recall_malicious_exact_class": 0.8421,
+    "samples": 19411,
+    "pass": true
+  },
+  "e1_full_regression_nocache": {
+    "file": "results/v2_exp1_regression_full_nocache.json",
+    "obf_recall": 0.996,
+    "fpr": 0.0032,
+    "fn": 41,
+    "fp": 13,
+    "samples": 19411,
+    "pass": true,
+    "note": "2026-07-12 优化后过线：url/double_url 地址尾污染 + JSON 尾空白 + CRLF Set-Cookie；剩余 FN 多为姓名级 %2B url_encode（与 FPR 权衡故意不抬）"
+  },
+  "unknown_obfuscation_formal": {
+    "file": "results/v2_exp_unknown_obfuscation_formal.json",
+    "total_variants": 210,
+    "n_techniques": 15,
+    "detection_recall": 1.0,
+    "exact_class_recall": 0.9571,
+    "nocache_detection_recall": 1.0,
+    "pass": true
+  },
+  "e3_stability_formal": {
+    "file": "results/v2_exp3_stability.json",
+    "rounds": 5,
+    "max_seeds": 80,
+    "max_variants": 800,
+    "per_round_recall": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "probe_recall": 1.0,
+    "recovery_rate": 1.0,
+    "recovery_total": 40,
+    "vacuous": false,
+    "converged": true
+  },
+  "dynamorph_guard_2026_07_12": {
+    "goal": "针对混淆逃逸的 Web 攻击载荷动态检测与对抗方案",
+    "phase_a": [
+      "口径统一：status/README/FRAMEWORK_REVIEW；旧 E2 deprecated",
+      "full regression 双轨产物落地",
+      "E3 recovery 非空集证明 + OnlineAdaptive",
+      "未知混淆 formal ≥200 variants + nocache",
+      "E9 固定种子×3 中位数协议"
+    ],
+    "phase_b": [
+      "多分类仲裁扩展 + pipeline 语义同形上下文",
+      "阈值策略包名实对齐 + online_adaptive_audit",
+      "语义同形单测/消融形状"
+    ],
+    "quick_gate": {
+      "cache_obf_recall": 1.0,
+      "cache_fpr": 0.0048,
+      "nocache_obf_recall": 0.9953,
+      "pass": true
+    },
+    "threshold_policy_audit": {
+      "file": "results/online_adaptive_audit.json",
+      "policy_kind": "threshold_policy_bundle",
+      "promotions": 29
+    },
+    "adversarial_drift_pass": true
+  }
 }

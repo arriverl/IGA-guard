@@ -1,2 +1,4 @@
-{"payload": "BD29f96e42B921E01cDfB7ee7fD79B36", "label": "SQLi", "source": "obfuscation:case_random", "pred": "Normal"}
-{"payload": "F8E98FEB0AEC1E6391F91E08313ED15E", "label": "SQLi", "source": "csic_gsi:cisc_anomalousTraffic_test.txt", "pred": "Normal"}
+{"payload": "Plumbago%2B39%2B", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Ayarza%2BQuintal", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Pl.%2BMerced%2C%2B147%2B", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}
+{"payload": "Scampini%2BBenito", "label": "SQLi", "source": "obfuscation:url_encode", "pred": "Normal"}

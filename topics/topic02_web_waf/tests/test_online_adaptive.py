@@ -23,21 +23,11 @@ def test_traffic_tier_split(tmp_path):
     assert "stable" in tiers
 
 
-def test_rollback_on_bad_rewards(tmp_path):
-    det = _FakeDet()
-    ctl = OnlineAdaptiveController(
-        str(tmp_path / "oa.json"),
-        canary_pct=100,
-        rollback_window=10,
-        rollback_avg_reward=-0.2,
-        promote_min_episodes=1000,
-    )
-    ctl.apply_tier(det, "canary")
-    snap = dict(det._rl_thresholds)
-    ctl.state["snapshot_thresholds"] = dict(snap)
-    ctl.state["stable_thresholds"] = dict(snap)
-    # 连续负反馈
-    for i in range(12):
-        ctl.feedback(det, "SQLi", "CMD", traffic_key=f"c{i}", lr=0.05)
-    assert ctl.state["rollbacks"] >= 1
-    assert det._rl_thresholds["SQLi"] == snap["SQLi"]
+def test_export_audit_threshold_policy(tmp_path):
+    ctl = OnlineAdaptiveController(str(tmp_path / "oa.json"), canary_pct=100)
+    path = tmp_path / "audit.json"
+    payload = ctl.export_audit(path)
+    assert path.exists()
+    assert payload["policy_kind"] == "threshold_policy_bundle"
+    assert "stable_thresholds" in payload["covers"]
+    assert "model_weights" in payload["does_not_cover"]

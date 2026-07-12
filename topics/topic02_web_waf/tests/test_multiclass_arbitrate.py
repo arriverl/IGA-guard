@@ -36,3 +36,29 @@ def test_arbitrate_keeps_clear_sqli():
         all_probs={"SQLi": 0.8, "CMD": 0.05, "Normal": 0.15},
     )
     assert label == "SQLi"
+
+
+def test_arbitrate_xss_over_sqli_on_script():
+    raw = "<script>alert(1)</script>"
+    label, conf = arbitrate_attack_label(
+        "SQLi",
+        0.7,
+        raw=raw,
+        norm=raw,
+        all_probs={"SQLi": 0.4, "XSS": 0.5, "Normal": 0.1},
+    )
+    assert label == "XSS"
+    assert conf >= 0.70
+
+
+def test_arbitrate_fileinclusion_over_path():
+    raw = "php://filter/convert.base64-encode/resource=index.php"
+    label, conf = arbitrate_attack_label(
+        "PathTraversal",
+        0.7,
+        raw=raw,
+        norm=raw,
+        all_probs={"PathTraversal": 0.4, "FileInclusion": 0.45},
+    )
+    assert label == "FileInclusion"
+    assert conf >= 0.70

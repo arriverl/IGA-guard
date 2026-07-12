@@ -1,9 +1,9 @@
 {
   "title": "对抗稳态与指标漂移报告",
   "e3": {
-    "file": "results\\v2_exp3_stability.json",
+    "file": "results/v2_exp3_stability.json",
     "drift": {
-      "n": 2,
+      "n": 5,
       "mean": 1.0,
       "std": 0.0,
       "min": 1.0,
@@ -16,32 +16,62 @@
     "converged": true,
     "probe": {
       "seed": 1729,
-      "total": 46,
-      "detected": 46,
+      "total": 129,
+      "detected": 129,
       "missed": 0,
       "recall": 1.0,
       "miss_distribution": {},
       "pass": true
     },
     "recovery": {
-      "total": 0,
-      "recovered": 0,
+      "total": 40,
+      "recovered": 40,
       "remaining_missed": 0,
-      "recovery_rate": 0.0,
+      "recovery_rate": 1.0,
       "miss_distribution": {},
+      "vacuous": false,
+      "mode": "regression_fn_pool+online_adaptive",
+      "promotions": 0,
+      "rollbacks": 73,
+      "episodes": 87,
+      "avg_reward": -1.0,
+      "pre_learn_misses": 40,
+      "pre_learn_total": 40,
+      "delayed_learn": true,
       "pass": true
     },
     "convergence_proof": {
       "probe_stable": true,
       "adaptive_recovery": true,
+      "recovery_non_vacuous": true,
       "adversarial_drift_bounded": true,
       "overall_converged": true
     },
     "per_round_recall": [
       1.0,
+      1.0,
+      1.0,
+      1.0,
       1.0
     ]
   },
-  "e9": null,
+  "e9": {
+    "file": "results/v2_exp9_stability.json",
+    "pooled_recall": 0.986,
+    "final_round_recall": 1.0,
+    "drift": {
+      "n": 3,
+      "mean": 0.9863,
+      "std": 0.0099,
+      "min": 0.9773,
+      "max": 1.0,
+      "range": 0.0227,
+      "last": 1.0,
+      "first": 0.9815,
+      "delta_last_first": 0.0185
+    },
+    "converged": true,
+    "llm_enabled": false
+  },
   "pass": true
 }

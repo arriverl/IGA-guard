@@ -1,0 +1,54 @@
+{
+  "title": "OnlineAdaptive threshold-policy audit",
+  "policy_kind": "threshold_policy_bundle",
+  "covers": [
+    "stable_thresholds",
+    "canary_thresholds",
+    "snapshot_thresholds",
+    "tier_metadata"
+  ],
+  "does_not_cover": [
+    "rescue_rules",
+    "continual_cache",
+    "model_weights"
+  ],
+  "status": {
+    "mode": "stable",
+    "policy_id": "policy-bootstrap",
+    "stable_policy_id": "policy-stable-20260712102355",
+    "canary_policy_id": "policy-canary-20260712102355",
+    "snapshot_id": "snapshot-20260712102355",
+    "episodes": 40,
+    "promotions": 29,
+    "rollbacks": 0,
+    "canary_pct": 100,
+    "avg_reward": 0.625,
+    "tier_stats": {
+      "canary": 40,
+      "stable": 0,
+      "shadow": 0
+    },
+    "last_event": "promote",
+    "stable_thresholds": {
+      "Normal": 0.38,
+      "SQLi": 0.4760000000000001,
+      "XSS": 0.42800000000000005,
+      "CMD": 0.2,
+      "PathTraversal": 0.42800000000000005,
+      "FileInclusion": 0.38,
+      "XXE": 0.38,
+      "PromptInjection": 0.38
+    },
+    "canary_thresholds": {
+      "Normal": 0.38,
+      "SQLi": 0.4760000000000001,
+      "XSS": 0.42800000000000005,
+      "CMD": 0.2,
+      "PathTraversal": 0.42800000000000005,
+      "FileInclusion": 0.38,
+      "XXE": 0.38,
+      "PromptInjection": 0.38
+    }
+  },
+  "exported_at": "2026-07-12T10:23:55.638005+00:00"
+}

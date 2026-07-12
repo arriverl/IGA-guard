@@ -1,0 +1,76 @@
+{
+  "experiment": "E9_llm_redteam",
+  "llm_enabled": false,
+  "llm_status": {
+    "enabled": true,
+    "configured": true,
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "api_base": "http://127.0.0.1:11434",
+    "ollama_reachable": true,
+    "local_models": [
+      "qwen2.5:0.5b"
+    ],
+    "model_available": false,
+    "autonomous": true
+  },
+  "rounds": 3,
+  "max_variants": 60,
+  "total_variants": 143,
+  "total_detected": 141,
+  "total_blocked": 141,
+  "total_missed": 2,
+  "final_round_recall": 1.0,
+  "pooled_recall": 0.986,
+  "block_recall": 0.986,
+  "label_recall": 0.9301,
+  "avg_recall": 0.986,
+  "new_techniques_discovered": 0,
+  "round_misses_path": "D:\\Code_development\\gitproduct\\caisa_contest_2026\\topics\\topic02_web_waf\\data\\cache\\auto_evolve_round_misses.jsonl",
+  "rounds_detail": [
+    {
+      "round": 1,
+      "total": 54,
+      "detected": 53,
+      "missed": 1,
+      "recall": 0.9815,
+      "block_recall": 0.9815,
+      "label_recall": 0.9259,
+      "new_techniques": []
+    },
+    {
+      "round": 2,
+      "total": 44,
+      "detected": 43,
+      "missed": 1,
+      "recall": 0.9773,
+      "block_recall": 0.9773,
+      "label_recall": 0.9545,
+      "new_techniques": []
+    },
+    {
+      "round": 3,
+      "total": 45,
+      "detected": 45,
+      "missed": 0,
+      "recall": 1.0,
+      "block_recall": 1.0,
+      "label_recall": 0.9111,
+      "new_techniques": []
+    }
+  ],
+  "target": "LLM-Evasion Recall > 95%",
+  "passed": true,
+  "drift": {
+    "n": 3,
+    "mean": 0.9863,
+    "std": 0.0099,
+    "min": 0.9773,
+    "max": 1.0,
+    "range": 0.0227,
+    "last": 1.0,
+    "first": 0.9815,
+    "delta_last_first": 0.0185
+  },
+  "converged": true
+}

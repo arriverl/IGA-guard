@@ -57,10 +57,31 @@ def cmd_status(_: argparse.Namespace) -> int:
             "continual_cache": (ROOT / "models" / "continual_cache.npz").exists(),
         },
         "config": str(ROOT / "configs" / "default.yaml"),
+        "metrics_authority": "results/canonical_metrics.json",
+        "gate_notes": {
+            "eval_regression": "strict: obf_recall>=99.5%, FPR<=1.3% (quick/full dual-track)",
+            "auto_verify": "loose smoke: E1 FPR<=5%, used for CI auto-verify only",
+        },
     }
-    results = ROOT / "results" / "v2_exp1_overall.json"
-    if results.exists():
-        status["latest_eval"] = json.loads(results.read_text(encoding="utf-8"))
+    # Canonical E1 full eval (authoritative); fall back to legacy filename.
+    auth_candidates = [
+        ROOT / "results" / "v2_exp1_opt_latest_full.json",
+        ROOT / "results" / "v2_exp1_overall.json",
+    ]
+    for results in auth_candidates:
+        if results.exists():
+            payload = json.loads(results.read_text(encoding="utf-8"))
+            status["latest_eval_file"] = str(results.relative_to(ROOT))
+            status["latest_eval"] = {
+                "obfuscated_attack_binary": payload.get("obfuscated_attack_binary"),
+                "overall_binary": payload.get("overall_binary"),
+                "overall_multiclass": payload.get("overall_multiclass"),
+                "n_samples": payload.get("n_samples") or payload.get("samples"),
+            }
+            break
+    canon = ROOT / "results" / "canonical_metrics.json"
+    if canon.exists():
+        status["canonical_metrics"] = json.loads(canon.read_text(encoding="utf-8"))
     print(json.dumps(status, indent=2, ensure_ascii=False))
     return 0
 
@@ -186,6 +207,28 @@ def cmd_eval_unknown(args: argparse.Namespace) -> int:
     if not args.include_nocache:
         cmd.append("--no-include-nocache")
     return _run(cmd, "未知混淆泛化评测")
+
+
+def cmd_demo_adaptive(_: argparse.Namespace) -> int:
+    return _run([sys.executable, "scripts/demo_online_adaptive.py"], "阈值策略包演示与审计导出")
+
+
+def cmd_e9_repro(args: argparse.Namespace) -> int:
+    py = sys.executable
+    cmd = [
+        py, "scripts/run_e9_repro.py",
+        "--seeds", *[str(s) for s in args.seeds],
+        "--rounds", str(args.rounds),
+        "--max-variants", str(args.max_variants),
+        "--output", str(args.output),
+    ]
+    if args.update_canonical:
+        cmd.append("--update-canonical")
+    if args.use_llm:
+        cmd.append("--use-llm")
+    else:
+        cmd.append("--no-llm")
+    return _run(cmd, "E9 固定种子中位数复现协议")
 
 
 def cmd_auto_evolve(args: argparse.Namespace) -> int:
@@ -426,6 +469,21 @@ def main() -> int:
         default=str(ROOT / "results" / "v2_exp_unknown_obfuscation.json"),
     )
     p_unk.set_defaults(func=cmd_eval_unknown)
+
+    p_demo = sub.add_parser("demo-adaptive", help="阈值策略包 canary 演示 + audit 导出")
+    p_demo.set_defaults(func=cmd_demo_adaptive)
+
+    p_e9r = sub.add_parser("e9-repro", help="E9 固定种子×N 中位数复现协议")
+    p_e9r.add_argument("--seeds", nargs="+", type=int, default=[41, 42, 43])
+    p_e9r.add_argument("--rounds", type=int, default=3)
+    p_e9r.add_argument("--max-variants", type=int, default=80)
+    p_e9r.add_argument("--use-llm", action="store_true")
+    p_e9r.add_argument("--update-canonical", action="store_true")
+    p_e9r.add_argument(
+        "--output",
+        default=str(ROOT / "results" / "v2_exp9_repro_median.json"),
+    )
+    p_e9r.set_defaults(func=cmd_e9_repro)
 
     p_ae = sub.add_parser("auto-evolve", help="自我迭代：发现新手法+更新检测器")
     p_ae.add_argument("--rounds", type=int, default=2)

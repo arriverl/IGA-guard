@@ -1,0 +1,44 @@
+{
+  "experiment": "E9_repro_median",
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "rounds": 3,
+  "max_variants": 80,
+  "no_llm": true,
+  "runs": [
+    {
+      "seed": 41,
+      "pooled_recall": 1.0,
+      "final_round_recall": 1.0,
+      "block_recall": 1.0,
+      "label_recall": 0.931,
+      "file": "results/v2_exp9_repro_seed41.json",
+      "llm_enabled": false
+    },
+    {
+      "seed": 42,
+      "pooled_recall": 0.9938,
+      "final_round_recall": 1.0,
+      "block_recall": 0.9938,
+      "label_recall": 0.9506,
+      "file": "results/v2_exp9_repro_seed42.json",
+      "llm_enabled": false
+    },
+    {
+      "seed": 43,
+      "pooled_recall": 1.0,
+      "final_round_recall": 1.0,
+      "block_recall": 1.0,
+      "label_recall": 0.9107,
+      "file": "results/v2_exp9_repro_seed43.json",
+      "llm_enabled": false
+    }
+  ],
+  "pooled_recall_median": 1.0,
+  "pooled_recall_mean": 0.9979,
+  "pooled_recall_min": 0.9938,
+  "pooled_recall_max": 1.0
+}

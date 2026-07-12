@@ -58,14 +58,17 @@ HTTP → 多层解混淆(≤8) → 四模态 Late Fusion
 | 多分类恶意精确召回 | 73.47% | **73.80%** |
 | 样本 | 19,411 | 19,411 |
 
-快速门禁（2k）：
-- cache：obf recall **1.0000**，FPR **0.0096**
-- no-cache：obf recall **0.9981**，FPR **0.0048**
+快速门禁（2k，`eval_regression` 严口径）：
+- cache：obf recall **99.81%**，FPR **0%**（`v2_exp1_regression_quick.json`）
+- no-cache：obf recall **99.81%**，FPR **0.48%**（`v2_exp1_regression_quick_nocache.json`）
 
-当前全量混淆子集 FN 已清零（0），长尾地址类编码样本已被覆盖。
+> **口径注意**：`run_auto_verify` 的 e1_2k（FPR≤5%）是 CI 松门禁，数字不可与 `eval_regression` 混读。  
+> **E2 废弃**：旧 `run_experiments_suite.py e2` 因 train/test `obfuscation:*` 重叠常得 `unknown_samples=0`；未知混淆主口径改为 `eval_unknown_obfuscation.py`。
+
+当前全量混淆子集 FN 已清零（0），长尾地址类编码样本已被覆盖。权威链：`results/canonical_metrics.json` → `v2_exp1_opt_latest_full.json`。
 
 产物：
-- `results/v2_exp1_opt_latest_full.json`
+- `results/v2_exp1_opt_latest_full.json`（E1 权威）
 - `results/v2_exp1_regression_quick.json`
 - `results/v2_exp1_regression_quick_nocache.json`
 - `results/canonical_metrics.json`

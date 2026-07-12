@@ -33,6 +33,8 @@
     .obf-detect-btn{background:#1e3a5f;font-size:.68rem;padding:.28rem .55rem;flex-shrink:0;white-space:nowrap}
     .obf-detect-btn:hover:not(:disabled){background:var(--accent)}
     .obf-detect-btn:disabled{opacity:.55;cursor:wait}
+    .obf-highlight{margin-top:.35rem;font-size:.72rem;line-height:1.45;word-break:break-all;color:#cbd5e1}
+    .obf-highlight mark.iga-mal{background:#dc2626;color:#fff;padding:0 .15rem;border-radius:3px}
     .obf-result{display:flex;gap:.35rem;margin-top:.3rem;flex-wrap:wrap;font-size:.68rem}
     .obf-badge{padding:.12rem .4rem;border-radius:4px}
     .obf-badge.mal{background:#3b1111;color:#fca5a5;border:1px solid var(--danger)}
@@ -152,6 +154,8 @@
                 <span class="obf-badge conf">{{ (v.detection.confidence * 100).toFixed(1) }}%</span>
                 <span class="obf-badge conf">{{ v.detection.latency_ms.toFixed(2) }}ms</span>
               </div>
+              <div v-if="v.highlight_html" class="obf-highlight nl" v-html="v.highlight_html"></div>
+              <div v-else-if="v.malicious_span" class="obf-meta">标注片段: {{ v.malicious_span }}</div>
             </div>
             <button class="obf-detect-btn" :disabled="v.detecting" @click="detectVariantObf(i)">
               {{ v.detecting ? '…' : '检测' }}
@@ -209,7 +213,7 @@ createApp({
     pct(v){ return v==null ? '-' : (v*100).toFixed(2)+'%'; },
     async detect(){
       const r=await fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({method:this.method,url:this.url})});
+        body:JSON.stringify({method:this.method,url:this.url,explain:true})});
       this.result=await r.json();
       if(this.result.detection?.latency_ms) this.latencyHistory.push(this.result.detection.latency_ms);
       this.$nextTick(()=>this.updateContribChart());
@@ -225,7 +229,7 @@ createApp({
         if(!r.ok||d.error){ this.obfVariants=[]; return; }
         this.obfVariants=(d.variants||[]).map(v=>({
           payload:v.payload, source:v.source||'unknown',
-          detecting:false, detection:null,
+          detecting:false, detection:null, highlight_html:'', malicious_span:'',
         }));
         this.obfGenerated=true;
       }finally{ this.obfLoading=false; }
@@ -237,11 +241,15 @@ createApp({
       try{
         const testUrl='http://demo/obf?p='+encodeURIComponent(v.payload);
         const r=await fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({method:'GET',url:testUrl})});
+          body:JSON.stringify({method:'GET',url:testUrl,explain:true})});
         const d=await r.json();
         v.detection=d.detection||null;
+        v.highlight_html=d.explanation?.highlight_html||'';
+        v.malicious_span=d.explanation?.malicious_span||'';
       }catch(_){
         v.detection={is_malicious:false,label:'Error',confidence:0,latency_ms:0};
+        v.highlight_html='';
+        v.malicious_span='';
       }finally{ v.detecting=false; }
     },
     async detectAllObf(){

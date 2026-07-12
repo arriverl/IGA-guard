@@ -40,7 +40,10 @@ def webspotter_explain(
     if not detection.is_malicious:
         return None
 
-    text = payload.normalized_payload or payload.raw_payload
+    # Prefer raw when it carries more obfuscation markers (better visual annotation).
+    raw = payload.raw_payload or ""
+    norm = payload.normalized_payload or raw
+    text = raw if _obf_marker_score(raw) >= _obf_marker_score(norm) else norm
     attack_type = detection.label
     best_span, best_range = _locate_span(text, attack_type)
 
@@ -61,11 +64,39 @@ def webspotter_explain(
     )
 
 
+def _obf_marker_score(text: str) -> int:
+    low = (text or "").lower()
+    score = 0
+    for m in ("%00", "%252", "\\u00", "&#", "%2b", "/**/", "<script", "union", "select"):
+        if m in low:
+            score += 1
+    # fullwidth / non-ascii letters
+    score += sum(1 for ch in text if "\uff00" <= ch <= "\uffef")
+    return score
+
+
 def _locate_span(text: str, attack_type: str) -> tuple[str, list[int]]:
     patterns = PATTERNS.get(attack_type, [])
     anchors = ANCHOR_KEYWORDS.get(attack_type, [])
     candidates: list[tuple[str, int, int, float]] = []
     lower = text.lower()
+
+    # Priority 0: obfuscation-aware spans (visual annotation for evasion payloads)
+    for pat, pri in (
+        (r"%00|%2500|\x00", 7.2),
+        (r"(?:\\u[0-9a-fA-F]{4}){2,}", 7.0),
+        (r"\\u[0-9a-fA-F]{4}", 6.9),  # sparse single unicode-escape
+        (r"%252[0-9a-fA-F]{2}", 6.8),
+        (r"&#x?[0-9a-fA-F]+;", 6.6),
+        (r"/\*\*/", 6.4),
+        (r"[|\?](?:$|[,+\s])", 6.2),
+        (r"[\uff01-\uff5e]{1,8}", 6.0),  # fullwidth run
+    ):
+        m = re.search(pat, text, re.IGNORECASE)
+        if m:
+            start = max(0, m.start() - 2)
+            end = min(len(text), m.end() + 10)
+            candidates.append((text[start:end], start, end, pri))
 
     # Priority 1: compound anchors (e.g. union select)
     if attack_type == "SQLi" and "union" in text.lower() and "select" in text.lower():
@@ -122,11 +153,13 @@ def _locate_span(text: str, attack_type: str) -> tuple[str, list[int]]:
     if candidates:
         best = max(candidates, key=lambda x: (x[3], - (x[2] - x[1])))
         span, start, end = best[0], best[1], best[2]
-        span, start, end = _refine_to_anchor(text, span, start, end, anchors)
+        # Only refine classical keyword spans; keep obfuscation spans intact.
+        if best[3] < 6.0:
+            span, start, end = _refine_to_anchor(text, span, start, end, anchors)
         return span, [start, end]
 
     for i, ch in enumerate(text):
-        if ch in "'\"<>%;":
+        if ch in "'\"<>%;" or ("\uff00" <= ch <= "\uffef"):
             start = max(0, i - 2)
             end = min(len(text), i + 12)
             return text[start:end], [start, end]
@@ -167,8 +200,10 @@ def _field_contributions(parts: list[NormalizedPayload], detection: DetectionRes
     anchors = ANCHOR_KEYWORDS.get(detection.label, [])
     for p in parts:
         key = f"{p.location}:{p.field_name}"
-        text = (p.normalized_payload or p.raw_payload).lower()
-        score = 0.1 + sum(0.25 for a in anchors if a.lower() in text)
+        text = (p.normalized_payload or p.raw_payload)
+        low = text.lower()
+        score = 0.1 + sum(0.25 for a in anchors if a.lower() in low)
+        score += 0.15 * min(4, _obf_marker_score(text))
         weights[key] = round(score, 3)
     total = sum(weights.values()) or 1.0
     return {k: round(v / total, 3) for k, v in weights.items()}

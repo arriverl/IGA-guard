@@ -1,26 +1,47 @@
 {
   "experiment": "E3_adversarial_stability",
-  "rounds": 2,
-  "max_seeds": 20,
-  "max_variants": 180,
+  "rounds": 5,
+  "max_seeds": 80,
+  "max_variants": 800,
   "per_round": [
     {
       "round": 1,
-      "total": 85,
-      "detected": 85,
+      "total": 248,
+      "detected": 248,
       "missed": 0,
       "recall": 1.0
     },
     {
       "round": 2,
-      "total": 85,
-      "detected": 85,
+      "total": 245,
+      "detected": 245,
+      "missed": 0,
+      "recall": 1.0
+    },
+    {
+      "round": 3,
+      "total": 246,
+      "detected": 246,
+      "missed": 0,
+      "recall": 1.0
+    },
+    {
+      "round": 4,
+      "total": 245,
+      "detected": 245,
+      "missed": 0,
+      "recall": 1.0
+    },
+    {
+      "round": 5,
+      "total": 241,
+      "detected": 241,
       "missed": 0,
       "recall": 1.0
     }
   ],
   "drift": {
-    "n": 2,
+    "n": 5,
     "mean": 1.0,
     "std": 0.0,
     "min": 1.0,
@@ -32,34 +53,44 @@
   },
   "probe": {
     "seed": 1729,
-    "total": 46,
-    "detected": 46,
+    "total": 129,
+    "detected": 129,
     "missed": 0,
     "recall": 1.0,
     "miss_distribution": {},
     "pass": true
   },
   "recovery": {
-    "total": 0,
-    "recovered": 0,
+    "total": 40,
+    "recovered": 40,
     "remaining_missed": 0,
-    "recovery_rate": 0.0,
+    "recovery_rate": 1.0,
     "miss_distribution": {},
+    "vacuous": false,
+    "mode": "regression_fn_pool+online_adaptive",
+    "promotions": 0,
+    "rollbacks": 73,
+    "episodes": 87,
+    "avg_reward": -1.0,
+    "pre_learn_misses": 40,
+    "pre_learn_total": 40,
+    "delayed_learn": true,
     "pass": true
   },
   "convergence_proof": {
     "probe_stable": true,
     "adaptive_recovery": true,
+    "recovery_non_vacuous": true,
     "adversarial_drift_bounded": true,
     "overall_converged": true
   },
   "converged": true,
   "gates": {
-    "min_last_recall": 0.8,
-    "min_mean_recall": 0.8,
-    "min_probe_recall": 0.8,
-    "min_recovery_rate": 0.5,
-    "max_std": 0.2,
-    "max_range": 0.35
+    "min_last_recall": 0.9,
+    "min_mean_recall": 0.9,
+    "min_probe_recall": 0.95,
+    "min_recovery_rate": 0.8,
+    "max_std": 0.1,
+    "max_range": 0.2
   }
 }

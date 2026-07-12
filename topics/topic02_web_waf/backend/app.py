@@ -94,7 +94,7 @@ def detect():
         body=data.get("body", ""),
         headers=data.get("headers", {}),
     )
-    report = engine.analyze_request(req)
+    report = engine.analyze_request(req, explain=bool(data.get("explain", True)))
     payload = report.to_dict()
     payload["policy"] = policy_meta
     latency_samples.append(report.detection.latency_ms)

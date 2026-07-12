@@ -223,7 +223,17 @@ def _write_json(path: Path, payload: dict) -> None:
 
 
 def run_e2(train_path: Path, test_path: Path, cfg_path: Path) -> dict:
-    print("\n=== E2: unknown obfuscation detection ===", flush=True)
+    """Legacy E2: train/test obfuscation:* overlap is typically complete → often 0 samples.
+
+    Deprecated in favor of scripts/eval_unknown_obfuscation.py (held-out technique synthesis).
+    Kept for backward CLI compatibility; writes an explicit deprecation note.
+    """
+    print("\n=== E2 (DEPRECATED): legacy unknown obfuscation:* overlap ===", flush=True)
+    print(
+        "NOTE: Prefer `python scripts/eval_unknown_obfuscation.py` / "
+        "`iga_system.py eval-unknown` for DynaMorph held-out generalization.",
+        flush=True,
+    )
     train_types = _collect_train_obf_types(train_path)
     unknown_rows: list[dict] = []
     unknown_types: set[str] = set()
@@ -244,13 +254,18 @@ def run_e2(train_path: Path, test_path: Path, cfg_path: Path) -> dict:
 
     result = {
         "experiment": "E2_unknown_obfuscation",
+        "deprecated": True,
+        "replacement": "scripts/eval_unknown_obfuscation.py",
         "dataset": str(test_path),
         "train_obfuscation_types": sorted(train_types),
         "unknown_obfuscation_types": sorted(unknown_types),
         "unknown_samples": len(unknown_rows),
         "obfuscated_recall": metrics["obfuscated_attack_binary"]["detection_recall"],
         "metrics": metrics,
-        "note": "测试集 source 含训练未出现的 obfuscation:* 类型；报告混淆攻击二分类 recall",
+        "note": (
+            "DEPRECATED: 测试集 source 与训练 obfuscation:* 常完全重叠导致 unknown_samples=0。"
+            "请改用 eval_unknown_obfuscation.py（held-out 手法合成 + cache/nocache 双轨）。"
+        ),
     }
     out = RESULTS / "v2_exp2_unknown.json"
     _write_json(out, result)

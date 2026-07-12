@@ -28,10 +28,10 @@
 本项目现已将“针对混淆逃逸的 Web 攻击载荷动态检测与对抗方案”落为 **DynaMorph-Guard**：
 
 - **语义同形检测**：`semantic_homograph.py` 同时构建 raw、URL 深解码、HTML 实体、Base64、JSON、参数结构多视图，把语法变异还原为攻击语义分数。
-- **移动目标防御**：`OnlineAdaptiveController` 在 `/api/detect` 热路径应用 stable/canary/shadow 分层策略，并返回 `policy_id` / `traffic_tier` / `snapshot_id`。
+- **移动目标防御**：`OnlineAdaptiveController` 在 `/api/detect` 热路径应用 **阈值策略包**（stable/canary/shadow 分层阈值 + `policy_id` / `snapshot_id`）。规则 / 缓存 / 模型权重属离线演化产物，不在线打包进 PolicyBundle。
 - **红蓝共演化评测**：`run_adversarial_stability.py` 输出 probe / recovery / drift 三层稳态证明，区分固定探针稳定性与对抗硬样本恢复率。
 - **未知混淆泛化**：`eval_unknown_obfuscation.py` 支持 cache/no-cache 双轨、per-technique、per-family、per-attack-type 指标。
-- **安全发布**：新规则、缓存、阈值先进入 canary/shadow，经过 quick/full regression 与 FPR 门禁后再晋升 stable。
+- **安全发布**：新阈值先进入 canary/shadow；rescue 规则与 cache 经 `eval_regression` / feedback-cycle 严门禁后再晋升 stable。
 
 ```
                     ┌─────────────────────────────────────────────────────────┐
@@ -105,11 +105,11 @@
 |------|----------|--------------------------------|
 | 混淆子集 Recall（全量 19,411） | > 99.5% | **100.00%** (FN=0) |
 | Normal FPR（全量） | 低误报 | **1.16%** (FP=47) |
-| 混淆子集 Recall（2k quick cache/no-cache） | > 99.5% | cache 最新复验 **99.81%**（FPR=0）；no-cache 最近记录 **99.81%** |
-| 多分类恶意精确召回（2k quick） | 精细处置 | **83.13%** |
+| 混淆子集 Recall（2k quick cache/no-cache） | > 99.5% | cache **100%**（FPR=0.48%）；no-cache **99.53%** |
+| 多分类恶意精确召回（2k quick） | 精细处置 | **见 quick JSON overall_multiclass** |
 | 延迟 P50 / P99 | < 5 ms / 实用 | **0.068 ms / 13.3 ms** ✓ |
 | WebSpotter span hit | — | **100%**（IoU Δ +37.9%）✓ |
-| E9 LLM 红队（80 variants） | 高 recall | pooled **98.96%** ✓ |
+| E9 LLM 红队（80 variants ×3 中位数） | 高 recall | pooled 中位数 **100%** ✓ |
 | 单元测试 | — | **89 passed** |
 
 全量权威口径（n=19,411）：`results/v2_exp1_opt_latest_full.json`（最新优化；混淆 Precision=100%）  
@@ -249,22 +249,24 @@ python scripts/iga_system.py serve
 | `dataset_agent.py` | 拉取公开源 + CSIC + 混淆扩充 | `python scripts/dataset_agent.py` |
 | `train.py` | 训练 Fusion RF | `python scripts/train.py --data data/master/train_obfuscated.csv` |
 | `train_bert.py` | 微调 TinyBERT | `python scripts/train_bert.py --epochs 5` |
-| `evaluate.py` | 诚实口径 E1 评估 | 输出 `results/v2_exp1_overall.json` |
+| `evaluate.py` | 诚实口径 E1 评估 | 权威产物 `results/v2_exp1_opt_latest_full.json`（见 `canonical_metrics.json`） |
+| `eval_regression.py` | **严门禁** quick/full（cache+nocache） | obf≥99.5%，FPR≤1.3% |
+| `eval_unknown_obfuscation.py` | **E2′** held-out 未知混淆泛化 | 替代已废弃的旧 E2 |
 | `build_cache.py` | Stage-1 构建 KV 缓存 | `--per-class 30` |
 | `expand_cache_from_misses.py` | 漏检写入缓存 | 420 条漏检 → 552 条总库 |
 | `evolve_from_obf_misses.py` | 漏检诚实增量重训 RF | 不污染测试集 |
 | `evolve_from_misses.py` | 对抗漏检 CSV 演化 | 配合 `run_adversarial.py` |
 | `analyze_misses.py` | 漏检模式分析 | 输出 `results/miss_analysis.json` |
 | `compare_multimodal_full.py` | 多模态开/关全量消融 | `v2_compare_multimodal_full.json` |
-| `run_experiments_suite.py` | E2/E5/E7/E8 批量实验 | `--experiments all` |
+| `run_experiments_suite.py` | E5/E7/E8（旧 E2 已废弃） | `--experiments e5,e7,e8`；未知混淆请用 `eval-unknown` |
 | `run_adversarial.py` | 多轮对抗演化 | `--rounds 3 --max-seeds 150` |
 | `benchmark_latency.py` | E4 延迟测试 | P50/P95/P99 |
-| `run_auto_verify.py` | 全自动检验（E1/E4/E6/E8/E9） | `results/auto_verify_report.md` |
+| `run_auto_verify.py` | **松门禁** CI 冒烟（E1 FPR≤5%） | 与 `eval_regression` 严口径不可混读 |
 | `miss_to_rule.py` | 漏检→动态 rescue 规则 | `discovered_rescue_rules.json` |
 | `calibrate_fusion_weights.py` | 融合权重离线校准 | `fusion_calibration.json` |
 | `clean_artifacts.sh` | 清理中间迭代产物 | 见 `docs/ARTIFACTS.md` |
 | `eval_explainability.py` | E6 WebSpotter IoU | `v2_exp6_localization.json` |
-| `stress_test.py` | E4b 压测（待执行） | QPS 压力 |
+| `stress_test.py` | E4b 压测 | 已有 `v2_exp4_stress.json`（QPS≈35，非设计级 10 万） |
 | `detect.py` | 单条 CLI 检测 | `--url "..." --json` |
 | `generate_dataset.py` | 小规模样本集生成 | `data/samples/` 演示用 |
 | `build_community_seed.py` | 构建社区种子库 | `payloads_seed.txt` |
@@ -275,7 +277,7 @@ python scripts/iga_system.py serve
 
 | 子命令 | 说明 |
 |--------|------|
-| `status` | 数据集行数、模型存在性、最新 E1 JSON |
+| `status` | 数据集/模型 + **canonical E1**（`v2_exp1_opt_latest_full.json`） |
 | `dataset` | 调用 `dataset_agent.py` 重建 master |
 | `train` | RF + TinyBERT（`--skip-bert` / `--bert-samples 0` 全量） |
 | `build-cache` | 初始 KV 缓存 |
@@ -283,7 +285,8 @@ python scripts/iga_system.py serve
 | `evaluate` | 全量/抽样评估（`--max-samples 0` 或不传为全量） |
 | `evolve-obf` | 漏检诚实 RF 重训 |
 | `compare-multimodal` | 多模态消融 |
-| `experiments` | E2/E5/E7/E8 |
+| `experiments` | E5/E7/E8（旧 E2 deprecated） |
+| `eval-unknown` | E2′ held-out 未知混淆 |
 | `adversarial` | 对抗演化 |
 | `obfuscate` | `-p` 载荷 `-t` 类型 `-n` 变种数 |
 | `pipeline` | dataset → train → evaluate → adversarial |
@@ -347,16 +350,20 @@ python scripts/iga_system.py serve
 
 ## 实验套件
 
+**口径说明**：答辩主指标以 `results/canonical_metrics.json` 为准。`eval_regression` 为严门禁（obf≥99.5%，FPR≤1.3%）；`run_auto_verify` 为 CI 松门禁（E1 FPR≤5%），二者不可混读。
+
 | 编号 | 名称 | 脚本/结果 | 状态 |
 |------|------|-----------|------|
-| E1 | 整体检测 | `evaluate.py` → `v2_exp1_overall.json` | ✅ |
-| E2 | 未知混淆 | `run_experiments_suite.py` → `v2_exp2_unknown.json` | ✅ |
-| E3 | 对抗鲁棒性 | `run_adversarial.py` → `v2_exp3_*.csv` | ✅ |
+| E1 | 整体检测 | 权威 `v2_exp1_opt_latest_full.json`；门禁 `eval_regression` | ✅ |
+| E2 | 旧零样本（废弃） | `v2_exp2_unknown.json` 常 `unknown_samples=0` | ⛔ 废弃 |
+| E2′ | 未知混淆泛化 | `eval_unknown_obfuscation.py` → `v2_exp_unknown_obfuscation*.json` | ✅ 主口径 |
+| E3 | 对抗鲁棒性 / 稳态 | `run_adversarial.py` + `run_adversarial_stability.py` | ✅ |
 | E4 | 延迟 | `benchmark_latency.py` → `v2_exp4_latency.json` | ✅ |
-| E5 | 消融 | `run_experiments_suite.py` → `v2_exp5_ablation.json` | ✅ |
+| E5 | 消融 | `run_experiments_suite.py` → `v2_exp5_ablation.json` | ⚠ 需用当前检测器重跑 |
 | E6 | 可解释性 | `eval_explainability.py` → `v2_exp6_localization.json` | ✅ |
-| E7 | Online RL | `run_experiments_suite.py` → `v2_exp7_evolution.json` | ✅ |
+| E7 | Online RL | `run_experiments_suite.py` → `v2_exp7_evolution.json` | ⚠ 现仅 5 事件 |
 | E8 | 虚拟补丁 | `run_experiments_suite.py` → `v2_exp8_virtual_patch.json` | ✅ |
+| E9 | LLM 红队 | `run_llm_redteam.py` → `v2_exp9_*.json` | ✅ |
 | — | 多模态消融 | `compare_multimodal_full.py` → `v2_compare_multimodal_full.json` | ✅ |
 
 ---

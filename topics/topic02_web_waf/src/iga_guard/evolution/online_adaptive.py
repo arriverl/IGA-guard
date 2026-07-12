@@ -1,9 +1,12 @@
 """在线自适应控制器：自动学习 / 自动回滚 / 流量分层灰度。
 
 相对批处理 feedback-cycle，本模块面向请求路径上的准在线闭环：
-  1) canary 流量先应用候选阈值/缓存更新
+  1) canary 流量先应用候选阈值更新（阈值策略包 / threshold policy bundle）
   2) 滑动窗口监控 reward / FPR 代理指标
   3) 恶化则自动回滚到快照；稳定则晋升到 stable 层
+
+注意：本控制器覆盖的是 RL 阈值 + tier 元数据，不包含 rescue 规则、
+continual cache 条目或模型权重（这些仍由离线演化脚本管理）。
 """
 
 from __future__ import annotations
@@ -284,6 +287,25 @@ class OnlineAdaptiveController:
     def unfreeze(self) -> None:
         self.state["mode"] = "canary"
         self._save()
+
+    def export_audit(self, path: str | Path) -> dict[str, Any]:
+        """Export threshold-policy audit evidence (not rules/cache/model bundle).
+
+        Policy coverage is intentionally limited to RL thresholds + tier metadata.
+        Rules / continual cache / model weights remain offline evolution artifacts.
+        """
+        out = Path(path)
+        payload = {
+            "title": "OnlineAdaptive threshold-policy audit",
+            "policy_kind": "threshold_policy_bundle",
+            "covers": ["stable_thresholds", "canary_thresholds", "snapshot_thresholds", "tier_metadata"],
+            "does_not_cover": ["rescue_rules", "continual_cache", "model_weights"],
+            "status": self.status(),
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+        }
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        return payload
 
 
 def _stamp() -> str:

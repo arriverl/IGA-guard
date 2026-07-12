@@ -31,6 +31,7 @@ from iga_guard.obfuscation_signals import (
     attack_keyword_scores,
     evasion_rule_scores,
     has_case_obfuscated_param,
+    has_fullwidth,
     has_strong_obfuscation,
     is_obfuscated,
     looks_like_benign_csic_form,
@@ -348,6 +349,10 @@ class DualTrackDetector:
                 label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
                 confidence = max(confidence, st_peak, thresh)
                 is_malicious = True
+            elif has_fullwidth(payload.raw_payload or "") and is_obfuscated(raw_low) and st_peak >= 0.35:
+                label = max((k for k in st if k != "Normal"), key=lambda k: st[k], default="SQLi")
+                confidence = max(confidence, st_peak, 0.55)
+                is_malicious = True
             elif decode_depth >= 2 and st_peak >= 0.52 and kw_peak >= 0.18:
                 label = max((k for k in st if k != "Normal"), key=lambda k: st[k])
                 confidence = max(confidence, st_peak, thresh)
@@ -493,6 +498,7 @@ class DualTrackDetector:
             and not rescued_obf
             and not full_url_form
             and not has_case_obfuscated_param(payload.raw_payload or "")
+            and not has_fullwidth(payload.raw_payload or "")
             and is_benign_traffic_context(payload.raw_payload, norm_text)
         ):
             # CSIC 正常表单在 URL 编码 + 商品参数下容易被“结构分”误提；放宽其反转阈值。
